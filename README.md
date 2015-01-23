@@ -1,5 +1,5 @@
 # HELIOS
-Radiative transfer code optimized for GPUs.
+*Radiative transfer code optimized for GPUs.*
 
 Upcoming open-soure code intended to calculate the radiative transfer in exoplanet atmospheres. The code is written in CUDA C++ and optimized for execution on GPUs.
 
