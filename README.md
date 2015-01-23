@@ -8,6 +8,6 @@ The code is using a two-stream, diffuse approximation. First versions will study
 
 HELIOS is part of the exoclime simulation platform ([ESP][1]), which also incorporates the THOR and VULCAN projects. 
 
-Please note that HELIOS is currently in its early stages of development. First versions are expected to come out at the end of 2015.
+Please note that HELIOS is currently in its early stages of development. First versions are expected to come out by the end of 2015.
 
 [1]:http://www.exoclime.net
