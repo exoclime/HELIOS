@@ -12,9 +12,11 @@ HELIOS-K a fast opacity calculator has been released.
 
 ## Getting the source
 All codes in HELIOS can be cloned with a single
+
     git clone --recursive https://github.com/exoclime/HELIOS
 
 Please note the `--recursive`, updating source is done by the two steps
+
     git pull
     git submodule foreach git pull
 
