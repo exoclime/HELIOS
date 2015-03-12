@@ -8,6 +8,19 @@ The code is based on a two-stream approximation. First versions will study the p
 
 HELIOS is part of the exoclime simulation platform ([ESP][1]), which also incorporates the THOR and VULCAN projects. 
 
-Please note that HELIOS is currently in its early stages of development. First versions are expected to come out by the end of 2015.
+HELIOS-K a fast opacity calculator has been released.
+
+## Getting the source
+All codes in HELIOS can be cloned with a single
+    git clone --recursive https://github.com/exoclime/HELIOS
+
+Please note the `--recursive`, updating source is done by the two steps
+    git pull
+    git submodule foreach git pull
+
+## Reporting issues
+Please use the issue tracker of the respective submodule:
+  - [HELIOS-K][2] for issues in the k-calculator
 
 [1]:http://www.exoclime.net
+[2]:https://github.com/exoclime/HELIOS-K/issues/new
