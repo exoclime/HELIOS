@@ -55,7 +55,7 @@ Note that HELIOS was developed and tested with Python 3.4. It has not been teste
 
 #### CUDA ####
 
-The NVIDIA CUDA API can be found [here](https://developer.nvidia.com/cuda-downloads).
+CUDA can be found [here](https://developer.nvidia.com/cuda-downloads).
 
 #### OS ####
 
