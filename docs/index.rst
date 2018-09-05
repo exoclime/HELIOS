@@ -6,8 +6,12 @@
 Welcome to HELIOS!
 ==================
 
+On this page you find the documentation for HELIOS, the radiative transfer code for exoplanetary atmospheres. 
+
 .. toctree::
    :maxdepth: 2
+
+   sections/about
 
    sections/requirements
 
@@ -15,9 +19,18 @@ Welcome to HELIOS!
 
    sections/tutorial
 
+   sections/parameters
+
    sections/structure
 
+   sections/ktable
+
    sections/license
+
+   sections/acknowledgements
+
+   sections/code
+
 
 
 Indices and tables
