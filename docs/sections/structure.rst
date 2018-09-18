@@ -129,21 +129,20 @@ The standard output of HELIOS may also be used as an input profile.
 
 Practically, the read-in temperature profile is linearly interpolated to the HELIOS pressure grid, set by the top and bottom of atmosphere pressures and the number of layers.
 
-adiabatic coefficient/entropy
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+adiabatic coefficient
+^^^^^^^^^^^^^^^^^^^^^
 
-To enable the convective adjustment, the adiabatic coefficient as function of temperature and pressure needs to be known. Furthermore, if the entropy is provided, the layer values will be returned as well. It should be listed in an ASCII file, with log10 temperature being on the smaller loop and log10 pressure on the larger one, i.e. from top to down we get kappa[t+n_t*p], with the pressure index p and the temperature index t, and n_t the number of temperature values.
+To enable the convective adjustment, the adiabatic coefficient as function of temperature and pressure needs to be known. In the simplest case, a constant value for the the adiabatic coefficient can be set manually.
 
-The format of this file should be:
+If a file is to be read in, it should be in ASCII format, with the adiabatic coefficient listed as function of pressure and temperature, with log10 temperature being on the smaller loop and log10 pressure on the larger one, i.e. from top to down we get kappa[t+n_t*p], with the pressure index p and the temperature index t, and n_t the number of temperature values. If the corresponding entropy is listed as well, its layer values will be given out as output as well.
+
+The format of the file should be:
 
 .. figure:: ../figures/adiabat.png
    :scale: 60 %
    :alt: map to buried treasure
 
    *Figure: Format of the adiabatic coefficient/entropy file.*
-
-
-If convective adjustment is not set, this input is not required.
 
 planet parameters
 ^^^^^^^^^^^^^^^^^
@@ -158,12 +157,16 @@ The planetary, stellar and orbital parameters may be pre-tabulated for convenien
 
 The name in the first column can then be used in the :doc:`parameters` making the corresponding values to be read automatically. The surface gravity can be given either in (dex cgs) or in (cgs) units. See the figure for the correct units of the other parameters.
 
+A sample planet file is provided with the installation. No guarantee is made about the correctness of the data within.
+
 If no planet file can be bypassed by setting the planetary parameters manually in the :doc:`parameters`.
 
 stellar spectrum
 ^^^^^^^^^^^^^^^^
 
-In addition to using the blackbody with the stellar temperature for the external irradiation, one can read in a stellar spectrum. The spectrum has to exhibit the same wavelength grid as the opacities. In needs to come with an HDF5 file in cgs units of erg s :math:`^{-1}` cm :math:`^{-3}`.
+In addition to using the blackbody with the stellar temperature for the external irradiation, one can read in a stellar spectrum. The spectrum has to exhibit the same wavelength grid as the opacities. The spectral flux needs to come with an HDF5 file in cgs units of erg s :math:`^{-1}` cm :math:`^{-3}`. 
+
+A sample file is provided with the installation. It contains the spectrum of HD 189733 downloaded from the `PHOENIX online database <http://phoenix.astro.physik.uni-goettingen.de/>`_, once in original resolution and once downsampled to 300 wavelength bins with the corresponding wavelength values.
 
 VULCAN mixing ratios
 ^^^^^^^^^^^^^^^^^^^^

@@ -111,35 +111,43 @@ Corrects for cut-off wavelengths in the total incoming flux. Due to the lower bo
 
    ``convective adjustment (yes, no)``
 
-Switches convective adjustment on or off. If set to off, only radiative equilibrium is sought during the temperature iteration. If this option is activated, convective adjustment is applied after a radiative solution has been found. In this way the temperature profile in radiative-convective equilibrium is obtained. 
+Switches convective adjustment on or off. If set to off, only radiative equilibrium is sought during the temperature iteration. If this option is activated, convective adjustment is applied after a radiative solution has been found. In this way the temperature profile in radiative-convective equilibrium is obtained.
+
+   ``kappa value (value, file)``
+
+Sets manually a constant value to the adiabatic coefficient. For an ideal gas, the value is given by 2 / (2 + n), where n is the number of degrees of freedom for the gas particles. For diatomic particles n = 5. If "file" is set, pre-tabulated values are to be read from a file. See :doc:`structure` for more info on the format of this file. 
 
    ``entropy/kappa file path``
 
 Sets the path to the file with the tabulated adiabatic coefficient (and optionally the entropy). 
 
-**ORBITAL/PLANETARY PARAMETERS**
+**ASTRONOMICAL PARAMETERS**
 
    ``planet (manual, pre-defined name)``
 
-The planetary parameters can be either specified manually or read in from a file. See :doc:`structure` for more info. 
+The planetary parameters can be either specified manually or read in from a file. A sample file is provided with the installation. See :doc:`structure` for more info.
 
    ``path to planet data file``
 
 Sets the path to the file with the planetary parameters. 
 
    ``surface gravity [cm s^-2] or [log10 (cm s^-2)]``
+
    ``orbital distance [AU]``
+
    ``radius planet [R_Jup]``
+
    ``radius star [R_Sun]``
+
    ``temperature star [K]``
 
-Manual entry for the planetary, stellar and orbital parameters.
-
-**STELLAR SPECTRUM** 
+Manual entry for the planetary, stellar and orbital parameters. The stellar temperature is only relevant if "blackbody" is chosen for the stellar spectrum (next parameter).
 
    ``spectral model (blackbody, HDF5 data set)``
 
-Sets the model for the stellar irradiation. Simplest approach is to use a blackbody shape with the stellar temperature. For this choice no additional input is required. If a sophisticated stellar spectrum is desired, the spectrum needs to be provided in a HDF5 file with the correct format. 
+Sets the model for the stellar irradiation. Simplest approach is to use a blackbody spectrum with the stellar temperature. For this choice no additional input is required. If a realistic stellar spectrum is desired, the spectrum needs to be provided in a HDF5 file with the correct format. A sample file is provided with the installation. See :doc:`structure` for more info.
+
+Sets the stellar temperature. 
 
    ``path to stellar spectrum file``
 

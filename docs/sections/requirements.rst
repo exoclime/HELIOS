@@ -23,6 +23,8 @@ HELIOS's computational core is written in CUDA C++, but the user shell comes in 
 The following Python packages are required.
 
 * numpy
+* scipy
+* astropy
 * matplotlib
 * h5py
 * PyCUDA
@@ -30,5 +32,7 @@ The following Python packages are required.
 Some of them may be already included in the python distribution. Otherwise they can be installed with the Python package manager pip. To install e.g. PyCUDA type::
 
    pip install pycuda
+
+This may fail, if you don't have admin permissions on the machine you are trying to install software. For this case, so-called *virtual environments* exist which embed your Python installation in a user-manageable frame. See e.g. `this <https://docs.python-guide.org/dev/virtualenvs/>`_ for a nice tutorial on that.
 
 Note that HELIOS has been tested with Python 3.5.x and 3.6.x. It may not be compatible with earlier versions. HELIOS does not run with Python 2.
