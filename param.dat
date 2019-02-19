@@ -56,7 +56,7 @@ orbital distance [AU] =                 10.03462
 radius planet [R_Jup] =                 1.891
 radius star [R_Sun] =                   2.362
 temperature star [K] =                  0			
-spectral model =                        blackbody                          (blackbody, HDF5 data set)
+spectral model =                        blackbody  /300/phoenix/hd189733   (blackbody, HDF5 data set)
 path to stellar spectrum file =         ./input/stellarspectra_slim.h5
 ———
 
