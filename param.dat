@@ -5,7 +5,7 @@
 ### GENERAL ###                                                         ### INFO ###
 name =                                  0
 precision =                             double
-realtime plotting =                     10                              (yes, no, value)
+realtime plotting =                     no                              (yes, no, value)
 ———
 
 ### GRID ###
@@ -29,7 +29,7 @@ TP-profile smoothing =                  no
 direct irradiation beam =               yes
 scattering =                            yes
 imp. scattering corr. =                 yes
-path to opacity file =                  ./input/300.h5
+path to opacity file =                  ./input/opacity_file.h5
 opacity format =                        ktable                          (ktable, sampling) 
 diffusivity factor =                    2.0 
 f factor =                              0.5 
@@ -42,21 +42,21 @@ energy budget correction =              yes
 
 ### CONVECTIVE ADJUSTMENT ###
 convective adjustment =                 yes
-kappa value =                           file                          (file, number)
+kappa value =                          	0.285714                          (file, number)
 entropy/kappa file path =               ./input/EOS_corrY.dat
 ———
 
 ### ASTRONOMICAL PARAMETERS ###
 ——pre-tabulated——
 planet =                                HD189733b                          (manual, name in the file)
-path to planet data file =              ./input/planet_data.dat
+path to planet data file =              ./input/planet_sample.dat
 ——manual input——
 surface gravity [cm s^-2] =             3.0
 orbital distance [AU] =                 10.03462
 radius planet [R_Jup] =                 1.891
 radius star [R_Sun] =                   2.362
 temperature star [K] =                  0			
-spectral model =                        blackbody  /300/phoenix/hd189733                       (blackbody, HDF5 data set)
+spectral model =                        blackbody                          (blackbody, HDF5 data set)
 path to stellar spectrum file =         ./input/stellarspectra_slim.h5
 ———
 
