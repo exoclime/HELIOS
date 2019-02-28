@@ -19,3 +19,9 @@ Thank you for considering HELIOS!
 ### Documentation ###
 
 A detailed documentation of HELIOS can be found [here](https://heliosexo.readthedocs.io/).
+
+### Pre-calculated Atmospheric Models ###
+
+We provide a number of pre-calculated models for non-irradiated and irradiated planets for a different atmospheric abundances. The models are available for download from this [server](https://chaldene.unibe.ch/data/helios/).
+
+_Further description of the files soon._
