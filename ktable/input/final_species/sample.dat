@@ -1,0 +1,23 @@
+your_species_name     name_in_FastChem  mass_in_AMU
+
+H2O                   H2O1              18.0153
+
+CO2                   C1O2              44.01
+
+CO                    C1O1              28.01
+
+CH4                   C1H4              16.04
+
+NH3                   H3N1              17.031
+
+HCN                   C1H1N1            27.0253
+
+C2H2                  C2H2              26.04
+
+PH3                   H3P1              33.99758
+
+H2S                   H2S1              34.081
+
+CIA_H2H2	      H2                2.01588
+
+CIA_H2He              He                4.0026
