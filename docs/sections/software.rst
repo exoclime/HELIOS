@@ -1,5 +1,7 @@
-Installation
-============
+Software
+========
+
+Presented here is an overview over the software. For a step-by-step installation walk-through, see :doc:`tutorial`. 
 
 HELIOS
 ------

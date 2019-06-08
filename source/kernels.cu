@@ -560,7 +560,8 @@ __global__ void corr_surface_emission(
         if(uncorr_emission > 0){
             corr_factor = STEFANBOLTZMANN * pow(T_surf, 4.0) / uncorr_emission;
         }
-        if(x == 0 and itervalue % 10 == 0) printf("Surface emission corrected by %.2f ppm.\n", 1e6 * (corr_factor - 1.0));
+        // correction info suppressed for the moment
+        //if(x == 0 and itervalue % 100 == 0) printf("Surface emission corrected by %.2f ppm.\n", 1e6 * (corr_factor - 1.0));
         
         planckband_lay[(numlayers+1) + x * (numlayers + 2)] *= corr_factor;
     }

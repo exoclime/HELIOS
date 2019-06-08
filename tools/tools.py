@@ -1,6 +1,5 @@
 import numpy as np
 import sys
-import bigfloat as bf
 import phys_const as pc
 
 

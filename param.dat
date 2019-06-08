@@ -6,7 +6,7 @@
 
 name =                                  0                                      (name of the output directory and file prefix.)
 precision =                             double                                 (double or single. but actually only double makes sense.)
-realtime plotting =                     yes                                     (yes, no, interval value)
+realtime plotting =                     no                                     (yes, no, interval value)
 ———
 
 ### GRID ###
@@ -14,7 +14,7 @@ realtime plotting =                     yes                                     
 isothermal layers =                     no                                     (set 'no' for iterative runs and 'yes' for post-processing only)
 number of layers =                      91                                     (10 layers per magnitude of pressure as rule of thumb)
 TOA pressure [10^-6 bar] =              1e0                                   (usually 1e0 or 1e-1)
-BOA pressure [10^-6 bar] =              1e9                                    (surface pressure. for gas planets usually 1e3 or 1e2.)
+BOA pressure [10^-6 bar] =              1e7                                    (surface pressure. for gas planets usually 1e3 or 1e2.)
 ———
 
 ### ITERATION ###

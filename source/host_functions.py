@@ -107,12 +107,10 @@ def calc_tau_lw_sw(quant):
         if quant.T_star > 10:
             B_star = calc_planck(quant.opac_wave[x], quant.T_star)
 
-            num_sw += B_star * tau_from_top * quant.opac_deltawave[x]
+            num_sw += B_star * np.exp(-tau_from_top) * quant.opac_deltawave[x]
             denom_sw += B_star * quant.opac_deltawave[x]
 
-    print(num_lw, denom_lw)
-
-    tau_lw_tot = num_lw / denom_lw
+    tau_lw_tot = -np.log(num_lw / denom_lw)
 
     if quant.T_star > 10:
         tau_sw_tot = -np.log(num_sw / denom_sw)
@@ -140,7 +138,7 @@ def initial_temp(quant, read, Vmod):
         for n in range(quant.nlayer):
             quant.T_lay.append(T_start)
 
-        print("\nStarting with an isothermal TP-profile with {:g}".format(T_start)+" K.")
+        print("\nStarting with an isothermal TP-profile at {:g}".format(T_start)+" K.")
 
     elif quant.singlewalk == 1:
 
@@ -209,7 +207,7 @@ def check_for_global_eq(quant):
         lim_quant = abs(quant.F_net[quant.ninterface - 1]) / quant.F_down_tot[quant.ninterface - 1]
 
     # user feedback
-    if quant.iter_value % 10 == 0:
+    if quant.iter_value % 100 == 0:
         print("The relative difference between TOA and BOA net flux is : {:.2e}".format(lim_quant)
               + " and should be less than {:.2e}".format(quant.global_limit) + ".")
 
@@ -261,14 +259,15 @@ def check_for_local_eq(quant):
                 converged_list.append(1)
             else:
                 quant.marked_red[i] = 1
-                if quant.iter_value % 10 == 9:
-                    print("layer: {:<5g}, delta_flux/BB_layer: {:<12.3e}".format(i, div_lim_quant))
+                # feedback suppressed for the moment
+                # if quant.iter_value % 10 == 9:
+                #     print("layer: {:<5g}, delta_flux/BB_layer: {:<12.3e}".format(i, div_lim_quant))
 
     if len(converged_list) == quant.nlayer - sum(quant.conv_layer):
         criterion = 1
 
     # user feedback
-    if quant.iter_value % 10 == 0:
+    if quant.iter_value % 100 == 0:
         print("Radiative convergence: " + str(len(converged_list)) +
               " out of " + str(quant.nlayer - sum(quant.conv_layer)) + " radiative layers.\n")
 
@@ -508,16 +507,14 @@ def success_message(quant):
     print("This has been " + run_type + " run with name " + quant.name + ".\n")
 
     print("\nFinal Check for numerical energy balance:")
-    print("\tTheoretical effective temperature of planet. global (f=0.25): {:g} K,".format(T_eff_global),
-          "day-side (f=2/3): {:g} K,".format(T_eff_dayside), "\n\tused in model ({:.2f}): {:g} K.".format(quant.f_factor, T_eff_model))
-    print("\tIncident TOA brightness temperature: {:g} K, Interior temperature: {:g} K.\n".format(T_star_brightness, quant.T_intern),
-          "\tOutgoing (planetary) brightness temperature: {:g} K.".format(T_planet_brightness))
+    print("  --> Theoretical effective temperature of planet: \n\tglobal (f=0.25): {:g} K,".format(T_eff_global),
+          "\n\tday-side (f=2/3): {:g} K,".format(T_eff_dayside), "\n\tused in model ({:.2f}): {:g} K.".format(quant.f_factor, T_eff_model))
+    print("  --> Incident TOA brightness temperature: {:g} K \n      Interior temperature: {:g} K".format(T_star_brightness, quant.T_intern),
+          "\n      Outgoing (planetary) brightness temperature: {:g} K".format(T_planet_brightness))
 
-    if quant.T_intern != 0:
-        relative_energy_imbalance = (quant.F_intern - quant.F_net[quant.ninterface-1])/quant.F_intern
-    else:
-        relative_energy_imbalance = -quant.F_net[quant.ninterface - 1] / quant.F_down_tot[quant.ninterface - 1]
-    print("--> Global energy imbalance: {:.2e} (positive: too much uptake, negative: too much loss).".format(relative_energy_imbalance), "\n")
+    relative_energy_imbalance = (quant.F_intern - quant.F_net[quant.ninterface - 1]) / quant.F_up_tot[quant.ninterface - 1]
+
+    print("  --> Global energy imbalance: {:.1f}ppm (positive: too much uptake, negative: too much loss).".format(relative_energy_imbalance*1e6), "\n")
 
 
 if __name__ == "__main__":

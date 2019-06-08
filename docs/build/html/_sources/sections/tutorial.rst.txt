@@ -85,6 +85,8 @@ To run the plotting scripts on Hulk, type ::
 
 or ``plot_spectrum.py``, respectively.
 
+**Further Tasks**: Please see the tasks document in the HELIOS main directory for further tasks to do.
+
 Sample Files
 ------------
 

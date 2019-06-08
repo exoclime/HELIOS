@@ -15,7 +15,7 @@ On this page you find the documentation for HELIOS, the radiative transfer code 
 
    sections/requirements
 
-   sections/installation
+   sections/software
 
    sections/tutorial
 

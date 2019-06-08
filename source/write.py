@@ -192,7 +192,7 @@ These are the parameters used in the production of this HELIOS output.
                 file.writelines("\ncloud width (std.dev.) [dex] = {:g}".format(quant.cloud_width))
                 file.writelines("\nnumber of run-in timesteps = {:g}".format(quant.foreplay))
                 file.writelines("\nartificial shortw. opacity = {:g}".format(quant.fake_opac))
-                file.writelines("\nuse f approximation formula = " + quant.approx_f)
+                file.writelines("\nuse f approximation formula = " + self.convert_1_0_to_yes_no(quant.approx_f))
                 file.writelines("\n---")
                 file.writelines("\n")
                 file.writelines("\n### VULCAN COUPLING ###")

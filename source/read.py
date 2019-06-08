@@ -496,7 +496,7 @@ class Read(object):
 
     def read_planet_file(self, quant):
 
-        planet_data = npy.genfromtxt(self.planet_file, names=True, dtype=None, skip_header=3, delimiter=None)
+        planet_data = npy.genfromtxt(self.planet_file, names=True, dtype=None, skip_header=3, delimiter=None, encoding='utf-8')
 
         first_column = npy.array(planet_data['Planet'],dtype='U')
 

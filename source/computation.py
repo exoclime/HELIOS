@@ -89,7 +89,7 @@ class Compute(object):
     def correct_incident_energy(self, quant):
         """ adjusts the incoming energy flux to obtain the correct brightness temperature of the planet"""
 
-        if quant.energy_correction == 1:
+        if quant.energy_correction == 1 and quant.T_star > 10:
 
             corr_inc_energy = self.mod.get_function("corr_inc_energy")
 
@@ -779,7 +779,7 @@ class Compute(object):
 
         while condition:
 
-            if quant.iter_value % 10 == 0:
+            if quant.iter_value % 100 == 0:
                 start_loop.record()
 
             # chunk for the calculation of surface emission
@@ -828,7 +828,8 @@ class Compute(object):
 
                 if quant.iter_value % 100 == 0:
                     print("\nWe are running \"" + quant.name + "\" at iteration step nr. : "+str(quant.iter_value))
-
+                    if quant.iter_value > 99:
+                        print("Time for the last 100 steps [s]: {:.2f}".format(time_loop * 1e-3))
                 if quant.iter_value >= quant.foreplay:
 
                     # chunk for the calculation of surface temperature
@@ -850,7 +851,7 @@ class Compute(object):
                         if quant.abort[i] == 0:
                             quant.marked_red[i] = 1
 
-                    if quant.iter_value % 10 == 0:
+                    if quant.iter_value % 100 == 0:
                         print("Layers converged: "+str(abortsum)+" out of "+str(quant.nlayer)+".")
 
                 # checks whether to continue the loop
@@ -863,12 +864,11 @@ class Compute(object):
                     if quant.realtime_plot == 1:
                         rt_plot.plot_tp(quant)
 
-                # records the time needed for 10 loops
-                if quant.iter_value % 10 == 9:
+                # records the time needed for 100 loops
+                if quant.iter_value % 100 == 99:
                     end_loop.record()
                     end_loop.synchronize()
                     time_loop = start_loop.time_till(end_loop)
-                    print("\nTime for the last 10 loops [s]: {:.2f}".format(time_loop * 1e-3))
 
                 # time restriction for the run. It aborts automatically after the following time steps and prevents a hung job.
                 if quant.iter_value > 2e4:
@@ -926,12 +926,13 @@ class Compute(object):
 
             while condition:
 
-                if quant.iter_value % 10 == 0:
+                if quant.iter_value % 100 == 0:
                     start_loop.record()
 
                 if quant.iter_value % 100 == 0:
                     print("\nWe are running \"" + quant.name + "\" at iteration step nr. : "+str(quant.iter_value))
-
+                    if quant.iter_value > 99:
+                        print("Time for the last 100 steps [s]: {:.2f}".format(time_loop * 1e-3))
                 # start with the convective adjustment and then recalculate the rad. fluxes, go back to conv. adjustment, then rad. fluxes, etc.
                 self.interpolate_temperatures(quant)
 
@@ -1016,12 +1017,11 @@ class Compute(object):
                     # kernel that advances the temperature in a radiative way
                     self.conv_temp_iteration(quant)
 
-                    # records the time needed for 10 loops
-                    if quant.iter_value % 10 == 9:
+                    # records the time needed for 100 loops
+                    if quant.iter_value % 100 == 99:
                         end_loop.record()
                         end_loop.synchronize()
                         time_loop = start_loop.time_till(end_loop)
-                        print("\nTime for the last 10 (total: {:d}) loops [s]: {:.2f}".format(quant.iter_value, time_loop * 1e-3))
 
                     quant.iter_value += 1
                     quant.iter_value = np.int32(quant.iter_value)
