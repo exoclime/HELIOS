@@ -1,0 +1,796 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Code Reference &#8212; HELIOS 2.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Acknowledgements" href="acknowledgements.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-helios">
+<span id="code-reference"></span><h1>Code Reference<a class="headerlink" href="#module-helios" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="helios.main">
+<code class="descclassname">helios.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#helios.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>runs the HELIOS RT computation if this file is executed</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="helios.run_helios">
+<code class="descclassname">helios.</code><code class="descname">run_helios</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#helios.run_helios" title="Permalink to this definition">¶</a></dt>
+<dd><p>runs a normal HELIOS run with standard I/O</p>
+</dd></dl>
+
+<span class="target" id="module-read"></span><dl class="class">
+<dt id="read.Read">
+<em class="property">class </em><code class="descclassname">read.</code><code class="descname">Read</code><a class="headerlink" href="#read.Read" title="Permalink to this definition">¶</a></dt>
+<dd><p>class that reads in parameters, which are to be used in the HELIOS code</p>
+<dl class="staticmethod">
+<dt id="read.Read.delete_duplicates">
+<em class="property">static </em><code class="descname">delete_duplicates</code><span class="sig-paren">(</span><em>long_list</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.delete_duplicates" title="Permalink to this definition">¶</a></dt>
+<dd><p>delete all duplicates in a list and return new list</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="read.Read.read_command_line">
+<code class="descname">read_command_line</code><span class="sig-paren">(</span><em>quant</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.read_command_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads any eventual command-line arguments</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="read.Read.read_entropy_table">
+<code class="descname">read_entropy_table</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.read_entropy_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads in entropy and kappa (for the stellar community: delad) values from ASCII table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="read.Read.read_opac_file">
+<code class="descname">read_opac_file</code><span class="sig-paren">(</span><em>quant</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.read_opac_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads the opacity table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="read.Read.read_param_file">
+<code class="descname">read_param_file</code><span class="sig-paren">(</span><em>quant</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.read_param_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads the input file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="read.Read.read_star">
+<code class="descname">read_star</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.read_star" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads the correct stellar spectrum from the corresponding file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="read.Read.read_temperature_file">
+<code class="descname">read_temperature_file</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.read_temperature_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads the temperatures from a file</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="read.Read.set_precision">
+<em class="property">static </em><code class="descname">set_precision</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.set_precision" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the correct precision for floating point numbers</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="read.Read.set_realtime_plotting">
+<em class="property">static </em><code class="descname">set_realtime_plotting</code><span class="sig-paren">(</span><em>var</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.set_realtime_plotting" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the realtime plotting parameters</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-write"></span><dl class="class">
+<dt id="write.Write">
+<em class="property">class </em><code class="descclassname">write.</code><code class="descname">Write</code><a class="headerlink" href="#write.Write" title="Permalink to this definition">¶</a></dt>
+<dd><p>class that possesses all the methods to write out data</p>
+<dl class="staticmethod">
+<dt id="write.Write.convert_1_0_to_yes_no">
+<em class="property">static </em><code class="descname">convert_1_0_to_yes_no</code><span class="sig-paren">(</span><em>variable</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.convert_1_0_to_yes_no" title="Permalink to this definition">¶</a></dt>
+<dd><p>converts a variable with value 1 or 0 to a “yes” or “no” message</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_Rayleigh_cross_sections">
+<em class="property">static </em><code class="descname">write_Rayleigh_cross_sections</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_Rayleigh_cross_sections" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the scattering cross sections to a file.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_T10">
+<em class="property">static </em><code class="descname">write_T10</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_T10" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the temperature at 10 bar (which is a proxy to the interior entropy) to a file.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_TOA_flux_Ang">
+<em class="property">static </em><code class="descname">write_TOA_flux_Ang</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_TOA_flux_Ang" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the TOA flux in Angstrom</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_TOA_flux_eclipse_depth">
+<em class="property">static </em><code class="descname">write_TOA_flux_eclipse_depth</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_TOA_flux_eclipse_depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the TOA fluxes to a file</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_abort_file">
+<em class="property">static </em><code class="descname">write_abort_file</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_abort_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes a file that tells you that the run has been aborted due to exceeding iteration steps</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_cloud_absorption">
+<em class="property">static </em><code class="descname">write_cloud_absorption</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_cloud_absorption" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the absorption opacities of the cloud to a file.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_cloud_scat_cross_sections">
+<em class="property">static </em><code class="descname">write_cloud_scat_cross_sections</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_cloud_scat_cross_sections" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the scattering cross sections of the cloud to a file.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_colmass_mu_cp_entropy">
+<em class="property">static </em><code class="descname">write_colmass_mu_cp_entropy</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_colmass_mu_cp_entropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the layer column mass, mean molecular weight and specific heat capacity to a file</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_contribution_function">
+<em class="property">static </em><code class="descname">write_contribution_function</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_contribution_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the contribution function for each layer and waveband to a file.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_direct_spectral_beam_flux">
+<em class="property">static </em><code class="descname">write_direct_spectral_beam_flux</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_direct_spectral_beam_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the direct irradiation beam flux to a file</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_downward_spectral_flux">
+<em class="property">static </em><code class="descname">write_downward_spectral_flux</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_downward_spectral_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the downward spectral flux to a file</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_g_0">
+<em class="property">static </em><code class="descname">write_g_0</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_g_0" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the asymmetry paramater values to a file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="write.Write.write_info">
+<code class="descname">write_info</code><span class="sig-paren">(</span><em>quant</em>, <em>read</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the information file</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_integrated_flux">
+<em class="property">static </em><code class="descname">write_integrated_flux</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_integrated_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the integrated total and net fluxes to a file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="write.Write.write_mean_extinction">
+<code class="descname">write_mean_extinction</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_mean_extinction" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the Planck and Rosseland mean opacities &amp; optical depths to a file.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_mean_werror">
+<em class="property">static </em><code class="descname">write_mean_werror</code><span class="sig-paren">(</span><em>quantity</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_mean_werror" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes an error message for quantities that could not be calculated</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_opacities">
+<em class="property">static </em><code class="descname">write_opacities</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_opacities" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the bin integrated opacities and scattering cross sections to a file.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_opt_depth">
+<em class="property">static </em><code class="descname">write_opt_depth</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_opt_depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the optical depth for each layer to a file.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_planck_center">
+<em class="property">static </em><code class="descname">write_planck_center</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_planck_center" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the Planck function at layer centers (+ stellar temp. and internal temp.) to a file.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_planck_interface">
+<em class="property">static </em><code class="descname">write_planck_interface</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_planck_interface" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the Planck function at interfaces to a file</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_restart_file">
+<em class="property">static </em><code class="descname">write_restart_file</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_restart_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes temporary output during the iteration process which can be used as restart profile</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_tp">
+<em class="property">static </em><code class="descname">write_tp</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_tp" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the TP-profile and the effective atmospheric temperature to a file</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_tp_cut">
+<em class="property">static </em><code class="descname">write_tp_cut</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_tp_cut" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the TP-profile up to a height of P = 1e-6 bar to a file</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_tp_pure">
+<em class="property">static </em><code class="descname">write_tp_pure</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_tp_pure" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the TP-profile to a file</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_trans_weight_function">
+<em class="property">static </em><code class="descname">write_trans_weight_function</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_trans_weight_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the transmission weighting function for each layer and waveband to a file.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_transmission">
+<em class="property">static </em><code class="descname">write_transmission</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_transmission" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the transmission function for each layer to a file.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="write.Write.write_upward_spectral_flux">
+<em class="property">static </em><code class="descname">write_upward_spectral_flux</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_upward_spectral_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the upward spectral flux to a file</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-computation"></span><dl class="class">
+<dt id="computation.Compute">
+<em class="property">class </em><code class="descclassname">computation.</code><code class="descname">Compute</code><a class="headerlink" href="#computation.Compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>class incorporating the computational core of HELIOS</p>
+<dl class="method">
+<dt id="computation.Compute.calc_surface_planck">
+<code class="descname">calc_surface_planck</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.calc_surface_planck" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the planck function of the surface temperature</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.calculate_c_p">
+<code class="descname">calculate_c_p</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.calculate_c_p" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the layer heat capacity from kappa and the mean molecular mass</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.calculate_contribution_function">
+<code class="descname">calculate_contribution_function</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.calculate_contribution_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate the transmission weighting function and the contribution function for each layer and waveband</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.calculate_delta_z">
+<code class="descname">calculate_delta_z</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.calculate_delta_z" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the vertical widths of the layers</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.calculate_direct_beamflux">
+<code class="descname">calculate_direct_beamflux</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.calculate_direct_beamflux" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the direct stellar flux at each interface</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.calculate_mean_opacities">
+<code class="descname">calculate_mean_opacities</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.calculate_mean_opacities" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the atmospheric Planck and Rosseland mean opacities</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.calculate_transmission">
+<code class="descname">calculate_transmission</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.calculate_transmission" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the transmission function in each layer for separate analysis</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.construct_grid">
+<code class="descname">construct_grid</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.construct_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>constructs the atmospheric grid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.construct_planck_table">
+<code class="descname">construct_planck_table</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.construct_planck_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>constructs the Planck table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.conv_temp_iteration">
+<code class="descname">conv_temp_iteration</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.conv_temp_iteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>temperature progression for the convection loop</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.convection_loop">
+<code class="descname">convection_loop</code><span class="sig-paren">(</span><em>quant</em>, <em>write</em>, <em>rt_plot</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.convection_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>loops interchangeably through the radiative and convection schemes</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.correct_incident_energy">
+<code class="descname">correct_incident_energy</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.correct_incident_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>adjusts the incoming energy flux to obtain the correct brightness temperature of the planet</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.correct_surface_emission">
+<code class="descname">correct_surface_emission</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.correct_surface_emission" title="Permalink to this definition">¶</a></dt>
+<dd><p>adjusts the surface flux to match the downward atmospheric flux</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.integrate_flux">
+<code class="descname">integrate_flux</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.integrate_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>integrates the spectral fluxes first over each bin and then the whole spectral range</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.integrate_optdepth_transmission">
+<code class="descname">integrate_optdepth_transmission</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.integrate_optdepth_transmission" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the transmission function in each layer</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.interpolate_meanmolmass">
+<code class="descname">interpolate_meanmolmass</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.interpolate_meanmolmass" title="Permalink to this definition">¶</a></dt>
+<dd><p>interpolates the mean molecular mass values from the k-table to the atmospheric layer values</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.interpolate_opacities_and_scattering_cross_sections">
+<code class="descname">interpolate_opacities_and_scattering_cross_sections</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.interpolate_opacities_and_scattering_cross_sections" title="Permalink to this definition">¶</a></dt>
+<dd><p>builds the layer and interface opacities by interpolating the values from the opacity table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.interpolate_planck">
+<code class="descname">interpolate_planck</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.interpolate_planck" title="Permalink to this definition">¶</a></dt>
+<dd><p>interpolates the pre-tabulated Planck function to the layer/interface values
+plus stellar and internal blackbody</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.interpolate_temperatures">
+<code class="descname">interpolate_temperatures</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.interpolate_temperatures" title="Permalink to this definition">¶</a></dt>
+<dd><p>interpolates the layer temperatures to the interfaces</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.normalize_cloud_scattering">
+<code class="descname">normalize_cloud_scattering</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.normalize_cloud_scattering" title="Permalink to this definition">¶</a></dt>
+<dd><p>normalizes the cloud scattering to own lognormal grey absorption</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.populate_spectral_flux">
+<code class="descname">populate_spectral_flux</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.populate_spectral_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>populates the down- and upstream spectral fluxes</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.rad_temp_iteration">
+<code class="descname">rad_temp_iteration</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.rad_temp_iteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the net flux and advances the layer temperature</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.radiation_loop">
+<code class="descname">radiation_loop</code><span class="sig-paren">(</span><em>quant</em>, <em>write</em>, <em>rt_plot</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.radiation_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>loops over the relevant kernels iteratively until the equilibrium TP - profile reached</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-host_functions"></span><dl class="function">
+<dt id="host_functions.calc_F_intern">
+<code class="descclassname">host_functions.</code><code class="descname">calc_F_intern</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.calc_F_intern" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the internal flux</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.calc_F_ratio">
+<code class="descclassname">host_functions.</code><code class="descname">calc_F_ratio</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.calc_F_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the planet to star flux ratio for sec. eclipse data interpretation</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.calc_surf_temperature">
+<code class="descclassname">host_functions.</code><code class="descname">calc_surf_temperature</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.calc_surf_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the surface temperature from the downward incoming (and absorbed) flux and the interior heat flux</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.calculate_conv_flux">
+<code class="descclassname">host_functions.</code><code class="descname">calculate_conv_flux</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.calculate_conv_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the convective net flux in the atmosphere.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.calculate_height_z">
+<code class="descclassname">host_functions.</code><code class="descname">calculate_height_z</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.calculate_height_z" title="Permalink to this definition">¶</a></dt>
+<dd><p>prints the message that you have been desperately waiting for</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.check_for_global_eq">
+<code class="descclassname">host_functions.</code><code class="descname">check_for_global_eq</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.check_for_global_eq" title="Permalink to this definition">¶</a></dt>
+<dd><p>checks for global equilibrium</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.check_for_global_local_equilibrium">
+<code class="descclassname">host_functions.</code><code class="descname">check_for_global_local_equilibrium</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.check_for_global_local_equilibrium" title="Permalink to this definition">¶</a></dt>
+<dd><p>checks for rad.-conv. convergence in terms of global and local equilibrium</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.check_for_local_eq">
+<code class="descclassname">host_functions.</code><code class="descname">check_for_local_eq</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.check_for_local_eq" title="Permalink to this definition">¶</a></dt>
+<dd><p>checks for local equilibrium</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.conv_check">
+<code class="descclassname">host_functions.</code><code class="descname">conv_check</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.conv_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>checks whether the lapse rate exceeds the allowed dry adiabat, if yes mark it for convective correction</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.conv_correct">
+<code class="descclassname">host_functions.</code><code class="descname">conv_correct</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.conv_correct" title="Permalink to this definition">¶</a></dt>
+<dd><p>corrects unstable lapse rates to dry adiabats, conserving the total enthalpy</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.convective_adjustment">
+<code class="descclassname">host_functions.</code><code class="descname">convective_adjustment</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.convective_adjustment" title="Permalink to this definition">¶</a></dt>
+<dd><p>adjusts the atmosphere for convective equilibrium.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.initial_temp">
+<code class="descclassname">host_functions.</code><code class="descname">initial_temp</code><span class="sig-paren">(</span><em>quant</em>, <em>read</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.initial_temp" title="Permalink to this definition">¶</a></dt>
+<dd><p>determines the initial temperature profile</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.mark_convective_layers">
+<code class="descclassname">host_functions.</code><code class="descname">mark_convective_layers</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.mark_convective_layers" title="Permalink to this definition">¶</a></dt>
+<dd><p>marks the layers where convection dominates over radiative transfer</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.planet_param">
+<code class="descclassname">host_functions.</code><code class="descname">planet_param</code><span class="sig-paren">(</span><em>quant</em>, <em>read</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.planet_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>takes the correct planetary parameters from dictionary if desired</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.set_up_numerical_parameters">
+<code class="descclassname">host_functions.</code><code class="descname">set_up_numerical_parameters</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.set_up_numerical_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets up additional parameters used in the calculation</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.success_message">
+<code class="descclassname">host_functions.</code><code class="descname">success_message</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.success_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>prints the message that you have been desperately waiting for</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.sum_mean_optdepth">
+<code class="descclassname">host_functions.</code><code class="descname">sum_mean_optdepth</code><span class="sig-paren">(</span><em>quant</em>, <em>i</em>, <em>opac</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.sum_mean_optdepth" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns the summed up optical depth from the TOA with an opacity source, e.g. Rosseland mean opacity</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.temp_calcs">
+<code class="descclassname">host_functions.</code><code class="descname">temp_calcs</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.temp_calcs" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes the final effective temperature</p>
+</dd></dl>
+
+<span class="target" id="module-realtime_plotting"></span><dl class="class">
+<dt id="realtime_plotting.Plot">
+<em class="property">class </em><code class="descclassname">realtime_plotting.</code><code class="descname">Plot</code><a class="headerlink" href="#realtime_plotting.Plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>class including all the plotting utensils</p>
+<dl class="staticmethod">
+<dt id="realtime_plotting.Plot.plot_convective_feedback">
+<em class="property">static </em><code class="descname">plot_convective_feedback</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#realtime_plotting.Plot.plot_convective_feedback" title="Permalink to this definition">¶</a></dt>
+<dd><p>plots the tp profile and the net flux in realtime</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="realtime_plotting.Plot.plot_tp">
+<em class="property">static </em><code class="descname">plot_tp</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#realtime_plotting.Plot.plot_tp" title="Permalink to this definition">¶</a></dt>
+<dd><p>plots the TP-profile in realtime</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-quantities"></span><dl class="class">
+<dt id="quantities.Store">
+<em class="property">class </em><code class="descclassname">quantities.</code><code class="descname">Store</code><a class="headerlink" href="#quantities.Store" title="Permalink to this definition">¶</a></dt>
+<dd><p>class that stores parameters, quantities, arrays, etc., used in the HELIOS code</p>
+<dl class="method">
+<dt id="quantities.Store.allocate_on_device">
+<code class="descname">allocate_on_device</code><span class="sig-paren">(</span><em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#quantities.Store.allocate_on_device" title="Permalink to this definition">¶</a></dt>
+<dd><p>allocate memory for arrays existing only on the GPU</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quantities.Store.convert_input_list_to_array">
+<code class="descname">convert_input_list_to_array</code><span class="sig-paren">(</span><em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#quantities.Store.convert_input_list_to_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>converts lists of quantities to arrays</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quantities.Store.copy_device_to_host">
+<code class="descname">copy_device_to_host</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#quantities.Store.copy_device_to_host" title="Permalink to this definition">¶</a></dt>
+<dd><p>copies relevant device arrays to host</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quantities.Store.copy_host_to_device">
+<code class="descname">copy_host_to_device</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#quantities.Store.copy_host_to_device" title="Permalink to this definition">¶</a></dt>
+<dd><p>copies relevant host arrays to device</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quantities.Store.create_zero_arrays">
+<code class="descname">create_zero_arrays</code><span class="sig-paren">(</span><em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#quantities.Store.create_zero_arrays" title="Permalink to this definition">¶</a></dt>
+<dd><p>creates zero arrays of quantities to be used on the GPU with the correct length/dimension</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quantities.Store.dimensions">
+<code class="descname">dimensions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#quantities.Store.dimensions" title="Permalink to this definition">¶</a></dt>
+<dd><p>create the correct dimensions of the grid from input parameters</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-phys_const"></span><span class="target" id="module-Vcoupling_modification"></span><dl class="class">
+<dt id="Vcoupling_modification.Vcoupling">
+<em class="property">class </em><code class="descclassname">Vcoupling_modification.</code><code class="descname">Vcoupling</code><a class="headerlink" href="#Vcoupling_modification.Vcoupling" title="Permalink to this definition">¶</a></dt>
+<dd><p>class that embodies everything needed to couple HELIOS and VULCAN</p>
+<dl class="staticmethod">
+<dt id="Vcoupling_modification.Vcoupling.Vrestart_file">
+<em class="property">static </em><code class="descname">Vrestart_file</code><span class="sig-paren">(</span><em>read</em>, <em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.Vrestart_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads the restart temperatures from file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Vcoupling_modification.Vcoupling.combine_to_mixed_opacities">
+<code class="descname">combine_to_mixed_opacities</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.combine_to_mixed_opacities" title="Permalink to this definition">¶</a></dt>
+<dd><p>combine the individual molecular opacities to layer/interface opacities</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Vcoupling_modification.Vcoupling.combine_to_scat_cross">
+<code class="descname">combine_to_scat_cross</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.combine_to_scat_cross" title="Permalink to this definition">¶</a></dt>
+<dd><p>create layer scattering cross-sections</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Vcoupling_modification.Vcoupling.interpolate_f_molecule_and_meanmolmass">
+<code class="descname">interpolate_f_molecule_and_meanmolmass</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.interpolate_f_molecule_and_meanmolmass" title="Permalink to this definition">¶</a></dt>
+<dd><p>interpolates the layer mixing ratios and the mean molecular mass to the interfaces</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Vcoupling_modification.Vcoupling.interpolate_molecular_and_mixed_opac">
+<code class="descname">interpolate_molecular_and_mixed_opac</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.interpolate_molecular_and_mixed_opac" title="Permalink to this definition">¶</a></dt>
+<dd><p>interpolates the molecular opacity tables to layer and interface values</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="Vcoupling_modification.Vcoupling.read_ind_molecule_opac">
+<em class="property">static </em><code class="descname">read_ind_molecule_opac</code><span class="sig-paren">(</span><em>quant</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.read_ind_molecule_opac" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads the file with the opacity table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Vcoupling_modification.Vcoupling.read_layer_molecular_abundance">
+<code class="descname">read_layer_molecular_abundance</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.read_layer_molecular_abundance" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads the molecular abundance from the VULCAN output file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Vcoupling_modification.Vcoupling.read_molecular_opacities">
+<code class="descname">read_molecular_opacities</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.read_molecular_opacities" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads the individual molecular opacities</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Vcoupling_modification.Vcoupling.test_coupling_convergence">
+<code class="descname">test_coupling_convergence</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.test_coupling_convergence" title="Permalink to this definition">¶</a></dt>
+<dd><p>test whether TP profile converged and ends coupled iteration</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Vcoupling_modification.Vcoupling.write_tp_VULCAN">
+<code class="descname">write_tp_VULCAN</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.write_tp_VULCAN" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the TP-profile to a file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Vcoupling_modification.Vcoupling.write_tp_VULCAN_temp">
+<code class="descname">write_tp_VULCAN_temp</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.write_tp_VULCAN_temp" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the TP-profile to a file</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-clouds"></span><dl class="class">
+<dt id="clouds.Cloud">
+<em class="property">class </em><code class="descclassname">clouds.</code><code class="descname">Cloud</code><a class="headerlink" href="#clouds.Cloud" title="Permalink to this definition">¶</a></dt>
+<dd><p>class that reads in cloud parameters, which then can be used in the HELIOS code</p>
+<dl class="method">
+<dt id="clouds.Cloud.conversion_of_cloud_parameters">
+<code class="descname">conversion_of_cloud_parameters</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#clouds.Cloud.conversion_of_cloud_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>converts the cloud parameters to the HELIOS wavelength grid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="clouds.Cloud.convert_to_new_grid">
+<code class="descname">convert_to_new_grid</code><span class="sig-paren">(</span><em>int_lambda</em>, <em>cent_lambda</em>, <em>orig_lambda</em>, <em>orig_value</em><span class="sig-paren">)</span><a class="headerlink" href="#clouds.Cloud.convert_to_new_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>generic function to convert values from one grid to another</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="clouds.Cloud.main_cloud_method">
+<code class="descname">main_cloud_method</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#clouds.Cloud.main_cloud_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>main method to handle cloud input</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="clouds.Cloud.onetoleft">
+<em class="property">static </em><code class="descname">onetoleft</code><span class="sig-paren">(</span><em>array</em>, <em>limit</em><span class="sig-paren">)</span><a class="headerlink" href="#clouds.Cloud.onetoleft" title="Permalink to this definition">¶</a></dt>
+<dd><p>small function to find the index of an array element whose value is closest to the left of a given limit</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="clouds.Cloud.read_cloud_dat">
+<code class="descname">read_cloud_dat</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#clouds.Cloud.read_cloud_dat" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads the cloud file (courtesy of D. Kitzmann)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="clouds.Cloud.read_cloud_h5">
+<code class="descname">read_cloud_h5</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#clouds.Cloud.read_cloud_h5" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads int the cloud .h5 file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="clouds.Cloud.write_cloud_h5">
+<code class="descname">write_cloud_h5</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#clouds.Cloud.write_cloud_h5" title="Permalink to this definition">¶</a></dt>
+<dd><p>creates a h5 container with the interpolated cloud parameters</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo_l.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">GPU-accelerated radiative transfer code for exoplanetary atmospheres</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=exoclime&repo=helios&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ktable.html">k-Table Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Code Reference</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Matej Malik.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/sections/code.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

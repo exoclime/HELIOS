@@ -1,0 +1,36 @@
+##############################################
+# Parameters for the K-table generator #
+##############################################
+
+################## 1ST STAGE --- INDIVIDUAL MOLECULES ##################
+
+### OPACITY FORMAT ###                                                             ### INFO ###
+                                                            
+format =                                sampling                                  (ktable, sampling)
+individual species calculation =        yes                                        (yes, no)
+
+--> only relevant if above is set to 'ktable' and 'yes' <--                                     
+path to HELIOS-K output =               /helios-k/
+
+--> only relevant if above is set to 'sampling' and 'yes' <--
+path to sampling param file =           ./input/sampling_species/sample.dat
+sampling wavelength grid =              50    0.34  200                         (resolution, limits in micron [lower, upper])
+--------
+
+################## 2ND STAGE --- COMBINING INDIVIDUAL FILES TO MIXED TABLE ##################
+
+### COMBINING / WEIGHTING ###
+
+path to sampling output =               ./output/r50/
+path to species file =                  ./input/final_species/sample.dat
+path to FastChem output =               ./input/chemistry/asplund_m0/
+path to condensation curves =           ./input/stability_curves/m0/
+path to final output (mixed table) =    ./output/r50/mixed_sample/
+--------
+
+################### DANGER ZONE ################### PROCEED UPON OWN RISK ###################
+
+### EXPERIMENTAL ###
+
+special abundance =                     none                                     (none, no_H2O, pure_H2O, pure_CO2, venus)
+####################

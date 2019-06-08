@@ -34,6 +34,9 @@ class Plot(object):
     def plot_tp(quant):
         """ plots the TP-profile in realtime """
 
+        # set to 1 for video output
+        video = 0
+
         nr_layer = np.arange(0, quant.nlayer)
 
         red_layer = []
@@ -46,13 +49,19 @@ class Plot(object):
 
         plt.ion()
 
+        if video == 1:
+            fig=plt.gcf()
+            fig.set_size_inches(10,6)
+
         plt.plot(quant.T_lay, nr_layer, color='cornflowerblue', linewidth=2.0)
         plt.scatter(quant.T_lay, nr_layer, color='forestgreen', s=40)
         plt.scatter(red_temp, red_layer, color='red', s=40)
 
         plt.ylim(0, quant.nlayer-1)
+        if video == 1:
+            plt.xlim(800, 3600)
 
-        plt.xlabel('temperature [K]')
+        plt.xlabel('temperature (K)')
         plt.ylabel('number of layer')
 
         plt.axes().xaxis.grid(True, 'minor', color='grey')
@@ -60,12 +69,19 @@ class Plot(object):
         plt.axes().yaxis.grid(True, 'minor', color='grey')
         plt.axes().yaxis.grid(True, 'major', color='grey')
         plt.show()
+
+        if video == 1:
+            plt.savefig("./video/rad_{:0>4d}.png".format(quant.iter_value))
+
         plt.pause(0.001)
         plt.clf()
 
     @staticmethod
     def plot_convective_feedback(quant):
         """ plots the tp profile and the net flux in realtime """
+
+        # set to 1 for video output
+        video = 0
 
         nr_layer = np.arange(0, quant.nlayer)
         nr_interface = np.arange(0, quant.ninterface)
@@ -82,6 +98,9 @@ class Plot(object):
         plt.ion()
         fig = plt.gcf()
 
+        if video == 1:
+            fig.set_size_inches(10, 6)
+
         # left subplot
         subtp = fig.add_subplot(121)
 
@@ -89,11 +108,12 @@ class Plot(object):
         subtp.scatter(quant.T_lay, nr_layer, color='orangered', s=20)
 
         plt.ylim(0, quant.nlayer-1)
+        # plt.xlim(800, 3600)
 
         x_low_lim = max(0, 100*(min(quant.T_lay) // 100 - 1))
         x_up_lim = 100*(max(quant.T_lay) // 100 + 2)
         plt.xlim(x_low_lim, x_up_lim)
-        plt.xlabel('temperature [K]')
+        plt.xlabel('temperature (K)')
         plt.ylabel('number of layer')
         plt.xticks(np.arange(x_low_lim, x_up_lim+400, 400))
         minorloc = tkr.MultipleLocator(50)
@@ -117,7 +137,10 @@ class Plot(object):
 
         plt.ylim(0, quant.ninterface - 1)
 
-        plt.xlabel('rad. net flux [erg s$^{-1}$ cm$^{-2}$]')
+        if video == 1:
+            plt.xlim(0, 40000)
+
+        plt.xlabel('rad. net flux (erg s$^{-1}$ cm$^{-2}$)')
         plt.ylabel('number of interface')
 
         subfnet.xaxis.grid(True, 'minor', color='grey')
@@ -127,6 +150,10 @@ class Plot(object):
 
         # show and close figure
         plt.show()
+
+        if video == 1:
+            plt.savefig("./video/radconv_{:0>4d}.png".format(quant.iter_value))
+
         plt.pause(0.001)
         plt.clf()
 

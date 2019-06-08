@@ -21,7 +21,9 @@
 
 import numpy as np
 from numpy.polynomial.legendre import leggauss as G
+import scipy.stats as st
 from source import phys_const as pc
+
 
 
 def planet_param(quant, read):
@@ -43,6 +45,86 @@ def planet_param(quant, read):
     quant.T_star = quant.fl_prec(max(quant.T_star, 1))
 
 
+def approx_f_from_formula(quant):
+    " calculates the f redistribution factor from the approximative formula from Koll et al. in prep."
+
+    # read in tau_lw from output file if it exists
+    if "_post" in quant.name:
+        name = quant.name[:-5]
+    else:
+        name = quant.name
+    try:
+        with open("./output/" + name + "/" + name + "_tau_lw_sw.dat", "r") as entr_file:
+            next(entr_file)
+            next(entr_file)
+            for line in entr_file:
+                column = line.split()
+                quant.tau_lw = float(column[0])
+        print("\ntau_lw read in from previous output file!")
+
+    except IOError:
+        print("\nWarning: Unable to read in tau_lw from file. Using input values!")
+
+    # calculates the f factor
+    T_eq = (quant.R_star / (2*quant.a))**0.5 * quant.T_star
+
+    term = quant.tau_lw * (quant.p_boa / 1e6) ** (2 / 3) * (T_eq / 6000) ** (-4 / 3)
+
+    quant.f_factor = 2 / 3 - 5 / 12 * term / (2 + term)
+
+
+def calc_planck(lamda, temp):
+
+    term1 = 2 * pc.H * pc.C**2 / lamda**5
+
+    term2 = np.exp(pc.H * pc.C / (lamda * pc.K_B * temp)) - 1
+
+    result = term1 * 1 / term2
+
+    return result
+
+
+def calc_tau_lw_sw(quant):
+
+    num_lw = 0
+    denom_lw = 0
+    num_sw = 0
+    denom_sw = 0
+
+    for x in range(quant.nbin):
+
+        tau_from_top = 0
+
+        for i in range(quant.nlayer):
+
+            tau_from_top += quant.delta_tau_band[x + i * quant.nbin]
+
+        B_surface = calc_planck(quant.opac_wave[x], quant.T_surf)
+
+        num_lw += B_surface * np.exp(-tau_from_top) * quant.opac_deltawave[x]
+        denom_lw += B_surface * quant.opac_deltawave[x]
+
+        if quant.T_star > 10:
+            B_star = calc_planck(quant.opac_wave[x], quant.T_star)
+
+            num_sw += B_star * tau_from_top * quant.opac_deltawave[x]
+            denom_sw += B_star * quant.opac_deltawave[x]
+
+    print(num_lw, denom_lw)
+
+    tau_lw_tot = num_lw / denom_lw
+
+    if quant.T_star > 10:
+        tau_sw_tot = -np.log(num_sw / denom_sw)
+    else:
+        tau_sw_tot = 0
+
+    with open("./output/" + quant.name + "/" + quant.name + "_tau_lw_sw.dat", "w") as file:
+        file.writelines("This file contains the total longwave and shortwave optical depths at BOA (or surface if there), tau_lw and tau_sw")
+        file.writelines("\n{:<10}{:<10}".format("tau_lw", "tau_sw"))
+        file.writelines("\n{:<10g}{:<10g}".format(tau_lw_tot, tau_sw_tot))
+
+
 def initial_temp(quant, read, Vmod):
     """ determines the initial temperature profile """
 
@@ -62,14 +144,11 @@ def initial_temp(quant, read, Vmod):
 
     elif quant.singlewalk == 1:
 
-        read.read_restart_file(quant)
+        read.read_temperature_file(quant)
 
         quant.T_lay = quant.T_restart
 
-        print("\nStarting with chosen restart temperature profile.")
-
-    else:
-        print("\nAbort! Restart parameter corrupt. Check that the value is 0 or 1.")
+        print("\nStarting with chosen temperature profile.")
 
 
 def temp_calcs(quant):
@@ -124,12 +203,10 @@ def check_for_global_eq(quant):
 
     criterion = 0
 
-    # case without star
-    if quant.T_intern != 0:
+    if quant.T_intern != 0: # with internal heat
         lim_quant = abs(quant.F_intern - quant.F_net[quant.ninterface - 1]) / quant.F_intern
-    else:
-        print("Without internal flux there is no reason to have convective adjustment. Please restart model without it. Aborting for now...")
-        raise SystemExit
+    elif quant.T_intern == 0: # without internal heat. in this case there must be a star
+        lim_quant = abs(quant.F_net[quant.ninterface - 1]) / quant.F_down_tot[quant.ninterface - 1]
 
     # user feedback
     if quant.iter_value % 10 == 0:
@@ -139,19 +216,20 @@ def check_for_global_eq(quant):
     if lim_quant < quant.global_limit:
         criterion = 1
 
-    # case with star -- why should it be different??
-    # else:
-    #     lim_quant = abs(quant.F_net[quant.ninterface - 1]) / quant.F_down_tot[quant.ninterface - 1]
-    #
-    #     #user feedback
-    #     if quant.iter_value % 10 == 0:
-    #         print("The relative difference between TOA up and downwards flux is: {:.2e}".format(
-    #             lim_quant) + " and should be less than {:.2e}".format(quant.global_limit) + ".")
-    #
-    #     if lim_quant < quant.global_limit:
-    #         criterion = 1
-
     return criterion
+
+
+def calc_surf_temperature(quant):
+    """ calculates the surface temperature from the downward incoming (and absorbed) flux and the interior heat flux """
+
+    # leaving away (1-albedo)/emissivity in the first term for clarity
+    quant.T_surf = (quant.F_down_tot[0]/pc.SIGMA_SB + quant.T_intern**4.0/(1.0 - quant.surf_albedo))**0.25
+
+    # change the upward BOA flux to match the Stefan-Boltzmann law and to include the surface albedo
+    quant.F_up_tot[0] = quant.surf_albedo * quant.F_down_tot[0] + (1.0 - quant.surf_albedo) * pc.SIGMA_SB * quant.T_surf**4.0
+
+    # the corresponding net flux needs to be tweaked as well in order for the temperature iteration to work properly
+    quant.F_net[0] = quant.F_up_tot[0] - quant.F_down_tot[0]
 
 
 def check_for_local_eq(quant):
@@ -249,18 +327,22 @@ def conv_check(quant):
 def conv_correct(quant):
     """ corrects unstable lapse rates to dry adiabats, conserving the total enthalpy """
 
-    # with star
+    # with external stellar radiation
     if quant.T_star >= 10:
 
         # dampara as in damping parameter. It is a try to play with words.
         quant.dampara = 16  # stable: 512. Other numbers like 16, 32, 64, 128 also possible, but may prove unstable in terms of convergence
 
         # allows to correct for global equilibrium. With fudge_factor == 1, you satisfy local equilibrium, but never reach a global one
-        fudge_factor = (100 * quant.F_intern / (quant.F_net[quant.ninterface - 31] + 99 * quant.F_intern)) ** (1.0 / quant.dampara)
+        if quant.F_intern != 0:
+            fudge_factor = (100 * quant.F_intern / (quant.F_net[quant.ninterface - 21] + 99 * quant.F_intern)) ** (1.0 / quant.dampara)
+        elif quant.F_intern == 0:
+            fudge_factor = (quant.F_down_tot[quant.ninterface - 21] / quant.F_up_tot[quant.ninterface - 21]) ** (1.0 / quant.dampara)
 
-    # without star
+    # same procedure without a stellar energy source
     else:
-        quant.dampara = max(quant.iter_value, 4096.0)  # value of 4096 found to be stable
+        quant.dampara = max(quant.iter_value, 4096.0)  # value of 4096 found to be stable...
+        # careful! too small values (e.g. < 128) may cause irregularities in the convergence
 
         fudge_factor = (quant.F_intern / quant.F_net[quant.ninterface - 1]) ** (1.0 / quant.dampara)
 
@@ -381,9 +463,13 @@ def calc_F_ratio(quant):
 
         for x in range(quant.nbin):
 
+            # original means here: without the energy correction factor
             original_star_BB_flux = np.pi * quant.planckband_lay[quant.nlayer + x * (quant.nlayer+2)] / quant.star_corr_factor
 
-            ratio = orbital_factor * quant.F_up_band[x + quant.nlayer * quant.nbin] / original_star_BB_flux
+            if original_star_BB_flux != 0:
+                ratio = orbital_factor * quant.F_up_band[x + quant.nlayer * quant.nbin] / original_star_BB_flux
+            else:
+                ratio = 0
 
             quant.F_ratio.append(ratio)
 
@@ -391,8 +477,12 @@ def calc_F_ratio(quant):
 def calculate_height_z(quant):
     """ prints the message that you have been desperately waiting for """
 
-    # determines layer corresponding to white light radius (assumption: R(white light) = 10 bar)
-    i_white_light_radius = max([i for i in range(quant.nlayer) if quant.p_lay[i] >= 1e7])
+    # rocky planets: white light radius is the surface
+    i_white_light_radius = 0
+
+    # gas planets with pressures of more than 10 bar: white light radius at 10 bar
+    if quant.p_lay[0] >= 1e7:
+        i_white_light_radius = max([i for i in range(quant.nlayer) if quant.p_lay[i] >= 1e7])
 
     quant.z_lay[i_white_light_radius] = 0
 
@@ -412,20 +502,22 @@ def success_message(quant):
     T_eff_global, T_eff_dayside, T_eff_model, T_star_brightness, T_planet_brightness = temp_calcs(quant)
 
     print("\nDone! Everything appears to have worked fine :-)\n")
-    print("This has been the run with name "+ quant.name +".\n")
 
-    print("\nFinal Check for numerical energy balance (within the spectral range of the model):")
-    print("\tTheoretical effective temperature of planet. global: {:g} K,".format(T_eff_global),
-          "day-side: {:g} K,".format(T_eff_dayside), "used in model: {:g} K.".format(T_eff_model))
-    print("\tIncident TOA bol. flux: {:g} erg s-1 cm-2,".format(quant.F_down_tot[quant.ninterface - 1]),
-          "outgoing TOA bol. flux: {:g} erg s-1 cm-2.".format(quant.F_up_tot[quant.ninterface-1]))
-    print("\tIncident brightness temperature: {:g} K,".format(T_star_brightness),
-          "outgoing (planetary) brightness temperature: {:g} K.".format(T_planet_brightness))
-    if quant.singlewalk == 0:
-        print("--> Global energy imbalance: {:g} erg s-1 cm-2 (positive: too much uptake, negative: too much loss)."
-              .format(quant.F_intern - quant.F_net[quant.ninterface-1]), "\n")
+    run_type = "an iterative" if quant.singlewalk == 0 else "a post-processing"
+
+    print("This has been " + run_type + " run with name " + quant.name + ".\n")
+
+    print("\nFinal Check for numerical energy balance:")
+    print("\tTheoretical effective temperature of planet. global (f=0.25): {:g} K,".format(T_eff_global),
+          "day-side (f=2/3): {:g} K,".format(T_eff_dayside), "\n\tused in model ({:.2f}): {:g} K.".format(quant.f_factor, T_eff_model))
+    print("\tIncident TOA brightness temperature: {:g} K, Interior temperature: {:g} K.\n".format(T_star_brightness, quant.T_intern),
+          "\tOutgoing (planetary) brightness temperature: {:g} K.".format(T_planet_brightness))
+
+    if quant.T_intern != 0:
+        relative_energy_imbalance = (quant.F_intern - quant.F_net[quant.ninterface-1])/quant.F_intern
     else:
-        print("--> Global energy imbalance not indicative for pure post-processing.\n")
+        relative_energy_imbalance = -quant.F_net[quant.ninterface - 1] / quant.F_down_tot[quant.ninterface - 1]
+    print("--> Global energy imbalance: {:.2e} (positive: too much uptake, negative: too much loss).".format(relative_energy_imbalance), "\n")
 
 
 if __name__ == "__main__":

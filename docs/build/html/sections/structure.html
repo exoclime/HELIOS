@@ -1,0 +1,247 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Structure &#8212; HELIOS 2.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="k-Table Generator" href="ktable.html" />
+    <link rel="prev" title="Parameter File" href="parameters.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="structure">
+<h1>Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="directories">
+<h2>Directories<a class="headerlink" href="#directories" title="Permalink to this headline">¶</a></h2>
+<p>The root (or parent, or main) directory contains the main HELIOS run file, and the parameter, readme and license files. In addition, the following subdirectories are found in the HELIOS installation:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">root</span></code>: contains the main HELIOS, readme, and license files.</li>
+<li><code class="docutils literal notranslate"><span class="pre">input</span></code>: usually contains the input files, like the opacity table, planet data, stellar spectrum, etc. In principle, as the path of any input file can be set in the parameter file, they don’t need to be here though.</li>
+<li><code class="docutils literal notranslate"><span class="pre">output</span></code>: files magically appear here after a finished calculation.</li>
+<li><code class="docutils literal notranslate"><span class="pre">source</span></code>: contains the source code files.</li>
+<li><code class="docutils literal notranslate"><span class="pre">docs</span></code>: contains the <a class="reference external" href="http://www.sphinx-doc.org/en/master/">Sphinx</a> files, used to create the documentation (the one you’re reading right now).</li>
+<li><code class="docutils literal notranslate"><span class="pre">ktable</span></code>: contains the k-table generator program. This directory can be moved (or deleted) in principle, as it works independently of the main HELIOS code. In general, it is recommended to leave the directory structure as it is.</li>
+</ul>
+</div>
+<div class="section" id="files">
+<h2>Files<a class="headerlink" href="#files" title="Permalink to this headline">¶</a></h2>
+<p>In the following the included files are briefly described. They are ordered from a user perspective from most to least interesting (from a developer perspective the order is probably exactly the other way around).</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">param.dat</span></code>: the main parameter/configuration file. That’s the file altered on a daily basis. See the <a class="reference internal" href="parameters.html"><span class="doc">Parameter File</span></a> for more info.</li>
+<li><code class="docutils literal notranslate"><span class="pre">read.py</span></code>: contains the class and the methods responsible for reading data. Check here if you get “reading” errors.</li>
+<li><code class="docutils literal notranslate"><span class="pre">write.py</span></code>: contains the class and the methods responsible for reading data. Check here if you get “writing” errors or if you want to modify the written files.</li>
+<li><code class="docutils literal notranslate"><span class="pre">realtime_plotting.py</span></code>: contains the matplotlib script for the realtime plotting. Alter this if you don’t like the aesthetics.</li>
+<li><code class="docutils literal notranslate"><span class="pre">helios.py</span></code>: main run file. It calls the other files and exhibits the chronological workflow. This is the conductor of HELIOS.</li>
+<li><code class="docutils literal notranslate"><span class="pre">host_functions.py</span></code>: contains the functions and short scripts executed on the CPU (aka host). If you want to include a short feature, which is not computation-heavy, you probably want to dump it here.</li>
+<li><code class="docutils literal notranslate"><span class="pre">quantities.py</span></code>: contains all scalar variables and arrays. It is responsible for data management, like copying arrays between the host and the device (GPU), and allocating memory.</li>
+<li><code class="docutils literal notranslate"><span class="pre">computation.py</span></code>: calls and co-ordinates the device kernels, i.e., functions living on the GPU. This is the brain of HELIOS.</li>
+<li><code class="docutils literal notranslate"><span class="pre">kernels.cu</span></code>: contains the detailed computations, executed on the device. This is the workhorse of HELIOS.</li>
+<li><code class="docutils literal notranslate"><span class="pre">phys_const.py</span></code>: contains the physical constants. It purely exists to convert long names to shorter ones.</li>
+</ul>
+<p>The k-table generator files are explained in <a class="reference internal" href="ktable.html"><span class="doc">k-Table Generator</span></a>.</p>
+</div>
+<div class="section" id="mandatory-input">
+<h2>Mandatory Input<a class="headerlink" href="#mandatory-input" title="Permalink to this headline">¶</a></h2>
+<p>The following input is required to be present and needs to be in the correct format.</p>
+<div class="section" id="opacity-table">
+<h3>opacity table<a class="headerlink" href="#opacity-table" title="Permalink to this headline">¶</a></h3>
+<p>The opacity table is best produced with the k-table generator program, using the output of HELIOS-K. If you want to use your own opacity table, the following format needs to met.</p>
+<p>The opacity table may come in two versions. For the temperature iteration, the k-distribution method. The integration over one wavelength bin is performed via Gaussian quadrature. For pure-postprocessing an opacity table is used in pure opacity sampling format, i.e., one opacity value per wavelength.</p>
+<hr class="docutils" />
+<p>In both cases, the opacity table has to come as HDF5 file with the following datasets:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pressures</span>
+<span class="n">temperatures</span>
+<span class="n">weighted</span> <span class="n">Rayleigh</span> <span class="n">cross</span><span class="o">-</span><span class="n">sections</span>
+<span class="n">meanmolmass</span>
+</pre></div>
+</div>
+<p>The first two sets list the PT-grid on which the opacities are pre-calculated. Both the pressure and temperature values need to be in ascending order. The pressures need to be uniformly spaced in log10 and the temperatures linearly.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">weighted</span> <span class="pre">Rayleigh</span> <span class="pre">cross-sections</span></code> set gives the weighted scattering cross-sections as function of wavelength, pressure and temperature in the following format:</p>
+<p>cross-sect[wavelength, press, temp] = cross-sect[x + n_x*p + n_x*n_p*t],</p>
+<p>where n_* is the length of the according list and x, p, t are the indices in the according list. For instance, temp = temperatures[t], wavelength = wavelengths[x] and press = pressures[p]. They can be a combination of variation of different cross-section sources, but they need to be weighted by their respective volume mixing ratio.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">meanmolmass</span></code> set lists the mean molecular mass of the gas particles as function of pressure and temperature as:</p>
+<p>meanmolmass[press, temp] = meanmolmass[p + n_p*t],</p>
+<p>with the same denomination as above.</p>
+<hr class="docutils" />
+<p>If opacity sampling is used, the following entry needs to be present as well:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wavelengths</span>
+<span class="n">kpoints</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">wavelengths</span></code> set lists the wavelengths used for the opacity calculation in ascending order. Those are also the wavelengths used for the radiative transfer calculation.</p>
+<p><code class="docutils literal notranslate"><span class="pre">kpoints</span></code> lists the opacities as a function of wavelength, pressure and temperature. The same format as for <code class="docutils literal notranslate"><span class="pre">weighted</span> <span class="pre">Rayleigh</span> <span class="pre">cross-sections</span></code> is used.</p>
+<hr class="docutils" />
+<p>If the k-distribution method is used, these datasets are required:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">center</span> <span class="n">wavelengths</span>
+<span class="n">interface</span> <span class="n">wavelengths</span>
+<span class="n">wavelength</span> <span class="n">width</span> <span class="n">of</span> <span class="n">bins</span>
+<span class="n">ypoints</span>
+<span class="n">kpoints</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">center</span> <span class="pre">wavelengths</span></code> set lists the central wavelength values for the wavelength bins in ascending order. These values are only used for plotting reasons and are not used in the radiative transfer calculation.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">interface</span> <span class="pre">wavelengths</span></code> set lists the interface wavelength values between the wavelength bins in ascending order.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">wavelength</span> <span class="pre">width</span> <span class="pre">of</span> <span class="pre">bins</span></code> set lists the width of the wavelength bins in ascending order.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ypoints</span></code> set lists the abscissa point values for the Gaussian quadrature integration. The standard approach is to use 20th order Gaussian quadrature. Note, that those values need to be rescaled to lie within [0,1].</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">kpoints</span> <span class="pre">set</span></code> lists the opacities as a function of y-point, wavelength, pressure and temperature. The format is analogously to before,</p>
+<p>kpoints[y-point, wavelength, press, temp] = kpoints[y + n_y*l + n_y*n_l*p + n_y*n_l*n_p*t],</p>
+<p>where n_* is the length of the according list and y, l, p, t are the indices in the according lists, e.g. y-point = ypoints[y], etc.</p>
+</div>
+</div>
+<div class="section" id="optional-input">
+<h2>Optional Input<a class="headerlink" href="#optional-input" title="Permalink to this headline">¶</a></h2>
+<p>The following input is optional, and only needed when certain options are set in the <a class="reference internal" href="parameters.html"><span class="doc">Parameter File</span></a>.</p>
+<div class="section" id="temperature-profile">
+<h3>temperature profile<a class="headerlink" href="#temperature-profile" title="Permalink to this headline">¶</a></h3>
+<p>An iterative run of HELIOS does not require an input temperature profile as it will iterate and find the radiative-convective solution. However, in the case of pure post-processing a given temperature profile is used to create the corresponding emission spectrum. The temperature file should be in ASCII form, with the temperatures and pressures in the first and second column. Both formats “TP” or “PT” can be set in the <a class="reference internal" href="parameters.html"><span class="doc">Parameter File</span></a>. Usually the pressure is assumed to be in cgs units. Should the pressure be in bar, an additional “bar” needs to be written after “TP” or “PT”.
+The standard output of HELIOS may also be used as an input profile.</p>
+<p>Practically, the read-in temperature profile is linearly interpolated to the HELIOS pressure grid, set by the top and bottom of atmosphere pressures and the number of layers.</p>
+</div>
+<div class="section" id="adiabatic-coefficient">
+<h3>adiabatic coefficient<a class="headerlink" href="#adiabatic-coefficient" title="Permalink to this headline">¶</a></h3>
+<p>To enable the convective adjustment, the adiabatic coefficient as function of temperature and pressure needs to be known. In the simplest case, a constant value for the the adiabatic coefficient can be set manually.</p>
+<p>If a file is to be read in, it should be in ASCII format, with the adiabatic coefficient listed as function of pressure and temperature, with log10 temperature being on the smaller loop and log10 pressure on the larger one, i.e. from top to down we get kappa[t+n_t*p], with the pressure index p and the temperature index t, and n_t the number of temperature values. If the corresponding entropy is listed as well, its layer values will be given out as output as well.</p>
+<p>The format of the file should be:</p>
+<div class="figure" id="id1">
+<a class="reference internal image-reference" href="../_images/adiabat.png"><img alt="map to buried treasure" src="../_images/adiabat.png" style="width: 1437.6px; height: 325.2px;" /></a>
+<p class="caption"><span class="caption-text"><em>Figure: Format of the adiabatic coefficient/entropy file.</em></span></p>
+</div>
+</div>
+<div class="section" id="planet-parameters">
+<h3>planet parameters<a class="headerlink" href="#planet-parameters" title="Permalink to this headline">¶</a></h3>
+<p>The planetary, stellar and orbital parameters may be pre-tabulated for convenience. The format of this ASCII file should be:</p>
+<div class="figure" id="id2">
+<a class="reference internal image-reference" href="../_images/planets.png"><img alt="map to buried treasure" src="../_images/planets.png" style="width: 950.4px; height: 186.0px;" /></a>
+<p class="caption"><span class="caption-text"><em>Figure: Format of the planet file.</em></span></p>
+</div>
+<p>The name in the first column can then be used in the <a class="reference internal" href="parameters.html"><span class="doc">Parameter File</span></a> making the corresponding values to be read automatically. The surface gravity can be given either in (dex cgs) or in (cgs) units. See the figure for the correct units of the other parameters.</p>
+<p>A sample planet file is provided with the installation. No guarantee is made about the correctness of the data within.</p>
+<p>If no planet file can be bypassed by setting the planetary parameters manually in the <a class="reference internal" href="parameters.html"><span class="doc">Parameter File</span></a>.</p>
+</div>
+<div class="section" id="stellar-spectrum">
+<h3>stellar spectrum<a class="headerlink" href="#stellar-spectrum" title="Permalink to this headline">¶</a></h3>
+<p>In addition to using the blackbody with the stellar temperature for the external irradiation, one can read in a stellar spectrum. The spectrum has to exhibit the same wavelength grid as the opacities. The spectral flux needs to come with an HDF5 file in cgs units of erg s <span class="math notranslate nohighlight">\(^{-1}\)</span> cm <span class="math notranslate nohighlight">\(^{-3}\)</span>.</p>
+<p>A sample file is provided with the installation. It contains the spectrum of HD 189733 downloaded from the <a class="reference external" href="http://phoenix.astro.physik.uni-goettingen.de/">PHOENIX online database</a>, once in original resolution and once downsampled to 300 wavelength bins with the corresponding wavelength values.</p>
+</div>
+<div class="section" id="vulcan-mixing-ratios">
+<h3>VULCAN mixing ratios<a class="headerlink" href="#vulcan-mixing-ratios" title="Permalink to this headline">¶</a></h3>
+<p>There are ongoing tests to couple HELIOS with the chemical kinetics code <a class="reference external" href="https:github.com/exoclime/vulcan">VULCAN</a>. To this end, the calculated chemical abundances obtained with VULCAN are used for each radiative transfer run.</p>
+<p><em>This feature is still in development. Thank you for your patience.</em></p>
+</div>
+</div>
+<div class="section" id="output">
+<h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
+<p>The output files should be self-explanatory. If not, additional information will be given here (later).</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo_l.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">GPU-accelerated radiative transfer code for exoplanetary atmospheres</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=exoclime&repo=helios&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter File</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Structure</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#directories">Directories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#files">Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mandatory-input">Mandatory Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optional-input">Optional Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#output">Output</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ktable.html">k-Table Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code.html">Code Reference</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Matej Malik.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/sections/structure.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

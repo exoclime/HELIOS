@@ -45,10 +45,10 @@ class Read(object):
     @staticmethod
     def delete_duplicates(long_list):
         """ delete all duplicates in a list and return new list """
-        short_list=[]
+        short_list = []
         for item in long_list:
-           if item not in short_list:
-              short_list.append(item)
+            if item not in short_list:
+                short_list.append(item)
         return short_list
 
     @staticmethod
@@ -78,8 +78,12 @@ class Read(object):
             n_plot = npy.int32(10)
         else:
             try:
-                real_plot = npy.int32(1)
-                n_plot = npy.int32(var)
+                if float(var) > 1:
+                    real_plot = npy.int32(1)
+                    n_plot = npy.int32(var)
+                else:
+                    real_plot = npy.int32(0)
+                    n_plot = npy.int32(10)
             except:
                 print("\nInvalid choice for realtime plotting. Aborting...")
                 raise SystemExit()
@@ -197,8 +201,6 @@ class Read(object):
                             quant.scat_corr = self.__read_yes_no__(column[4])
                         elif column[0] == "path" and column[2] == "opacity" and column[3] == "file":
                             self.ktable_path = column[5]
-                        elif column[0] == "opacity" and column[1] == "format":
-                            quant.opac_format = column[3]
                         elif column[0] == "path" and column[2] == "molecular":
                             self.ind_mol_opac_path = column[5]
                         elif column[0] == "path" and column[2] == "FASTCHEM":
@@ -215,10 +217,16 @@ class Read(object):
                             quant.geom_zenith_corr = self.__read_yes_no__(column[5])
                         elif column[0] == "internal" and column[1] == "temperature":
                             quant.T_intern = quant.fl_prec(column[4])
+                        elif column[0] == "surface" and column[1] == "temperature":
+                            quant.T_surf = quant.fl_prec(column[4])
                         elif column[0] == "asymmetry":
                             quant.g_0 = quant.fl_prec(column[4])
                         elif column[0] == "energy" and column[2] == "correction":
                             quant.energy_correction = self.__read_yes_no__(column[4])
+                        elif column[0] == "surface" and column[1] == "albedo":
+                            quant.surf_albedo = quant.fl_prec(column[3])
+                            quant.surf_albedo = min(0.999, quant.surf_albedo) # everything above 0.999 albedo is not physical. fullstop.
+                            quant.surf_albedo = quant.fl_prec(quant.surf_albedo)
 
                         # CONVECTIVE ADJUSTMENT
                         elif column[0] == "convective":
@@ -229,6 +237,10 @@ class Read(object):
                             self.entr_kappa_path = column[4]
 
                         # ASTRONOMICAL PARAMETERS
+                        elif column[0] == "stellar" and column[2] == "model":
+                            quant.stellar_model = column[4]
+                        elif column[0] == "path" and column[2] == "stellar":
+                            self.stellar_path = column[6]
                         elif column[0] == "planet" and column[1] == "=":
                             quant.planet = column[2]
                         elif column[0] == "path" and column[2] == "planet" and column[3] == "data":
@@ -243,10 +255,6 @@ class Read(object):
                             quant.R_star = quant.fl_prec(column[4])
                         elif column[0] == "temperature" and column[1] == "star":
                             quant.T_star = quant.fl_prec(column[4])
-                        elif column[0] == "spectral" and column[1] == "model":
-                            quant.stellar_model = column[3]
-                        elif column[0] == "path" and column[2] == "stellar":
-                            self.stellar_path = column[6]
 
                         # EXPERIMENTAL
                         elif column[0] == "clouds":
@@ -263,10 +271,19 @@ class Read(object):
                             quant.foreplay = npy.int32(column[5])
                         elif column[0] == "artificial" and column[2] == "opacity":
                             quant.fake_opac = quant.fl_prec(column[4])
-                        elif column[0] == "write" and column[1] == "VULCAN":
-                            Vmod.write_V_output = self.__read_yes_no__(column[4])
-                        elif column[0] == "path" and column[4] == "mixing":
-                            Vmod.mixfile_path = column[7]
+                        elif column[0] == "use" and column[1] == "f" and column[2] == "approximation":
+                            quant.approx_f = self.__read_yes_no__(column[5])
+
+                        # VULCAN COUPLING
+                        elif column[0] == "VULCAN" and column[1] == "coupling":
+                            Vmod.V_coupling = self.__read_yes_no__(column[3])
+                        elif column[0] == "path" and column[2] == "individual":
+                            Vmod.mol_opac_path = column[5]
+                        elif column[0] == "species" and column[1] == "file":
+                            Vmod.species_file = column[3]
+                        elif column[0] == "mixing" and column[2] == "file":
+                            Vmod.mix_file = column[4]
+
 
         except IOError:
             print("ABORT - Input file not found!")
@@ -278,25 +295,29 @@ class Read(object):
         parser = argparse.ArgumentParser(description=
                                          "The following are the possible command-line parameters for HELIOS")
 
-        parser.add_argument('-g', help='Value of the surface gravity [cm s^-2]', required=False)
-        parser.add_argument('-a', help='Orbital distance [AU]', required=False)
-        parser.add_argument('-rstar', help='Stellar radius [R_sun]', required=False)
-        parser.add_argument('-tstar', help='Stellar temperature [K]', required=False)
-        parser.add_argument('-tintern', help='Internal flux temperature [K]', required=False)
-        parser.add_argument('-name', help='Name of output', required=False)
+        parser.add_argument('-g', help='surface gravity [cm s^-2]', required=False)
+        parser.add_argument('-a', help='orbital distance [AU]', required=False)
+        parser.add_argument('-rstar', help='stellar radius [R_sun]', required=False)
+        parser.add_argument('-tstar', help='stellar temperature [K]', required=False)
+        parser.add_argument('-tintern', help='internal flux temperature [K]', required=False)
+        parser.add_argument('-name', help='name of output', required=False)
         parser.add_argument('-Viter', help='VULCAN coupling iteration step nr.', required=False)
         parser.add_argument('-angle', help='zenith angle measured from the vertical', required=False)
         parser.add_argument('-isothermal', help='isothermal layers?', required=False)
         parser.add_argument('-postprocess', help='pure post-processing?', required=False)
         parser.add_argument('-temperaturepath', help='path to the temperature file', required=False)
         parser.add_argument('-plot', help='realtime plotting?', required=False)
-        parser.add_argument('-opacitypath', help='Path to the opacity table file', required=False)
-        parser.add_argument('-opacityformat', help='Opacity format, either ktable or sampling', required=False)
-        parser.add_argument('-energycorrection', help='Include correction for global incoming energy?', required=False)
+        parser.add_argument('-opacitypath', help='path to the opacity table file', required=False)
+        parser.add_argument('-energycorrection', help='include correction for global incoming energy?', required=False)
         parser.add_argument('-planet', help='name of the planet to be modeled', required=False)
         parser.add_argument('-nlayers', help='number of layers in the grid', required=False)
         parser.add_argument('-ptoa', help='pressure at the TOA', required=False)
         parser.add_argument('-pboa', help='pressure at the BOA', required=False)
+        parser.add_argument('-f', help='f heat redistribution factor', required=False)
+        parser.add_argument('-tau_lw', help='tau_lw', required=False)
+        parser.add_argument('-star', help='spectral model of the star', required=False)
+        parser.add_argument('-Vfile', help='path to the file with VULCAN mixing ratios', required=False)
+        parser.add_argument('-kappa', help='adiabatic coefficient, kappa = (ln T / ln P)_S', required=False)
 
 
         args = parser.parse_args()
@@ -343,9 +364,6 @@ class Read(object):
         if args.opacitypath:
             self.ktable_path = args.opacitypath
 
-        if args.opacityformat:
-            quant.opac_format = args.opacityformat
-
         if args.energycorrection:
             quant.energy_correction = self.__read_yes_no__(args.energycorrection)
 
@@ -362,6 +380,20 @@ class Read(object):
         if args.pboa:
             quant.p_boa = quant.fl_prec(args.pboa)
 
+        if args.f:
+            quant.f_factor = quant.fl_prec(args.f)
+
+        if args.tau_lw:
+            quant.tau_lw = quant.fl_prec(args.tau_lw)
+
+        if args.star:
+            quant.stellar_model = args.star
+
+        if args.Vfile:
+            Vmod.mix_file = args.Vfile
+
+        if args.kappa:
+            quant.kappa_manual_value = args.kappa
 
         # now that we know the name for sure, let's do some pleasantries
         print("\n### Welcome to HELIOS! This run has the name: " + quant.name + ". Enjoy the ride! ###")
@@ -370,82 +402,86 @@ class Read(object):
         """ reads the opacity table """
 
         if Vmod.V_iter_nr == 0:
-            opac_path = self.ktable_path
-        elif Vmod.V_iter_nr > 0:
-            opac_path = Vmod.eqchem_opac_path
 
-        try:
-            with h5py.File(opac_path, "r") as opac_file:
-                print("\nReading opacity table...")
+            try:
+                with h5py.File(self.ktable_path, "r") as opac_file:
+                    print("\nReading opacity table...")
 
-                # always in the opacity file
-                for k in opac_file["kpoints"][:]:
-                    quant.opac_k.append(k)
-                for t in opac_file["temperatures"][:]:
-                    quant.ktemp.append(t)
-                quant.ntemp = npy.int32(len(quant.ktemp))
-                for p in opac_file["pressures"][:]:
-                    quant.kpress.append(p)
-                quant.npress = npy.int32(len(quant.kpress))
-                if Vmod.V_iter_nr == 0:
-                    for cross in opac_file["weighted Rayleigh cross-sections"][:]:
-                        quant.opac_scat_cross.append(cross)
-                elif Vmod.V_iter_nr > 0:
-                    for cross in opac_file["pure Rayleigh cross-sections"][:]:
-                        quant.opac_scat_cross.append(cross)
+                    # pre-tabulated opacity values
+                    quant.opac_k = [k for k in opac_file["kpoints"][:]]
 
-                mu_arr = []
-                for mu in opac_file["meanmolmass"][:]:
-                    mu_arr.append(mu)
-                quant.opac_meanmass = [mu_arr[i] * pc.AMU for i in range(quant.ntemp * quant.npress)]
+                    # temperature grid
+                    quant.ktemp = [t for t in opac_file["temperatures"][:]]
+                    quant.ntemp = npy.int32(len(quant.ktemp))
 
-                if quant.opac_format == 'sampling':
+                    # pressure grid
+                    quant.kpress = [p for p in opac_file["pressures"][:]]
+                    quant.npress = npy.int32(len(quant.kpress))
 
-                    for x in opac_file["wavelengths"][:]:
-                        quant.opac_wave.append(x)
+                    # Rayleigh scattering cross-sections
+                    quant.opac_scat_cross = [c for c in opac_file["weighted Rayleigh cross-sections"][:]]
 
-                    # only 1 gaussian point
-                    quant.opac_y.append(0)
+                    # pre-tabulated mean molecular mass values (& convert from mu to mean mass)
+                    quant.opac_meanmass = [m * pc.AMU for m in opac_file["meanmolmass"][:]]
+                    # quant.opac_meanmass = [2.5 * pc.AMU for m in opac_file["meanmolmass"][:]]  # for testing
 
-                    # lamda interface values
-                    quant.opac_interwave.append(quant.opac_wave[0] - (quant.opac_wave[1] - quant.opac_wave[0])/2)
-                    for x in range(len(quant.opac_wave) - 1):
-                        quant.opac_interwave.append((quant.opac_wave[x+1] + quant.opac_wave[x])/2)
-                    quant.opac_interwave.append(quant.opac_wave[-1] + (quant.opac_wave[-1] - quant.opac_wave[-2])/2)
+                    # wavelength grid
+                    try:
+                        quant.opac_wave = [x for x in opac_file["center wavelengths"][:]]
+                    except KeyError:
+                        quant.opac_wave = [x for x in opac_file["wavelengths"][:]]
+                    quant.nbin = npy.int32(len(quant.opac_wave))
 
-                    # delta lamda values
-                    for x in range(len(quant.opac_interwave)-1):
-                        quant.opac_deltawave.append(quant.opac_interwave[x+1]-quant.opac_interwave[x])
+                    # Gaussian y-points
+                    try:
+                        quant.opac_y = [y for y in opac_file["ypoints"][:]]
+                    except KeyError:
+                        quant.opac_y = [0]
+                    quant.ny = npy.int32(len(quant.opac_y))
 
-                # only in ktable version
-                elif quant.opac_format == "ktable":
+                    # interface positions of the wavelength bins
+                    try:
+                        quant.opac_interwave = [i for i in opac_file["interface wavelengths"][:]]
+                    except KeyError:
+                        # quick and dirty way to get the lamda interface values
+                        quant.opac_interwave = []
+                        quant.opac_interwave.append(quant.opac_wave[0] - (quant.opac_wave[1] - quant.opac_wave[0])/2)
+                        for x in range(len(quant.opac_wave) - 1):
+                            quant.opac_interwave.append((quant.opac_wave[x+1] + quant.opac_wave[x])/2)
+                        quant.opac_interwave.append(quant.opac_wave[-1] + (quant.opac_wave[-1] - quant.opac_wave[-2])/2)
 
-                    for y in opac_file["ypoints"][:]:
-                        quant.opac_y.append(y)
-                    for x in opac_file["center wavelengths"][:]:
-                        quant.opac_wave.append(x)
-                    for w in opac_file["wavelength width of bins"][:]:
-                        quant.opac_deltawave.append(w)
-                    for i in opac_file["interface wavelengths"][:]:
-                        quant.opac_interwave.append(i)
+                    # widths of the wavelength bins
+                    try:
+                        quant.opac_deltawave = [w for w in opac_file["wavelength width of bins"][:]]
+                    except KeyError:
+                        quant.opac_deltawave = []
+                        for x in range(len(quant.opac_interwave) - 1):
+                            quant.opac_deltawave.append(quant.opac_interwave[x + 1] - quant.opac_interwave[x])
 
-        except OSError:
-            print("\nABORT - \"", opac_path, "\" not found!")
-            raise SystemExit()
 
-        # uncomment the following lines and play with the opacities. for debugging purposes only -- obviously :)
-        # nump = len(quant.kpress)
-        # nt = len(quant.ktemp)
-        # nx = len(quant.opac_wave)
-        # ny = len(quant.opac_y)
-        # for t in range(nt):
-        #     for p in range(nump):
-        #         for x in range(nx):
-        #             for y in range(ny):
-        #                 if x > 200:
-        #                     quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t] = 1e0
-        #                 else:
-        #                     quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t] = 1e0
+            except OSError:
+                print("\nABORT - \"", self.ktable_path, "\" not found!")
+                raise SystemExit()
+
+            # uncomment the following lines and play with the opacities. for debugging purposes only -- obviously :)
+            # nump = len(quant.kpress)
+            # nt = len(quant.ktemp)
+            # nx = len(quant.opac_wave)
+            # ny = len(quant.opac_y)
+            # for t in range(nt):
+            #     for p in range(nump):
+            #         for x in range(nx):
+            #             for y in range(ny):
+            #                 #if temp 14 fixed at 800K, 22 1200K
+            #                 # quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t] = quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * 14]
+            #
+            #                 # if press fixed at 1bar
+            #                 # quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t] = quant.opac_k[y + ny * x + ny * nx * 18 + ny * nx * nump * t]
+            #
+            #                 # max value at 1e0
+            #                 # if x < 275:
+            #                 #     quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t] = min(1e-1, quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t])
+
 
     @staticmethod
     def __read_correct_dataset__(path, dataset, flux_list):
@@ -460,13 +496,12 @@ class Read(object):
 
     def read_planet_file(self, quant):
 
-        planet_data = npy.genfromtxt(self.planet_file,
-                                     names=True, dtype=None, skip_header=3)
+        planet_data = npy.genfromtxt(self.planet_file, names=True, dtype=None, skip_header=3, delimiter=None)
 
-        first_colum = npy.array(planet_data['Planet'],dtype='U')
+        first_column = npy.array(planet_data['Planet'],dtype='U')
 
         try:
-            row = npy.where(first_colum == quant.planet)[0][0]
+            row = npy.where(first_column == quant.planet)[0][0]
 
             quant.R_planet = quant.fl_prec(planet_data['R_pl'][row])
             quant.g = quant.fl_prec(planet_data['g_surf'][row])
@@ -500,15 +535,22 @@ class Read(object):
                     for line in entr_file:
                         column = line.split()
                         if column:
-
                             quant.entr_press.append(10**quant.fl_prec(column[0]))
                             quant.entr_temp.append(10**quant.fl_prec(column[1]))
                             entropy.append(quant.fl_prec(column[4]))
                             kappa.append(quant.fl_prec(column[5]))
+            except IndexError:
 
-            except IOError:
-                print("ABORT - Entropy table file not found!")
-                raise SystemExit()
+                with open(self.entr_kappa_path, "r") as entr_file:
+                    next(entr_file)
+                    next(entr_file)
+                    for line in entr_file:
+                        column = line.split()
+                        if column:
+                            quant.entr_press.append(10 ** quant.fl_prec(column[0]))
+                            quant.entr_temp.append(10 ** quant.fl_prec(column[1]))
+                            entropy.append(0)
+                            kappa.append(quant.fl_prec(column[2]))
 
             quant.entr_press = self.delete_duplicates(quant.entr_press)
             quant.entr_temp = self.delete_duplicates(quant.entr_temp)
@@ -544,7 +586,7 @@ class Read(object):
                                               quant.stellar_model,
                                               quant.starflux)
                 quant.real_star = npy.int32(1)
-                print("\nReading", self.stellar_path+quant.stellar_model, "as spectral model of the host star.")
+                print("\nReading", self.stellar_path + quant.stellar_model, "as spectral model of the host star.")
 
             except KeyError:
 
@@ -573,31 +615,39 @@ class Read(object):
 
         return new_array
 
-    def read_restart_file(self, quant):
-        """ reads the restart temperatures from file """
+    def read_temperature_file(self, quant):
+        """ reads the temperatures from a file """
 
         file_temp = []
         file_press = []
 
         if self.temp_format == 'helios':
             try:
-                with open(self.temp_path, "r") as restart_file:
-                    next(restart_file)
-                    next(restart_file)
-                    for line in restart_file:
+                with open(self.temp_path, "r") as temp_file:
+                    next(temp_file)
+                    next(temp_file)
+                    for line in temp_file:
                         column = line.split()
                         file_temp.append(quant.fl_prec(column[1]))
                         file_press.append(quant.fl_prec(column[2]))
+                        try:
+                            quant.T_surf = quant.fl_prec(column[8])  # will override the value in the param.dat file
+                        except IndexError:
+                            pass
 
             except IOError:
-                print("ABORT - restart file not found!")
+                print("ABORT - TP file not found!")
                 raise SystemExit()
 
         elif self.temp_format == 'TP' or 'PT':
             try:
-                with open(self.temp_path, "r") as restart_file:
-                    for line in restart_file:
+                with open(self.temp_path, "r") as temp_file:
+                    for line in temp_file:
                         column = line.split()
+                        try:
+                            float(column[0])
+                        except ValueError:
+                            continue
                         if self.temp_format == 'TP':
                             file_temp.append(quant.fl_prec(column[0]))
                             file_press.append(quant.fl_prec(column[1]))
@@ -605,14 +655,14 @@ class Read(object):
                             file_press.append(quant.fl_prec(column[0]))
                             file_temp.append(quant.fl_prec(column[1]))
             except IOError:
-                print("ABORT - restart file not found!")
+                print("ABORT - TP file not found!")
                 raise SystemExit()
 
             if self.temp_pressure_unit == 'bar':
                 file_press = [p * 1e6 for p in file_press]
 
         else:
-            print("Wrong format for restart TP-file. Aborting...")
+            print("Wrong format for TP-file. Aborting...")
             raise SystemExit()
 
         own_press = [quant.p_boa * npy.exp(npy.log(quant.p_toa / quant.p_boa) * p / (quant.nlayer - 1.0)) for p in range(quant.nlayer)]
@@ -621,4 +671,4 @@ class Read(object):
 
 if __name__ == "__main__":
     print("This module is for reading stuff. "
-          "Stuff like the input file or the opacity container or the Lord of the Rings by J. R. R. Tolkien.")
+          "...stuff like the input file, or the opacity container, or the 'Lord of the Rings' by J. R. R. Tolkien.")

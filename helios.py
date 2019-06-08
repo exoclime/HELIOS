@@ -46,6 +46,12 @@ def run_helios():
     # read input files and do preliminary calculations
     reader.read_param_file(keeper, Vmodder)
     reader.read_command_line(keeper, Vmodder)
+
+    if Vmodder.V_coupling == 1:
+        Vmodder.read_or_create_iter_count()
+        Vmodder.read_species()
+        Vmodder.read_molecular_opacities(keeper)
+        Vmodder.read_layer_molecular_abundance(keeper)
     reader.read_opac_file(keeper, Vmodder)
     reader.read_entropy_table(keeper)
     cloudy.main_cloud_method(keeper)
@@ -54,16 +60,14 @@ def run_helios():
     hsfunc.planet_param(keeper, reader)
     hsfunc.set_up_numerical_parameters(keeper)
     hsfunc.initial_temp(keeper, reader, Vmodder)
+    if keeper.approx_f == 1:
+        hsfunc.approx_f_from_formula(keeper)
     hsfunc.calc_F_intern(keeper)
-
-    if Vmodder.V_iter_nr > 0:
-        Vmodder.read_molecular_opacities(keeper)
-        Vmodder.read_layer_molecular_abundance(keeper)
 
     # get ready for GPU computations
     keeper.create_zero_arrays(Vmodder)
     keeper.convert_input_list_to_array(Vmodder)
-    keeper.copy_host_to_device()
+    keeper.copy_host_to_device(Vmodder)
     keeper.allocate_on_device(Vmodder)
 
     # conduct the GPU core computations
@@ -71,17 +75,19 @@ def run_helios():
     computer.correct_incident_energy(keeper)
     computer.construct_grid(keeper)
 
-    if Vmodder.V_iter_nr > 0:
-        Vmodder.interpolate_f_molecule_and_meanmolmass(keeper)
-        Vmodder.combine_to_scat_cross(keeper)
+    if Vmodder.V_coupling == 1:
+        if Vmodder.V_iter_nr > 0:
+            Vmodder.interpolate_f_molecule_and_meanmolmass(keeper)
+            Vmodder.combine_to_scat_cross(keeper)
 
     computer.radiation_loop(keeper, writer, plotter, Vmodder)
-    computer.convection_loop(keeper, writer, plotter)
+    computer.convection_loop(keeper, writer, plotter, Vmodder)
 
     computer.integrate_optdepth_transmission(keeper)
     computer.calculate_contribution_function(keeper)
     computer.interpolate_entropy(keeper)
     computer.calculate_mean_opacities(keeper)
+    computer.integrate_beamflux(keeper)
 
     # copy everything back to host and write to files
     keeper.copy_device_to_host()
@@ -108,18 +114,18 @@ def run_helios():
     writer.write_opt_depth(keeper)
     writer.write_trans_weight_function(keeper)
     writer.write_contribution_function(keeper)
-    if keeper.opac_format == 'ktable':
-        writer.write_mean_extinction(keeper)
+    writer.write_mean_extinction(keeper)
     writer.write_T10(keeper)
     writer.write_TOA_flux_Ang(keeper)
-    if Vmodder.write_V_output == 1:
+    writer.write_flux_ratio_only(keeper)
+    if Vmodder.V_coupling == 1:
         Vmodder.write_tp_VULCAN(keeper)
-        Vmodder.write_tp_VULCAN_temp(keeper)
+    hsfunc.calc_tau_lw_sw(keeper)  # for Daniel Koll collaboration
 
     # prints the success message - yay!
     hsfunc.success_message(keeper)
 
-    if Vmodder.V_iter_nr > 0:
+    if Vmodder.V_coupling == 1:
         Vmodder.test_coupling_convergence(keeper)
 
 

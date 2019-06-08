@@ -1,0 +1,229 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Parameter File &#8212; HELIOS 2.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Structure" href="structure.html" />
+    <link rel="prev" title="Tutorial" href="tutorial.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="parameter-file">
+<h1>Parameter File<a class="headerlink" href="#parameter-file" title="Permalink to this headline">¶</a></h1>
+<p>The input parameters are set in the file <code class="docutils literal notranslate"><span class="pre">param.dat</span></code>. The individual parameters are the following, with input type and suggested values in round brackets. The respective units are also given in <code class="docutils literal notranslate"><span class="pre">param.dat</span></code>.</p>
+<p><strong>GENERAL</strong></p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">name</span></code></div></blockquote>
+<p>The name of the output. The output directory is given this name and the files begin with this string.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">precision</span> <span class="pre">(double,</span> <span class="pre">single)</span></code></div></blockquote>
+<p>Under all normal conditions double precision should be used. Single precision should make the code run faster, but somehow does not. Hence, single precision does not provide any advantage at the moment.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">realtime</span> <span class="pre">plotting</span> <span class="pre">(yes,</span> <span class="pre">no,</span> <span class="pre">number)</span></code></div></blockquote>
+<p>Determines wether realtime plotting is shown during the iterative run. The output interval can be manually specified.</p>
+<p><strong>GRID</strong></p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">isothermal</span> <span class="pre">layers</span> <span class="pre">(yes,</span> <span class="pre">no)</span></code></div></blockquote>
+<p>Determines whether the model uses a constant temperature across each layer (=isothermal layers) or expands the Planck function to first order (=non-isothermal layers). Usually for the temperature iteration non-isothermal layers are recommended, whereas for pure post-processing purposes isothermal layers are sufficient.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">number</span> <span class="pre">of</span> <span class="pre">layers</span> <span class="pre">(typically</span> <span class="pre">50</span> <span class="pre">-</span> <span class="pre">200)</span></code></div></blockquote>
+<p>Sets the number of vertical layers in the grid. Usually having 10 layers per magnitude in pressure provides a reasonable compromise between accuracy and computational effort.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">TOA</span> <span class="pre">pressure</span> <span class="pre">[10^-6</span> <span class="pre">bar]</span> <span class="pre">(typically</span> <span class="pre">1)</span></code></div></blockquote>
+<p>The pressure value at the topmost simulated atmospheric layer.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">BOA</span> <span class="pre">pressure</span> <span class="pre">[10^-6</span> <span class="pre">bar]</span> <span class="pre">(typically</span> <span class="pre">1e9)</span></code></div></blockquote>
+<p>The pressure value at the bottommost simulated atmospheric layer. The model construct a grid between the BOA and TOA pressures equidistant in log10 P.</p>
+<p><strong>ITERATION</strong></p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">post-processing</span> <span class="pre">only</span> <span class="pre">(yes,</span> <span class="pre">no)</span></code></div></blockquote>
+<p>Sets whether the model proceeds with the temperature iteration routine (“no”) or just propagates the fluxes once through the layers (“yes”). In the latter case, there is no iteration happening and the TP-profile needs to be provided. Setting this option to “yes” is typically used to produce a high resolution spectrum from a given TP-profile. If this value is set to “no”, the effective irradiated temperature of the planet is used initially.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">temperature</span> <span class="pre">file</span></code></div></blockquote>
+<p>Sets the path to the temperature file. This parameter is irrelevant if the option “restart temperatures” is set to “no”.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">temperature</span> <span class="pre">file</span> <span class="pre">format</span> <span class="pre">&amp;</span> <span class="pre">P</span> <span class="pre">unit</span> <span class="pre">(helios,</span> <span class="pre">TP,</span> <span class="pre">PT,</span> <span class="pre">TP</span> <span class="pre">bar,</span> <span class="pre">PT</span> <span class="pre">bar)</span></code></div></blockquote>
+<p>Sets the format of the temperature file. See <a class="reference internal" href="structure.html"><span class="doc">Structure</span></a> for more info.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">varying</span> <span class="pre">timestep</span> <span class="pre">(yes,</span> <span class="pre">no)</span></code></div></blockquote>
+<p>Determines whether the model uses a fixed timestep (“no”) or a varying, adaptive timestep (“yes”) to advance during the temperature iteration process. It is recommended to set this parameter always to “yes”. If “post-processing only” is set to “yes”, this parameter is irrelevant.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">timestep</span> <span class="pre">[s]</span> <span class="pre">(typically</span> <span class="pre">1e2</span> <span class="pre">-</span> <span class="pre">1e3)</span></code></div></blockquote>
+<p>Sets the length of the fixed timestep. This parameter is irrelevant if “varying timestep” is set to “yes”.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">adaptive</span> <span class="pre">interval</span> <span class="pre">(6,</span> <span class="pre">20)</span></code></div></blockquote>
+<p>Sets the interval in numerical forward steps which is used between consequent adaptive adjustments of the stepping length. A value of 20 is the conservative safe choice for a stable algorithm. Smaller values may result in convergence issues, but also speed up the iteration.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">TP-profile</span> <span class="pre">smoothing</span> <span class="pre">(yes,</span> <span class="pre">no)</span></code></div></blockquote>
+<p>Determines whether a TP-profile smoothing is applied during the iteration. This smoothing prevents large temperature jumps between adjacent layers. In rare cases the smoothing may cause convergence issues. For debugging switch off this option, otherwise it can remain activated.</p>
+<p><strong>RADIATION</strong></p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">direct</span> <span class="pre">irradiation</span> <span class="pre">beam</span> <span class="pre">(yes,</span> <span class="pre">no)</span></code></div></blockquote>
+<p>Includes a separate irradiation beam for the stellar flux at a certain zenith angle (set later). Otherwise, the stellar flux is isotropic and treated by the diffuse flux equations. For the description of average hemispheric conditions this can be switched off.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">scattering</span> <span class="pre">(yes,</span> <span class="pre">no)</span></code></div></blockquote>
+<p>Determines whether gas (Rayleigh) scattering is used.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">imp.</span> <span class="pre">scattering</span> <span class="pre">corr.</span> <span class="pre">(yes,</span> <span class="pre">no)</span></code></div></blockquote>
+<p>Includes the scattering correction of <a class="reference external" href="http://adsabs.harvard.edu/abs/2018ApJS..237...29H">Heng et al. 2018</a>. This option should generally be on.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">opacity</span> <span class="pre">file</span></code></div></blockquote>
+<p>Sets the path to the opacity table file. For more info on the format of this file see <a class="reference internal" href="structure.html"><span class="doc">Structure</span></a>.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">opacity</span> <span class="pre">format</span> <span class="pre">(ktable,</span> <span class="pre">sampling)</span></code></div></blockquote>
+<p>Determines whether the opacity values, which are read in, are treated as k-coefficients or standard opacity values per wavelength.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">diffusivity</span> <span class="pre">factor</span> <span class="pre">(typically</span> <span class="pre">1.5</span> <span class="pre">-</span> <span class="pre">2)</span></code></div></blockquote>
+<p>Sets the value of the diffusivity factor. If you are not sure, pick 2.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">f</span> <span class="pre">factor</span> <span class="pre">(typically</span> <span class="pre">0.25</span> <span class="pre">-</span> <span class="pre">1)</span></code></div></blockquote>
+<p>The f factor determines the heat redistribution efficiency in the atmosphere. For day-side emission spectra one typically assumes f = 2/3 = 0.6667 or 0.5. For no redistribution (substellar point) f = 1 and for a full/global redistribution f = 0.25. This option is irrelevant if a direct irradiation beam is used.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">internal</span> <span class="pre">temperature</span> <span class="pre">[K]</span> <span class="pre">(typically</span> <span class="pre">0</span> <span class="pre">-</span> <span class="pre">300</span> <span class="pre">for</span> <span class="pre">irrad.</span> <span class="pre">planets)</span></code></div></blockquote>
+<p>The internal temperature determines the strength of the internal heating. In this case the internal heat is modeled as blackbody ration with the internal temperature. If internal heating is negligible on the resulting spectrum (e.g. strongly irradiated planets) it is safe to assume this parameter as zero.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">asymmetry</span> <span class="pre">factor</span> <span class="pre">g_0</span> <span class="pre">(in</span> <span class="pre">range</span> <span class="pre">[-1,</span> <span class="pre">1])</span></code></div></blockquote>
+<p>Determines the scattering orientation. As Rayleigh scattering is mostly isotropic, it is recommended to choose zero. A positive value implies forward scattering and a negative value backward scattering.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">energy</span> <span class="pre">budget</span> <span class="pre">correction</span> <span class="pre">(yes,</span> <span class="pre">no)</span></code></div></blockquote>
+<p>Corrects for cut-off wavelengths in the total incoming flux. Due to the lower bound of the wavelength range at 0.3 micron, the fraction of the external radiation at smaller wavelengths is not accounted for. This correction shifts all flux values to give the correct wavelength-integrated flux according to the Stefan-Boltzmann law.</p>
+<p><strong>CONVECTIVE ADJUSTMENT</strong></p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">convective</span> <span class="pre">adjustment</span> <span class="pre">(yes,</span> <span class="pre">no)</span></code></div></blockquote>
+<p>Switches convective adjustment on or off. If set to off, only radiative equilibrium is sought during the temperature iteration. If this option is activated, convective adjustment is applied after a radiative solution has been found. In this way the temperature profile in radiative-convective equilibrium is obtained.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">kappa</span> <span class="pre">value</span> <span class="pre">(value,</span> <span class="pre">file)</span></code></div></blockquote>
+<p>Sets manually a constant value to the adiabatic coefficient. For an ideal gas, the value is given by 2 / (2 + n), where n is the number of degrees of freedom for the gas particles. For diatomic particles n = 5. If “file” is set, pre-tabulated values are to be read from a file. See <a class="reference internal" href="structure.html"><span class="doc">Structure</span></a> for more info on the format of this file.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">entropy/kappa</span> <span class="pre">file</span> <span class="pre">path</span></code></div></blockquote>
+<p>Sets the path to the file with the tabulated adiabatic coefficient (and optionally the entropy).</p>
+<p><strong>ASTRONOMICAL PARAMETERS</strong></p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">planet</span> <span class="pre">(manual,</span> <span class="pre">pre-defined</span> <span class="pre">name)</span></code></div></blockquote>
+<p>The planetary parameters can be either specified manually or read in from a file. A sample file is provided with the installation. See <a class="reference internal" href="structure.html"><span class="doc">Structure</span></a> for more info.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">planet</span> <span class="pre">data</span> <span class="pre">file</span></code></div></blockquote>
+<p>Sets the path to the file with the planetary parameters.</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">surface</span> <span class="pre">gravity</span> <span class="pre">[cm</span> <span class="pre">s^-2]</span> <span class="pre">or</span> <span class="pre">[log10</span> <span class="pre">(cm</span> <span class="pre">s^-2)]</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">orbital</span> <span class="pre">distance</span> <span class="pre">[AU]</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">radius</span> <span class="pre">planet</span> <span class="pre">[R_Jup]</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">radius</span> <span class="pre">star</span> <span class="pre">[R_Sun]</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">temperature</span> <span class="pre">star</span> <span class="pre">[K]</span></code></p>
+</div></blockquote>
+<p>Manual entry for the planetary, stellar and orbital parameters. The stellar temperature is only relevant if “blackbody” is chosen for the stellar spectrum (next parameter).</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">spectral</span> <span class="pre">model</span> <span class="pre">(blackbody,</span> <span class="pre">HDF5</span> <span class="pre">data</span> <span class="pre">set)</span></code></div></blockquote>
+<p>Sets the model for the stellar irradiation. Simplest approach is to use a blackbody spectrum with the stellar temperature. For this choice no additional input is required. If a realistic stellar spectrum is desired, the spectrum needs to be provided in a HDF5 file with the correct format. A sample file is provided with the installation. See <a class="reference internal" href="structure.html"><span class="doc">Structure</span></a> for more info.</p>
+<p>Sets the stellar temperature.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">stellar</span> <span class="pre">spectrum</span> <span class="pre">file</span></code></div></blockquote>
+<p>Sets the path to the HDF5 file containing the stellar spectrum. If “blackbody” is chosen above, this parameter is irrelevant.</p>
+<p><strong>EXPERIMENTAL</strong></p>
+<p>These are several experimental options, which are under testing for functionality. For the moment these parameters can simply be ignored.</p>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo_l.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">GPU-accelerated radiative transfer code for exoplanetary atmospheres</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=exoclime&repo=helios&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Parameter File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ktable.html">k-Table Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code.html">Code Reference</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Matej Malik.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/sections/parameters.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -21,7 +21,6 @@
 #     <http://www.gnu.org/licenses/>.
 # ==============================================================================
 
-import math
 from astropy import constants as const
 
 

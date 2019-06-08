@@ -1,0 +1,182 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>k-Table Generator &#8212; HELIOS 2.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="License" href="license.html" />
+    <link rel="prev" title="Structure" href="structure.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="k-table-generator">
+<h1>k-Table Generator<a class="headerlink" href="#k-table-generator" title="Permalink to this headline">¶</a></h1>
+<p>This script called the “k-Table Generator” is a small tool to convert the HELIOS-K opacity output into opacity tables, which can be read in by HELIOS.</p>
+<p>To combine the individual opacities it further requires access to chemical abundances given by FastChem. Pre-generated HELIOS-K opacities may also be found <a class="reference external" href="https://chaldene.unibe.ch/">here</a>.</p>
+<div class="section" id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>The main program is run by typing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">ktable</span><span class="o">.</span><span class="n">dat</span>
+</pre></div>
+</div>
+<p>in the main directory. Additional source files (the “code”) are located in the source subdirectory, and some input files in the input directory. The output may come conveniently to the output directory. However, every path can modified in the parameter file <code class="docutils literal notranslate"><span class="pre">param_ktable.dat</span></code>. The parameters are described further below.</p>
+<p>The opacity table generation comes in <em>two stages</em>. In the first stage, opacity files for the individual absorbers are created from the HELIOS-K output. In the second stage, the individual opacities are weighted by the respective molecule’s equilibrium mixing ratio, determined by FastChem, and combined to the final mixed opacity table. This final product is then used in HELIOS.</p>
+</div>
+<div class="section" id="parameter-file">
+<h2>Parameter File<a class="headerlink" href="#parameter-file" title="Permalink to this headline">¶</a></h2>
+<p>The parameter file first contains the parameters setting the correct format of the opacities.</p>
+<p><code class="docutils literal notranslate"><span class="pre">format</span> <span class="pre">(ktable,</span> <span class="pre">sampling)</span></code></p>
+<p>This determines whether k-distribution tables (ktable) or tables with per-wavelength opacities (sampling) shall be created during the first stage of the process.</p>
+<p><code class="docutils literal notranslate"><span class="pre">individual</span> <span class="pre">species</span> <span class="pre">calculation</span> <span class="pre">(yes,</span> <span class="pre">no)</span></code></p>
+<p>Sets whether the files for individual species shall be calculated (aka the first stage of the process). If starting from the HELIOS-K output, this should be set to “yes”. If the individual files have already been generated, this step can be skipped with a “no”.</p>
+<p><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">HELIOS-K</span> <span class="pre">output</span></code></p>
+<p>Sets the path to the HELIOS-K output directory. The individual “cbin” files can be in subdirectories. This parameter is <strong>only relevant in the “ktable” setting</strong>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">sampling</span> <span class="pre">param</span> <span class="pre">file</span></code></p>
+<p>Sets the path to the files which lists all the species and their respective paths for the sampling calculation.</p>
+<p><code class="docutils literal notranslate"><span class="pre">sampling</span> <span class="pre">wavelength</span> <span class="pre">grid</span> <span class="pre">(R=3000,</span> <span class="pre">8k)</span></code></p>
+<p>Sets the wavelength grid to be used for the opacity downsampling process. At the moment only two choices exist. “R=3000” creates a wavelength grid with a constant resolution of 3000 across the whole range. This grid has around 13‘000 wavelength points between 0.34 micron and 30 micron. In contrast “8k” creates a wavelength grid with a focus on the near-infrared regime. It contains around 8000 points and ranges from 0.33 micron to 200 micron.  It is recommed to use the “R=3000” setting. Other wavelength grids can be defined in the <code class="docutils literal notranslate"><span class="pre">build_opac_sampling.py</span></code> if desired.</p>
+<p><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">sampling</span> <span class="pre">output</span></code></p>
+<p>This sets the path to the individual opacity tables, created in stage one.</p>
+<p><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">species</span> <span class="pre">file</span></code></p>
+<p>Sets the file containing the species included in the final mixed table.</p>
+<p><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">FastChem</span> <span class="pre">output</span></code></p>
+<p>Sets the path to the FastChem output. In the current version the output needs to come in two files named <code class="docutils literal notranslate"><span class="pre">chem_high.dat</span></code> and <code class="docutils literal notranslate"><span class="pre">chem_low.dat</span></code>, containing the chemical abundance for a temperature pressure grid, whereas the first file contains the higher temperature regime and the second one the lower temperatures. Preferably, the grid structure [p + n_p * t] is used. (This will be made more user-friendly in a future update.)</p>
+<p>As reference, I use a grid in P=[1e-6,1e3,Delta_P=1/3dex] and T=[100, 6000, Delta_T=100].</p>
+<p><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">final</span> <span class="pre">output</span> <span class="pre">(mixed</span> <span class="pre">ktable)</span></code></p>
+<p>Sets the path to the final mixed opacity table and corresponding temporary and info files.</p>
+<p>Note: Many temporary files are being generated to save intermediate calculations, e.g., the weighted opacities weighted by the mixing ratios. This allows for a large speed-up the next time the same species and abundances are employed.</p>
+</div>
+<div class="section" id="input-files">
+<h2>Input Files<a class="headerlink" href="#input-files" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">species_for_sampling.dat</span></code></p>
+<p>This lists the species to be used in the sampling calculation. Depending on their location either Opacity2 or Opacity3 will determine the correct file format by the program. The first column is the name of the species. It can be chosen theoretically at will, but it is recommended to chose the usual chemical notation.</p>
+<p><code class="docutils literal notranslate"><span class="pre">species_for_final_output.dat</span></code></p>
+<p>This lists the species to be included in the final mixed opacity table. Their name must be equal to the name chosen for the individual sampling. The FastChem name further allows the program to find the correct abundances in the FastChem output. Finally the program needs the mass of the species to convert from volume to mass mixing ratios.</p>
+<p>Reference input files are provided with the installation.</p>
+</div>
+<div class="section" id="ktable-vs-sampling">
+<h2>ktable vs sampling<a class="headerlink" href="#ktable-vs-sampling" title="Permalink to this headline">¶</a></h2>
+<p><strong>ktable</strong></p>
+<p>If the first parameter in <code class="docutils literal notranslate"><span class="pre">param_ktable.dat</span></code> is set to “ktable”, the program will calculate the k-distribution tables for the individual species, using the Chebyshev coefficients from the HELIOS-K output. For this it needs to access the “cbin” files containing the Chebyshev coefficients. It will generature individual opacity containers with 20 Gaussian points per wavelength bin. This is required in HELIOS. The number of wavelength bins is given by the resolution of the “cbin” files. See the HELIOS-K ReadMe for more info on those. The species used in this process are simply are species present in the directory (or subdirectories) set in the parameter file.</p>
+<div class="figure" id="id1">
+<a class="reference internal image-reference" href="../_images/cbin_files.png"><img alt="map to buried treasure" src="../_images/cbin_files.png" style="width: 744.0px; height: 224.4px;" /></a>
+<p class="caption"><span class="caption-text"><em>Figure: cbin files produced by HELIOS-K.</em></span></p>
+</div>
+<p><strong>sampling</strong></p>
+<p>If set to “sampling”, the program will sample the opacity functions from HELIOS-K for individual species at the the wavelength grid, as specified in the parameter file. The species to be sampled are set in the <code class="docutils literal notranslate"><span class="pre">species_for_sampling.dat</span></code> file. The files should be located in the HELIOS-K output directories, e.g. as given the Opacity2 main directory.</p>
+<div class="figure" id="id2">
+<a class="reference internal image-reference" href="../_images/Opacity2.png"><img alt="map to buried treasure" src="../_images/Opacity2.png" style="width: 510.0px; height: 454.8px;" /></a>
+<p class="caption"><span class="caption-text"><em>Figure: Directory with calculated opacities by HELIOS-K. This is a good input for the opacity table generation using the “sampling” method.</em></span></p>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo_l.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">GPU-accelerated radiative transfer code for exoplanetary atmospheres</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=exoclime&repo=helios&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">Structure</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">k-Table Generator</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parameter-file">Parameter File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#input-files">Input Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ktable-vs-sampling">ktable vs sampling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code.html">Code Reference</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Matej Malik.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/sections/ktable.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

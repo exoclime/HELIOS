@@ -35,75 +35,95 @@ class Compute(object):
         self.kernels = self.kernel_file.read()
         self.mod = SourceModule(self.kernels)
 
+    def calc_surface_planck(self, quant):
+        """ calculates the planck function of the surface temperature """
+
+        surf_planck = self.mod.get_function("calc_surface_planck")
+
+        surf_planck(quant.dev_planckband_lay,
+                    quant.dev_opac_interwave,
+                    quant.dev_opac_deltawave,
+                    quant.nbin,
+                    quant.nlayer,
+                    quant.T_surf,
+                    block=(16, 1, 1),
+                    grid=((int(quant.nbin) + 15) // 16, 1, 1)
+                    )
+
+        # surf_planck_sampling = self.mod.get_function("calc_surface_planck_sampling")
+        #
+        # surf_planck_sampling(quant.dev_planckband_lay,
+        #                      quant.dev_opac_wave,
+        #                      quant.nbin,
+        #                      quant.nlayer,
+        #                      quant.T_surf,
+        #                      block=(16, 1, 1),
+        #                      grid=((int(quant.nbin) + 15) // 16, 1, 1)
+        #                      )
+
+        cuda.Context.synchronize()
+
     def construct_planck_table(self, quant):
         """ constructs the Planck table """
 
-        if quant.opac_format == "ktable":
+        # constructs the planck table
+        plancktable = self.mod.get_function("plancktable")
 
-            # constructs the planck table
-            plancktable = self.mod.get_function("plancktable")
+        # iteration over smaller kernels instead of one big to prevent kernel timeouts.
+        for p_iter in range(0,10):
 
-            # iteration over smaller kernels instead of one big to prevent kernel timeouts.
-            for i in range(0,10):
+            plancktable(quant.dev_planckband_grid,
+                        quant.dev_opac_interwave,
+                        quant.dev_opac_deltawave,
+                        quant.nbin,
+                        quant.T_star,
+                        np.int32(p_iter),
+                        quant.plancktable_dim,
+                        quant.plancktable_step,
+                        block=(16, 16, 1),
+                        grid=((int(quant.nbin) + 15) // 16, (int(quant.plancktable_dim/10 + 1) + 15) // 16, 1)
+                        )
 
-                planck_iter = np.int32(i)
-                plancktable(quant.dev_planckband_grid,
-                            quant.dev_opac_interwave,
-                            quant.dev_opac_deltawave,
-                            quant.nbin,
-                            quant.T_star,
-                            quant.T_intern,
-                            planck_iter,
-                            block=(16, 16, 1),
-                            grid=((int(quant.nbin) + 15) // 16, (802 + 15) // 16, 1)
-                            )
-
-                cuda.Context.synchronize()
-
-        elif quant.opac_format == "sampling":
-
-            plancktable_sampling = self.mod.get_function("plancktable_sampling")
-
-            for i in range(0,10):
-
-                planck_iter = np.int32(i)
-                plancktable_sampling(quant.dev_planckband_grid,
-                                     quant.dev_opac_wave,
-                                     quant.nbin,
-                                     quant.T_star,
-                                     quant.T_intern,
-                                     planck_iter,
-                                     block=(16, 16, 1),
-                                     grid=((int(quant.nbin) + 15) // 16, (802 + 15) // 16, 1)
-                                     )
-
-                cuda.Context.synchronize()
+        cuda.Context.synchronize()
 
     def correct_incident_energy(self, quant):
         """ adjusts the incoming energy flux to obtain the correct brightness temperature of the planet"""
 
         if quant.energy_correction == 1:
 
-            if quant.opac_format == "ktable":
+            corr_inc_energy = self.mod.get_function("corr_inc_energy")
 
-                corr_inc_energy = self.mod.get_function("corr_inc_energy")
+            corr_inc_energy(quant.dev_planckband_grid,
+                            quant.dev_starflux,
+                            quant.dev_opac_deltawave,
+                            quant.real_star,
+                            quant.nbin,
+                            quant.T_star,
+                            quant.plancktable_dim,
+                            block=(16, 1, 1),
+                            grid=((int(quant.nbin) + 15) // 16, 1, 1)
+                            )
 
-                corr_inc_energy(quant.dev_planckband_grid,
-                                quant.dev_starflux,
-                                quant.dev_opac_deltawave,
-                                quant.real_star,
-                                quant.nbin,
-                                quant.T_star,
-                                quant.star_corr_factor,
-                                block=(16, 1, 1),
-                                grid=((int(quant.nbin) + 15) // 16, 1, 1)
-                                )
+            cuda.Context.synchronize()
 
-                cuda.Context.synchronize()
+    def correct_surface_emission(self, quant):
+        """ adjusts the surface flux to match the downward atmospheric flux"""
 
-            elif quant.opac_format == "sampling":
+        corr_surface_emission = self.mod.get_function("corr_surface_emission")
 
-                inp = input("Energy correction not possible for opacity sampling. Skipping this feature...\nAcknowledge by pressing a key.")
+        corr_surface_emission(quant.dev_F_down_tot,
+                              quant.dev_opac_deltawave,
+                              quant.dev_planckband_lay,
+                              quant.surf_albedo,
+                              quant.T_surf,
+                              quant.nbin,
+                              quant.nlayer,
+                              quant.iter_value,
+                              block=(16, 1, 1),
+                              grid=((int(quant.nbin) + 15) // 16, 1, 1)
+                              )
+
+        cuda.Context.synchronize()
 
     def construct_grid(self, quant):
         """ constructs the atmospheric grid """
@@ -120,7 +140,7 @@ class Compute(object):
                    quant.nlayer,
                    quant.g,
                    block=(16, 1, 1),
-                   grid=((int(quant.nlayer)+15)//16, 1, 1)
+                   grid=((int(quant.nlayer)+15) // 16, 1, 1)
                    )
 
         cuda.Context.synchronize()
@@ -134,7 +154,7 @@ class Compute(object):
                    quant.dev_T_int,
                    quant.ninterface,
                    block=(16, 1, 1),
-                   grid=((int(quant.ninterface)+15)//16, 1, 1)
+                   grid=((int(quant.ninterface)+15) // 16, 1, 1)
                    )
 
         cuda.Context.synchronize()
@@ -159,7 +179,7 @@ class Compute(object):
                       quant.fake_opac,
                       quant.nlayer,
                       block=(16, 16, 1),
-                      grid=((int(quant.nbin)+15)//16, (int(quant.nlayer)+15)//16, 1)
+                      grid=((int(quant.nbin)+15) // 16, (int(quant.nlayer)+15) // 16, 1)
                       )
 
         cuda.Context.synchronize()
@@ -225,8 +245,9 @@ class Compute(object):
 
         # changes kappa to correct format
         if quant.kappa_manual_value == "file":
-            quant.kappa_kernel_value = 0
-        quant.kappa_kernel_value = quant.fl_prec(quant.kappa_kernel_value)
+            quant.kappa_kernel_value = quant.fl_prec(0)
+        else:
+            quant.kappa_kernel_value = quant.fl_prec(quant.kappa_manual_value)
 
         kappa_interpol = self.mod.get_function("kappa_interpol")
         kappa_interpol(quant.dev_T_lay,
@@ -313,6 +334,9 @@ class Compute(object):
                               quant.real_star,
                               quant.nlayer,
                               quant.nbin,
+                              quant.T_surf,
+                              quant.plancktable_dim,
+                              quant.plancktable_step,
                               block=(16, 16, 1),
                               grid=((int(quant.nbin)+15)//16, (int(quant.nlayer+2)+15)//16, 1)
                               )
@@ -327,8 +351,10 @@ class Compute(object):
                                       quant.dev_planckband_grid,
                                       quant.ninterface,
                                       quant.nbin,
+                                      quant.plancktable_dim,
+                                      quant.plancktable_step,
                                       block=(16, 16, 1),
-                                      grid=((int(quant.nbin)+15)//16, (int(quant.ninterface+1)+15)//16, 1)
+                                      grid=((int(quant.nbin)+15)//16, (int(quant.ninterface)+15)//16, 1)
                                       )
 
         cuda.Context.synchronize()
@@ -571,6 +597,7 @@ class Compute(object):
                                  quant.w_0_limit,
                                  quant.dir_beam,
                                  quant.clouds,
+                                 quant.surf_albedo,
                                  block=(16, 16, 1),
                                  grid=((int(quant.nbin)+15)//16, (int(quant.ny)+15)//16, 1)
                                  )
@@ -616,6 +643,7 @@ class Compute(object):
                                     quant.delta_tau_limit,
                                     quant.dir_beam,
                                     quant.clouds,
+                                    quant.surf_albedo,
                                     quant.dev_trans_wg_upper,
                                     quant.dev_trans_wg_lower,
                                     block=(16, 16, 1),
@@ -696,6 +724,8 @@ class Compute(object):
                     quant.local_limit_rad_iter,
                     quant.adapt_interval,
                     quant.smooth,
+                    quant.plancktable_dim,
+                    quant.plancktable_step,
                     block=(16, 1, 1),
                     grid=((int(quant.nlayer)+15)//16, 1, 1)
                     )
@@ -752,15 +782,23 @@ class Compute(object):
             if quant.iter_value % 10 == 0:
                 start_loop.record()
 
+            # chunk for the calculation of surface emission
+            self.calc_surface_planck(quant)
+            if quant.iter_value > 0 == 0:
+                self.correct_surface_emission(quant)
+
             self.interpolate_temperatures(quant)
             self.interpolate_planck(quant)
 
             if quant.iter_value % 10 == 0:
 
-                if Vmod.V_iter_nr == 0:
+                if Vmod.V_coupling == 0:
                     self.interpolate_opacities_and_scattering_cross_sections(quant)
                     self.interpolate_meanmolmass(quant)
-                elif Vmod.V_iter_nr > 0:
+                elif Vmod.V_coupling == 1:
+                    if Vmod.V_iter_nr == 0:
+                        self.interpolate_opacities_and_scattering_cross_sections(quant)
+                        self.interpolate_meanmolmass(quant)
                     Vmod.interpolate_molecular_and_mixed_opac(quant)
                     Vmod.combine_to_mixed_opacities(quant)
                 self.interpolate_kappa(quant)
@@ -793,6 +831,15 @@ class Compute(object):
 
                 if quant.iter_value >= quant.foreplay:
 
+                    # chunk for the calculation of surface temperature
+                    quant.F_down_tot = quant.dev_F_down_tot.get()
+                    quant.F_up_tot = quant.dev_F_up_tot.get()
+                    quant.F_net = quant.dev_F_net.get()
+                    quant.p_int = quant.dev_p_int.get()
+                    hsfunc.calc_surf_temperature(quant)
+                    quant.dev_F_up_tot = gpuarray.to_gpu(quant.F_up_tot)
+                    quant.dev_F_net = gpuarray.to_gpu(quant.F_net)
+
                     # radiative temperature progression
                     self.rad_temp_iteration(quant)
 
@@ -817,7 +864,7 @@ class Compute(object):
                         rt_plot.plot_tp(quant)
 
                 # records the time needed for 10 loops
-                if (quant.iter_value-1) % 10 == 9:
+                if quant.iter_value % 10 == 9:
                     end_loop.record()
                     end_loop.synchronize()
                     time_loop = start_loop.time_till(end_loop)
@@ -840,7 +887,7 @@ class Compute(object):
         print("\nTime for radiative iteration [s]: {:.2f}".format(time_total * 1e-3))
         print("Total number of iterative steps: "+str(quant.iter_value))
 
-    def convection_loop(self, quant, write, rt_plot):
+    def convection_loop(self, quant, write, rt_plot, Vmod):
         """ loops interchangeably through the radiative and convection schemes """
 
         # kappa is required for the conv. instability check
@@ -871,7 +918,7 @@ class Compute(object):
                 end_loop = cuda.Event()
                 print("\nConvectively unstable layers found. Starting convective adjustment")
             else:
-                print("All layers convectively stable. No convective adjustment necessary.\n")
+                print("\nAll layers convectively stable. No convective adjustment necessary.\n")
 
             # quantities required on the host for the first convective adjustment
             quant.F_net = quant.dev_F_net.get()
@@ -887,7 +934,13 @@ class Compute(object):
 
                 # start with the convective adjustment and then recalculate the rad. fluxes, go back to conv. adjustment, then rad. fluxes, etc.
                 self.interpolate_temperatures(quant)
-                self.interpolate_meanmolmass(quant)
+
+                if Vmod.V_coupling == 0:
+                    self.interpolate_meanmolmass(quant)
+                elif Vmod.V_coupling == 1:
+                    if Vmod.V_iter_nr == 0:
+                        self.interpolate_meanmolmass(quant)
+
                 self.interpolate_kappa(quant)
                 self.calculate_c_p(quant)
                 quant.kappa_lay = quant.dev_kappa_lay.get()
@@ -897,11 +950,22 @@ class Compute(object):
                 hsfunc.convective_adjustment(quant)
                 quant.dev_T_lay = gpuarray.to_gpu(quant.T_lay)
 
+                # chunk for the calculation of surface emission
+                self.calc_surface_planck(quant)
+                self.correct_surface_emission(quant)
+
                 self.interpolate_temperatures(quant)
-                self.interpolate_opacities_and_scattering_cross_sections(quant)
-                self.interpolate_meanmolmass(quant)
-                self.interpolate_kappa(quant)
-                self.calculate_c_p(quant)
+
+                if Vmod.V_coupling == 0:
+                    self.interpolate_opacities_and_scattering_cross_sections(quant)
+                    self.interpolate_meanmolmass(quant)
+                elif Vmod.V_coupling == 1:
+                    if Vmod.V_iter_nr == 0:
+                        self.interpolate_opacities_and_scattering_cross_sections(quant)
+                        self.interpolate_meanmolmass(quant)
+                    Vmod.interpolate_molecular_and_mixed_opac(quant)
+                    Vmod.combine_to_mixed_opacities(quant)
+
                 self.normalize_cloud_scattering(quant)
                 self.interpolate_planck(quant)
                 self.calculate_transmission(quant)
@@ -919,24 +983,28 @@ class Compute(object):
                 quant.F_down_tot = quant.dev_F_down_tot.get()
                 quant.F_up_tot = quant.dev_F_up_tot.get()
                 quant.F_net_diff = quant.dev_F_net_diff.get()
-                quant.kappa_lay = quant.dev_kappa_lay.get()
-                quant.kappa_int = quant.dev_kappa_int.get()
 
                 # mark layers where convection is dominant // used by realtime net flux plotting
                 quant.T_lay = quant.dev_T_lay.get()
 
+                # required for convective mark-up
+                self.interpolate_kappa(quant)
+                self.calculate_c_p(quant)
+                quant.kappa_lay = quant.dev_kappa_lay.get()
+                quant.kappa_int = quant.dev_kappa_int.get()
+
                 # mark convection zone. used by realtime plotting
                 hsfunc.mark_convective_layers(quant)
-                # hsfunc.radiative_adjustment(quant)
-                # if quant.iter_value % 50 == 0:
-                #     print("kick")
-                #     hsfunc.random_adjustment(quant)
-                #     quant.dev_T_lay = gpuarray.to_gpu(quant.T_lay)
+
+                # chunk for the calculation of surface temperature
+                hsfunc.calc_surf_temperature(quant)
+                quant.dev_F_up_tot = gpuarray.to_gpu(quant.F_up_tot)
+                quant.dev_F_net = gpuarray.to_gpu(quant.F_net)
 
                 # checks whether to continue the loop
                 condition = not(hsfunc.check_for_global_local_equilibrium(quant)) or quant.iter_value < 100
 
-                # the following only if loop continues
+                # radiative forward stepping if local flux criterium not satisfied
                 if condition:
 
                     # realtime plotting every 10th step
@@ -958,7 +1026,7 @@ class Compute(object):
                     quant.iter_value += 1
                     quant.iter_value = np.int32(quant.iter_value)
 
-                # time restriction for the run. It aborts automatically after the following timesteps and thus prevents a hung job.
+                # time restriction for the run. It aborts automatically after the following timesteps and thus prevents a hung up job.
                 if quant.iter_value > 2e4:
 
                     write.write_abort_file(quant)
@@ -1076,6 +1144,21 @@ class Compute(object):
                        )
 
         cuda.Context.synchronize()
+
+    def integrate_beamflux(self, quant):
+        """ integrates the spectral direct beam flux first over each bin and then the whole spectral range """
+
+        integrate_flux = self.mod.get_function("integrate_beamflux")
+
+        integrate_flux(quant.dev_F_dir_tot,
+                       quant.dev_F_dir_band,
+                       quant.dev_opac_deltawave,
+                       quant.dev_gauss_weight,
+                       quant.nbin,
+                       quant.ninterface,
+                       block=(16, 1, 1),
+                       grid=((int(quant.ninterface)+15)//16, 1, 1)
+                       )
 
 if __name__ == "__main__":
     print("This module is for computational purposes. It is the working horse of the whole code.")
