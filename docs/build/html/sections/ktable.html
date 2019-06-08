@@ -44,51 +44,49 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">ktable</span><span class="o">.</span><span class="n">dat</span>
 </pre></div>
 </div>
-<p>in the main directory. Additional source files (the “code”) are located in the source subdirectory, and some input files in the input directory. The output may come conveniently to the output directory. However, every path can modified in the parameter file <code class="docutils literal notranslate"><span class="pre">param_ktable.dat</span></code>. The parameters are described further below.</p>
-<p>The opacity table generation comes in <em>two stages</em>. In the first stage, opacity files for the individual absorbers are created from the HELIOS-K output. In the second stage, the individual opacities are weighted by the respective molecule’s equilibrium mixing ratio, determined by FastChem, and combined to the final mixed opacity table. This final product is then used in HELIOS.</p>
+<p>in the main directory. Additional source files (the “code”) are located in the source subdirectory, and additional input files in the input directory. The output goes per default to the output subdirectory. Note, every path can modified in the parameter file <code class="docutils literal notranslate"><span class="pre">param_ktable.dat</span></code>. Further parameters are described below.</p>
+<p>The opacity table generation comes in <em>two stages</em>. In the first stage, opacity files for each molecule are individually created from the HELIOS-K output. In the second stage, the individual opacities are weighted by the respective molecule’s equilibrium mixing ratio, determined by FastChem, and combined to the final mixed opacity table. This final pre-mixed opacity table is then used in HELIOS.</p>
 </div>
-<div class="section" id="parameter-file">
-<h2>Parameter File<a class="headerlink" href="#parameter-file" title="Permalink to this headline">¶</a></h2>
-<p>The parameter file first contains the parameters setting the correct format of the opacities.</p>
+<div class="section" id="parameter-file-and-input">
+<h2>Parameter File and Input<a class="headerlink" href="#parameter-file-and-input" title="Permalink to this headline">¶</a></h2>
+<p>The parameter file <code class="docutils literal notranslate"><span class="pre">param_ktable.dat</span></code> contains the parameters for the correct reading and writing of the opacities. The parameters are as follows.</p>
 <p><code class="docutils literal notranslate"><span class="pre">format</span> <span class="pre">(ktable,</span> <span class="pre">sampling)</span></code></p>
-<p>This determines whether k-distribution tables (ktable) or tables with per-wavelength opacities (sampling) shall be created during the first stage of the process.</p>
+<p>This determines the type of opacity tables at hand. Either k-distribution tables (ktable) or opacity sampling tables (=simple per-wavelength opacities) are possible.</p>
 <p><code class="docutils literal notranslate"><span class="pre">individual</span> <span class="pre">species</span> <span class="pre">calculation</span> <span class="pre">(yes,</span> <span class="pre">no)</span></code></p>
-<p>Sets whether the files for individual species shall be calculated (aka the first stage of the process). If starting from the HELIOS-K output, this should be set to “yes”. If the individual files have already been generated, this step can be skipped with a “no”.</p>
+<p>Sets whether the files for individual molecules should be calculated (aka the first stage of the process). If starting from the HELIOS-K output, this should be set to “yes”. If the individual files have already been generated previously and you simply want to combine the gases differently (e.g., different chemical abundances), set this to “no”.</p>
 <p><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">HELIOS-K</span> <span class="pre">output</span></code></p>
-<p>Sets the path to the HELIOS-K output directory. The individual “cbin” files can be in subdirectories. This parameter is <strong>only relevant in the “ktable” setting</strong>.</p>
+<p>Sets the path to the HELIOS-K output directory. The individual “cbin” files can be in subdirectories. This parameter is <strong>only considered in the “ktable” setting</strong>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">sampling</span> <span class="pre">param</span> <span class="pre">file</span></code></p>
-<p>Sets the path to the files which lists all the species and their respective paths for the sampling calculation.</p>
-<p><code class="docutils literal notranslate"><span class="pre">sampling</span> <span class="pre">wavelength</span> <span class="pre">grid</span> <span class="pre">(R=3000,</span> <span class="pre">8k)</span></code></p>
-<p>Sets the wavelength grid to be used for the opacity downsampling process. At the moment only two choices exist. “R=3000” creates a wavelength grid with a constant resolution of 3000 across the whole range. This grid has around 13‘000 wavelength points between 0.34 micron and 30 micron. In contrast “8k” creates a wavelength grid with a focus on the near-infrared regime. It contains around 8000 points and ranges from 0.33 micron to 200 micron.  It is recommed to use the “R=3000” setting. Other wavelength grids can be defined in the <code class="docutils literal notranslate"><span class="pre">build_opac_sampling.py</span></code> if desired.</p>
+<p>Sets the path to the file which lists all the species and their respective paths for the sampling calculation. This is usually the HELIOS-K output directory. Depending on their location, having either “Opacity2” or “Opacity3” in the path name will determine the correct file format to be read in by the program. The first column is the name of the species. It can be chosen theoretically at will, but it is recommended to choose the usual chemical notation.</p>
+<p><code class="docutils literal notranslate"><span class="pre">sampling</span> <span class="pre">wavelength</span> <span class="pre">grid</span> <span class="pre">(resolution,</span> <span class="pre">limits</span> <span class="pre">in</span> <span class="pre">micron</span> <span class="pre">[lower,</span> <span class="pre">upper])</span></code></p>
+<p>Sets the wavelength grid to be used for the opacity sampling process. Three numbers specify the sampling process. The first number sets the sampling resolution in wavelength. The second and third numbers give the lower and upper wavelength limits in micron, respectively. It is recommended to use something around “R=3000” for post-processing (spectrum generation) purposes.</p>
 <p><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">sampling</span> <span class="pre">output</span></code></p>
-<p>This sets the path to the individual opacity tables, created in stage one.</p>
+<p>Sets the path to the individual opacity files. Those files generated in stage 1 will appear in this directory.</p>
 <p><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">species</span> <span class="pre">file</span></code></p>
-<p>Sets the file containing the species included in the final mixed table.</p>
+<p>Sets the path to the file, which contains all the species to be included in the final mixed table. Their name must be equal to the name chosen for the individual sampling. The FastChem name further allows the program to find the correct abundances in the FastChem output. Finally the program needs the mass of the species to convert from volume to mass mixing ratios.</p>
 <p><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">FastChem</span> <span class="pre">output</span></code></p>
-<p>Sets the path to the FastChem output. In the current version the output needs to come in two files named <code class="docutils literal notranslate"><span class="pre">chem_high.dat</span></code> and <code class="docutils literal notranslate"><span class="pre">chem_low.dat</span></code>, containing the chemical abundance for a temperature pressure grid, whereas the first file contains the higher temperature regime and the second one the lower temperatures. Preferably, the grid structure [p + n_p * t] is used. (This will be made more user-friendly in a future update.)</p>
-<p>As reference, I use a grid in P=[1e-6,1e3,Delta_P=1/3dex] and T=[100, 6000, Delta_T=100].</p>
-<p><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">final</span> <span class="pre">output</span> <span class="pre">(mixed</span> <span class="pre">ktable)</span></code></p>
+<p>Sets the path to the FastChem output. In the current version the output needs to come in two files named <code class="docutils literal notranslate"><span class="pre">chem_high.dat</span></code> and <code class="docutils literal notranslate"><span class="pre">chem_low.dat</span></code>, containing the chemical abundance for a temperature pressure grid, whereas the first file contains the higher temperature regime and the second one the lower temperatures. The grid structure [p + n_p * t] is used. Check out the example file included in the input/chemistry subdirectory for reference. (This will be made more user-friendly in a future update.)</p>
+<p>As example, I used a grid in P=[1e-6,1e3,Delta_P=1/3dex] and T=[100, 6000, Delta_T=100] for my own calculations.</p>
+<p><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">condensation</span> <span class="pre">curves</span></code></p>
+<p>Sets the path to condensation curve data. Some species are removed from the gas phase if below their condensation (stability) curves. Those species are TiO, VO, SiO (due to MgSiO3), Na (due to Na2S) and K (due to KCl). The species removal procedure is described in detail in App. B of <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2019AJ....157..170M/">Malik et al. 2019</a>. Pre-calculated reference for solar abundances are provided with the installation.</p>
+<p><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">final</span> <span class="pre">output</span> <span class="pre">(mixed</span> <span class="pre">table)</span></code></p>
 <p>Sets the path to the final mixed opacity table and corresponding temporary and info files.</p>
-<p>Note: Many temporary files are being generated to save intermediate calculations, e.g., the weighted opacities weighted by the mixing ratios. This allows for a large speed-up the next time the same species and abundances are employed.</p>
+<p>Note: Many temporary files are being generated to save intermediate calculations, e.g., the weighted opacities weighted by the mixing ratios. This allows for a large speed-up the next time the same species and abundances are employed. These temporary files can be safely deleted, should they clog up too much storage space.</p>
 </div>
-<div class="section" id="input-files">
-<h2>Input Files<a class="headerlink" href="#input-files" title="Permalink to this headline">¶</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">species_for_sampling.dat</span></code></p>
-<p>This lists the species to be used in the sampling calculation. Depending on their location either Opacity2 or Opacity3 will determine the correct file format by the program. The first column is the name of the species. It can be chosen theoretically at will, but it is recommended to chose the usual chemical notation.</p>
-<p><code class="docutils literal notranslate"><span class="pre">species_for_final_output.dat</span></code></p>
-<p>This lists the species to be included in the final mixed opacity table. Their name must be equal to the name chosen for the individual sampling. The FastChem name further allows the program to find the correct abundances in the FastChem output. Finally the program needs the mass of the species to convert from volume to mass mixing ratios.</p>
-<p>Reference input files are provided with the installation.</p>
+<div class="section" id="sample-files-for-reference">
+<h2>Sample Files for Reference<a class="headerlink" href="#sample-files-for-reference" title="Permalink to this headline">¶</a></h2>
+<p>The installation comes with reference examples for all the required input files.</p>
 </div>
 <div class="section" id="ktable-vs-sampling">
 <h2>ktable vs sampling<a class="headerlink" href="#ktable-vs-sampling" title="Permalink to this headline">¶</a></h2>
 <p><strong>ktable</strong></p>
-<p>If the first parameter in <code class="docutils literal notranslate"><span class="pre">param_ktable.dat</span></code> is set to “ktable”, the program will calculate the k-distribution tables for the individual species, using the Chebyshev coefficients from the HELIOS-K output. For this it needs to access the “cbin” files containing the Chebyshev coefficients. It will generature individual opacity containers with 20 Gaussian points per wavelength bin. This is required in HELIOS. The number of wavelength bins is given by the resolution of the “cbin” files. See the HELIOS-K ReadMe for more info on those. The species used in this process are simply are species present in the directory (or subdirectories) set in the parameter file.</p>
+<p>If the first parameter in <code class="docutils literal notranslate"><span class="pre">param_ktable.dat</span></code> is set to “ktable”, the program will calculate the k-distribution tables for the individual species, using the Chebyshev coefficients from the HELIOS-K output. For this it needs to access the “cbin” files containing the Chebyshev coefficients. It will generature individual opacity containers with 20 Gaussian points per wavelength bin. This is required in HELIOS. The number of wavelength bins is given by the resolution of the “cbin” files. See the HELIOS-K ReadMe for more info on those. The species considered in this process are simply the species present in the directory (or subdirectories) set in the parameter file.</p>
 <div class="figure" id="id1">
 <a class="reference internal image-reference" href="../_images/cbin_files.png"><img alt="map to buried treasure" src="../_images/cbin_files.png" style="width: 744.0px; height: 224.4px;" /></a>
 <p class="caption"><span class="caption-text"><em>Figure: cbin files produced by HELIOS-K.</em></span></p>
 </div>
 <p><strong>sampling</strong></p>
-<p>If set to “sampling”, the program will sample the opacity functions from HELIOS-K for individual species at the the wavelength grid, as specified in the parameter file. The species to be sampled are set in the <code class="docutils literal notranslate"><span class="pre">species_for_sampling.dat</span></code> file. The files should be located in the HELIOS-K output directories, e.g. as given the Opacity2 main directory.</p>
+<p>If the first parameter in <code class="docutils literal notranslate"><span class="pre">param_ktable.dat</span></code> is set to “sampling”, the program will sample the opacity output from HELIOS-K at the wavelength grid, as specified in the parameter file and convert it into individual molecular opacity files. The species to be sampled are set in the “sampling param file” (see above). The files should be located in the HELIOS-K output directories, e.g. as given in the Opacity2 or Opacity3 directories on the University of Bern server.</p>
 <div class="figure" id="id2">
 <a class="reference internal image-reference" href="../_images/Opacity2.png"><img alt="map to buried treasure" src="../_images/Opacity2.png" style="width: 510.0px; height: 454.8px;" /></a>
 <p class="caption"><span class="caption-text"><em>Figure: Directory with calculated opacities by HELIOS-K. This is a good input for the opacity table generation using the “sampling” method.</em></span></p>
@@ -136,8 +134,8 @@
 <li class="toctree-l1"><a class="reference internal" href="structure.html">Structure</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">k-Table Generator</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting Started</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#parameter-file">Parameter File</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#input-files">Input Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parameter-file-and-input">Parameter File and Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sample-files-for-reference">Sample Files for Reference</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ktable-vs-sampling">ktable vs sampling</a></li>
 </ul>
 </li>

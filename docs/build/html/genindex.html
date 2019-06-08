@@ -60,6 +60,10 @@
       <li><a href="sections/code.html#quantities.Store.allocate_on_device">allocate_on_device() (quantities.Store method)</a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="sections/code.html#host_functions.approx_f_from_formula">approx_f_from_formula() (in module host_functions)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="C">C</h2>
@@ -173,6 +177,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="sections/code.html#host_functions.initial_temp">initial_temp() (in module host_functions)</a>
 </li>
+      <li><a href="sections/code.html#computation.Compute.integrate_beamflux">integrate_beamflux() (computation.Compute method)</a>
+</li>
       <li><a href="sections/code.html#computation.Compute.integrate_flux">integrate_flux() (computation.Compute method)</a>
 </li>
       <li><a href="sections/code.html#computation.Compute.integrate_optdepth_transmission">integrate_optdepth_transmission() (computation.Compute method)</a>
@@ -271,15 +277,17 @@
 </li>
       <li><a href="sections/code.html#read.Read.read_entropy_table">read_entropy_table() (read.Read method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="sections/code.html#Vcoupling_modification.Vcoupling.read_ind_molecule_opac">read_ind_molecule_opac() (Vcoupling_modification.Vcoupling static method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="sections/code.html#Vcoupling_modification.Vcoupling.read_layer_molecular_abundance">read_layer_molecular_abundance() (Vcoupling_modification.Vcoupling method)</a>
 </li>
       <li><a href="sections/code.html#Vcoupling_modification.Vcoupling.read_molecular_opacities">read_molecular_opacities() (Vcoupling_modification.Vcoupling method)</a>
 </li>
       <li><a href="sections/code.html#read.Read.read_opac_file">read_opac_file() (read.Read method)</a>
+</li>
+      <li><a href="sections/code.html#Vcoupling_modification.Vcoupling.read_or_create_iter_count">read_or_create_iter_count() (Vcoupling_modification.Vcoupling method)</a>
 </li>
       <li><a href="sections/code.html#read.Read.read_param_file">read_param_file() (read.Read method)</a>
 </li>
@@ -335,8 +343,6 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="sections/code.html#module-Vcoupling_modification">Vcoupling_modification (module)</a>
 </li>
-      <li><a href="sections/code.html#Vcoupling_modification.Vcoupling.Vrestart_file">Vrestart_file() (Vcoupling_modification.Vcoupling static method)</a>
-</li>
   </ul></td>
 </tr></table>
 
@@ -363,6 +369,8 @@
 </li>
       <li><a href="sections/code.html#write.Write.write_downward_spectral_flux">write_downward_spectral_flux() (write.Write static method)</a>
 </li>
+      <li><a href="sections/code.html#write.Write.write_flux_ratio_only">write_flux_ratio_only() (write.Write static method)</a>
+</li>
       <li><a href="sections/code.html#write.Write.write_g_0">write_g_0() (write.Write static method)</a>
 </li>
       <li><a href="sections/code.html#write.Write.write_info">write_info() (write.Write method)</a>
@@ -373,10 +381,10 @@
 </li>
       <li><a href="sections/code.html#write.Write.write_mean_werror">write_mean_werror() (write.Write static method)</a>
 </li>
-      <li><a href="sections/code.html#write.Write.write_opacities">write_opacities() (write.Write static method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="sections/code.html#write.Write.write_opacities">write_opacities() (write.Write static method)</a>
+</li>
       <li><a href="sections/code.html#write.Write.write_opt_depth">write_opt_depth() (write.Write static method)</a>
 </li>
       <li><a href="sections/code.html#write.Write.write_planck_center">write_planck_center() (write.Write static method)</a>
@@ -400,8 +408,6 @@
       <li><a href="sections/code.html#write.Write.write_tp_pure">write_tp_pure() (write.Write static method)</a>
 </li>
       <li><a href="sections/code.html#Vcoupling_modification.Vcoupling.write_tp_VULCAN">write_tp_VULCAN() (Vcoupling_modification.Vcoupling method)</a>
-</li>
-      <li><a href="sections/code.html#Vcoupling_modification.Vcoupling.write_tp_VULCAN_temp">write_tp_VULCAN_temp() (Vcoupling_modification.Vcoupling method)</a>
 </li>
       <li><a href="sections/code.html#write.Write.write_trans_weight_function">write_trans_weight_function() (write.Write static method)</a>
 </li>

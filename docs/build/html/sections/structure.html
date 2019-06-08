@@ -50,14 +50,14 @@
 </div>
 <div class="section" id="files">
 <h2>Files<a class="headerlink" href="#files" title="Permalink to this headline">¶</a></h2>
-<p>In the following the included files are briefly described. They are ordered from a user perspective from most to least interesting (from a developer perspective the order is probably exactly the other way around).</p>
+<p>In the following the included files are briefly described. They are ordered from a user perspective from most to least interesting (from a developer perspective the order is probably the other way around).</p>
 <ul class="simple">
 <li><code class="docutils literal notranslate"><span class="pre">param.dat</span></code>: the main parameter/configuration file. That’s the file altered on a daily basis. See the <a class="reference internal" href="parameters.html"><span class="doc">Parameter File</span></a> for more info.</li>
 <li><code class="docutils literal notranslate"><span class="pre">read.py</span></code>: contains the class and the methods responsible for reading data. Check here if you get “reading” errors.</li>
 <li><code class="docutils literal notranslate"><span class="pre">write.py</span></code>: contains the class and the methods responsible for reading data. Check here if you get “writing” errors or if you want to modify the written files.</li>
 <li><code class="docutils literal notranslate"><span class="pre">realtime_plotting.py</span></code>: contains the matplotlib script for the realtime plotting. Alter this if you don’t like the aesthetics.</li>
 <li><code class="docutils literal notranslate"><span class="pre">helios.py</span></code>: main run file. It calls the other files and exhibits the chronological workflow. This is the conductor of HELIOS.</li>
-<li><code class="docutils literal notranslate"><span class="pre">host_functions.py</span></code>: contains the functions and short scripts executed on the CPU (aka host). If you want to include a short feature, which is not computation-heavy, you probably want to dump it here.</li>
+<li><code class="docutils literal notranslate"><span class="pre">host_functions.py</span></code>: contains the functions and short scripts executed on the CPU (aka host). If you want to include a short feature, which is not computation-heavy, you probably want to include it here.</li>
 <li><code class="docutils literal notranslate"><span class="pre">quantities.py</span></code>: contains all scalar variables and arrays. It is responsible for data management, like copying arrays between the host and the device (GPU), and allocating memory.</li>
 <li><code class="docutils literal notranslate"><span class="pre">computation.py</span></code>: calls and co-ordinates the device kernels, i.e., functions living on the GPU. This is the brain of HELIOS.</li>
 <li><code class="docutils literal notranslate"><span class="pre">kernels.cu</span></code>: contains the detailed computations, executed on the device. This is the workhorse of HELIOS.</li>
@@ -70,7 +70,7 @@
 <p>The following input is required to be present and needs to be in the correct format.</p>
 <div class="section" id="opacity-table">
 <h3>opacity table<a class="headerlink" href="#opacity-table" title="Permalink to this headline">¶</a></h3>
-<p>The opacity table is best produced with the k-table generator program, using the output of HELIOS-K. If you want to use your own opacity table, the following format needs to met.</p>
+<p>The opacity table is best produced with the k-table generator program, using the output of HELIOS-K. If you want to use your own opacity table, the following format needs to met. First of all, it needs to be in HDF5 format. See <a class="reference external" href="http://www.h5py.org/">h5py</a> or <a class="reference external" href="https://www.hdfgroup.org/">HDF5</a> for more info on this format and how to use it.</p>
 <p>The opacity table may come in two versions. For the temperature iteration, the k-distribution method. The integration over one wavelength bin is performed via Gaussian quadrature. For pure-postprocessing an opacity table is used in pure opacity sampling format, i.e., one opacity value per wavelength.</p>
 <hr class="docutils" />
 <p>In both cases, the opacity table has to come as HDF5 file with the following datasets:</p>
@@ -154,6 +154,35 @@ The standard output of HELIOS may also be used as an input profile.</p>
 <p><em>This feature is still in development. Thank you for your patience.</em></p>
 </div>
 </div>
+<div class="section" id="command-line-options">
+<h2>Command Line Options<a class="headerlink" href="#command-line-options" title="Permalink to this headline">¶</a></h2>
+<p>In addition to the parameter file, the most important parameters can also be set as command line options or console arguments. These options are</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>-name:                  name of output
+-isothermal:            isothermal layers?
+-postprocess:           pure post-processing?
+-nlayers:               number of layers in the grid
+-plot:                  realtime plotting?
+-ptoa:                  pressure at the TOA
+-pboa:                  pressure at the BOA
+-temperaturepath:       path to the temperature file
+-opacitypath:           path to the opacity table file
+-energycorrection:      include correction for global incoming energy?
+-tintern:               internal flux temperature [K]
+-angle:                 zenith angle measured from the vertical [deg]
+-planet:                name of the planet (manual or entry in planet data file)
+-g:                     surface gravity [cm s^-2]
+-a:                     orbital distance [AU]
+-rstar:                 stellar radius [R_sun]
+-tstar:                 stellar temperature [K]
+-f:                     f heat redistribution factor
+-star:                  spectral model of the star
+-kappa:                 adiabatic coefficient, kappa = (ln T / ln P)_S
+-Vfile:                 path to the file with VULCAN mixing ratios
+-Viter:                 VULCAN coupling iteration step nr.
+-tau_lw:                longwave optical depth (used for f approximation)
+</pre></div>
+</div>
+</div>
 <div class="section" id="output">
 <h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
 <p>The output files should be self-explanatory. If not, additional information will be given here (later).</p>
@@ -202,6 +231,7 @@ The standard output of HELIOS may also be used as an input profile.</p>
 <li class="toctree-l2"><a class="reference internal" href="#files">Files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#mandatory-input">Mandatory Input</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#optional-input">Optional Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#command-line-options">Command Line Options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#output">Output</a></li>
 </ul>
 </li>

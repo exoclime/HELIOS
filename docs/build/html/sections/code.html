@@ -184,6 +184,12 @@
 </dd></dl>
 
 <dl class="staticmethod">
+<dt id="write.Write.write_flux_ratio_only">
+<em class="property">static </em><code class="descname">write_flux_ratio_only</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_flux_ratio_only" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes only the planetary and stellar flux ratio to a file, e.g., to be readable by Pandexo</p>
+</dd></dl>
+
+<dl class="staticmethod">
 <dt id="write.Write.write_g_0">
 <em class="property">static </em><code class="descname">write_g_0</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#write.Write.write_g_0" title="Permalink to this definition">¶</a></dt>
 <dd><p>writes the asymmetry paramater values to a file.</p>
@@ -347,7 +353,7 @@
 
 <dl class="method">
 <dt id="computation.Compute.convection_loop">
-<code class="descname">convection_loop</code><span class="sig-paren">(</span><em>quant</em>, <em>write</em>, <em>rt_plot</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.convection_loop" title="Permalink to this definition">¶</a></dt>
+<code class="descname">convection_loop</code><span class="sig-paren">(</span><em>quant</em>, <em>write</em>, <em>rt_plot</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.convection_loop" title="Permalink to this definition">¶</a></dt>
 <dd><p>loops interchangeably through the radiative and convection schemes</p>
 </dd></dl>
 
@@ -361,6 +367,12 @@
 <dt id="computation.Compute.correct_surface_emission">
 <code class="descname">correct_surface_emission</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.correct_surface_emission" title="Permalink to this definition">¶</a></dt>
 <dd><p>adjusts the surface flux to match the downward atmospheric flux</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="computation.Compute.integrate_beamflux">
+<code class="descname">integrate_beamflux</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.integrate_beamflux" title="Permalink to this definition">¶</a></dt>
+<dd><p>integrates the spectral direct beam flux first over each bin and then the whole spectral range</p>
 </dd></dl>
 
 <dl class="method">
@@ -427,6 +439,12 @@ plus stellar and internal blackbody</p>
 </dd></dl>
 
 <span class="target" id="module-host_functions"></span><dl class="function">
+<dt id="host_functions.approx_f_from_formula">
+<code class="descclassname">host_functions.</code><code class="descname">approx_f_from_formula</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.approx_f_from_formula" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the f redistribution factor from the approximative formula from Koll et al. in prep.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="host_functions.calc_F_intern">
 <code class="descclassname">host_functions.</code><code class="descname">calc_F_intern</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.calc_F_intern" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculates the internal flux</p>
@@ -576,7 +594,7 @@ plus stellar and internal blackbody</p>
 
 <dl class="method">
 <dt id="quantities.Store.copy_host_to_device">
-<code class="descname">copy_host_to_device</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#quantities.Store.copy_host_to_device" title="Permalink to this definition">¶</a></dt>
+<code class="descname">copy_host_to_device</code><span class="sig-paren">(</span><em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#quantities.Store.copy_host_to_device" title="Permalink to this definition">¶</a></dt>
 <dd><p>copies relevant host arrays to device</p>
 </dd></dl>
 
@@ -598,12 +616,6 @@ plus stellar and internal blackbody</p>
 <dt id="Vcoupling_modification.Vcoupling">
 <em class="property">class </em><code class="descclassname">Vcoupling_modification.</code><code class="descname">Vcoupling</code><a class="headerlink" href="#Vcoupling_modification.Vcoupling" title="Permalink to this definition">¶</a></dt>
 <dd><p>class that embodies everything needed to couple HELIOS and VULCAN</p>
-<dl class="staticmethod">
-<dt id="Vcoupling_modification.Vcoupling.Vrestart_file">
-<em class="property">static </em><code class="descname">Vrestart_file</code><span class="sig-paren">(</span><em>read</em>, <em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.Vrestart_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>reads the restart temperatures from file</p>
-</dd></dl>
-
 <dl class="method">
 <dt id="Vcoupling_modification.Vcoupling.combine_to_mixed_opacities">
 <code class="descname">combine_to_mixed_opacities</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.combine_to_mixed_opacities" title="Permalink to this definition">¶</a></dt>
@@ -630,7 +642,7 @@ plus stellar and internal blackbody</p>
 
 <dl class="staticmethod">
 <dt id="Vcoupling_modification.Vcoupling.read_ind_molecule_opac">
-<em class="property">static </em><code class="descname">read_ind_molecule_opac</code><span class="sig-paren">(</span><em>quant</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.read_ind_molecule_opac" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">read_ind_molecule_opac</code><span class="sig-paren">(</span><em>quant</em>, <em>name</em>, <em>read_grid_parameters=False</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.read_ind_molecule_opac" title="Permalink to this definition">¶</a></dt>
 <dd><p>reads the file with the opacity table</p>
 </dd></dl>
 
@@ -647,6 +659,12 @@ plus stellar and internal blackbody</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="Vcoupling_modification.Vcoupling.read_or_create_iter_count">
+<code class="descname">read_or_create_iter_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.read_or_create_iter_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes the TP-profile to a file</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="Vcoupling_modification.Vcoupling.test_coupling_convergence">
 <code class="descname">test_coupling_convergence</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.test_coupling_convergence" title="Permalink to this definition">¶</a></dt>
 <dd><p>test whether TP profile converged and ends coupled iteration</p>
@@ -655,12 +673,6 @@ plus stellar and internal blackbody</p>
 <dl class="method">
 <dt id="Vcoupling_modification.Vcoupling.write_tp_VULCAN">
 <code class="descname">write_tp_VULCAN</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.write_tp_VULCAN" title="Permalink to this definition">¶</a></dt>
-<dd><p>writes the TP-profile to a file</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="Vcoupling_modification.Vcoupling.write_tp_VULCAN_temp">
-<code class="descname">write_tp_VULCAN_temp</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.write_tp_VULCAN_temp" title="Permalink to this definition">¶</a></dt>
 <dd><p>writes the TP-profile to a file</p>
 </dd></dl>
 

@@ -36,7 +36,98 @@
             
   <div class="section" id="tutorial">
 <h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
-<p>Make sure that your working machine satisfies all of the requirements described in <a class="reference internal" href="requirements.html"><span class="doc">Requirements</span></a> before running HELIOS.</p>
+<p><strong>Dear ESP school participants, read below under sections “ESP Summer School 2019”.</strong></p>
+<p>Welcome! I assume this is the first time you are looking at HELIOS. Thus, I will guide you here in the most straightforward way towards the first run of the code on your machine. In order to keep the tutorial short and clear, in-depths explanations are omitted. Please refer to the appropriate sections in the in-depth documentation for more info.</p>
+<p>In the following I merely expect that you possess an NVIDIA GPU and are either on a Linux or Mac Os X system (sorry, Windows users. You are on your own).</p>
+<div class="section" id="step-by-step-installation">
+<h2>Step-by-step Installation<a class="headerlink" href="#step-by-step-installation" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Install the newest version of the CUDA toolkit from <a class="reference external" href="https://developer.nvidia.com/cuda-downloads">NVIDIA</a>. To ascertain a successful installation, type <code class="docutils literal notranslate"><span class="pre">which</span> <span class="pre">nvcc</span></code>. This should provide you with the location of the nvcc compiler. If not, something went wrong with the installation.</li>
+</ol>
+<blockquote>
+<div><p>Make sure that the library and program paths are exported. On Mac Os x you should have the following entries in your .bash_profile file (shown for version 10.0 of CUDA)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export PATH=/Developer/NVIDIA/CUDA-10.0/bin:$PATH
+export DYLD_LIBRARY_PATH=/Developer/NVIDIA/CUDA-10.0/lib:$DYLD_LIBRARY_PATH
+</pre></div>
+</div>
+<p>On a Linux machine you should have the following entries</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export PATH=/usr/local/cuda-10.0/bin:$PATH
+export DYLD_LIBRARY_PATH=/usr/local/cuda-10.0/lib:$DYLD_LIBRARY_PATH
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic" start="2">
+<li><p class="first">Now we set up Python. Most straightforward is to download and install the Anaconda package as it contains most of the required libraries already. Get it from <a class="reference external" href="https://www.anaconda.com/distribution/#download-section">here</a>. Pick Python version 3.x. Also, the command line installer is better if you are installing it on a remote server.</p>
+</li>
+<li><p class="first">Now we set up a virtual environment for Python. In a terminal or shell window type</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">MyBubble</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<blockquote>
+<div><p>where MyBubble is just a naming suggestion. Type</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">MyBubble</span>
+</pre></div>
+</div>
+<p>to activate the environment. Then we need to uninstall and reinstall pycuda package (the pre-installated version does not work usually). Type</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">uninstall</span> <span class="n">pycuda</span>
+</pre></div>
+</div>
+<p>(type yes, when asked) and then type</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pycuda</span>
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic" start="4">
+<li><p class="first">Now we get Helios from its Github repository by typing</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">exoclime</span><span class="o">/</span><span class="n">HELIOS</span><span class="o">.</span><span class="n">git</span> <span class="n">helios</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<blockquote>
+<div><p>The last “helios” is the name of the directory to be created.</p>
+<p>Congratulations, you have successfully installed HELIOS!</p>
+</div></blockquote>
+</div>
+<div class="section" id="esp-summer-school-2019">
+<h2>ESP Summer School 2019<a class="headerlink" href="#esp-summer-school-2019" title="Permalink to this headline">¶</a></h2>
+<p>Everything is pre-installed on Hulk for your convenience. To run HELIOS, simply go to the main directory, as was shared with you. Type</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">srun</span> <span class="o">--</span><span class="n">gres</span><span class="o">=</span><span class="n">gpu</span><span class="p">:</span><span class="mi">1</span> <span class="o">--</span><span class="n">x11</span> <span class="n">python3</span> <span class="n">helios</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Voilà! Please continue with reading section “First Run” (ignore first instruction).</p>
+</div>
+<div class="section" id="first-run">
+<h2>First Run<a class="headerlink" href="#first-run" title="Permalink to this headline">¶</a></h2>
+<p>Go to the HELIOS main directory and type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">helios</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>HELIOS is pre-configured to conduct a generic run of the hot Jupiter HD 189733b. If HELIOS ran successfully, you should be now in possession of the dayside temperature profile in radiative-convective equilibrium and the corresponding emission and secondary eclipse spectra of this planet. Feel free to explore the <code class="docutils literal notranslate"><span class="pre">output</span></code> directory.</p>
+<p>For a first quick analysis of your output, the installation includes two plotting scripts <code class="docutils literal notranslate"><span class="pre">plot_tp.py</span></code> and <code class="docutils literal notranslate"><span class="pre">plot_spectrum.py</span></code>, located in the <code class="docutils literal notranslate"><span class="pre">tools</span></code> subdirectory. Those scripts allow you to inspect your very first generated temperature-profile profile and emission spectrum. Well done! You can now go on and modify the parameters in the <code class="docutils literal notranslate"><span class="pre">param.dat</span></code> file or simulate another planet. Please refer to the rest of the documentation for more info.</p>
+<div class="section" id="id1">
+<h3>ESP Summer School 2019<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>To run the plotting scripts on Hulk, type</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">srun</span> <span class="o">--</span><span class="n">x11</span> <span class="n">python3</span> <span class="n">plot_tp</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>or <code class="docutils literal notranslate"><span class="pre">plot_spectrum.py</span></code>, respectively.</p>
+</div>
+</div>
+<div class="section" id="sample-files">
+<h2>Sample Files<a class="headerlink" href="#sample-files" title="Permalink to this headline">¶</a></h2>
+<p>In the <code class="docutils literal notranslate"><span class="pre">input</span></code> subdirectory, three sample files are included to help with the first runs of HELIOS.</p>
+<p><code class="docutils literal notranslate"><span class="pre">opac_sample.dat</span></code></p>
+<p>This is a sample file for the opacity table. It contains pre-calculated opacities for the main typical hot Jupiter (or brown dwarf) absorbers, pre-mixed with solar elemental abundances according to Asplund et al. 2009. The included absorbers are H2O, CO2, CO, CH4, NH3, HCN, C2H2, PH3, H2S and the CIA H2-H2, H2-He opacities. It also contains the Rayleigh cross-sections for H2, H, He and H2O. To keep the size of the table manageable, the opacities are sampled at a resolution of R=50 between 0.3 and 200 micron.</p>
+<p>Note, this table is good for obtaining a <em>first order estimate</em> of hot Jupiter (or brown dwarf) atmospheric temperatures and their spectra. For accurate results, a higher resolution with more absorbing species is recommended. See <a class="reference internal" href="ktable.html"><span class="doc">k-Table Generator</span></a> how to generate an own, improved opacity table.</p>
+<p>See <a class="reference external" href="http://www.h5py.org/">h5py</a> or <a class="reference external" href="https://www.hdfgroup.org/">HDF5</a> for more info on this format and how to use it.</p>
+<p><code class="docutils literal notranslate"><span class="pre">stellar_sample.dat</span></code></p>
+<p>This is a sample file on how to include a realistic stellar spectrum. As the opacity, this is in HDF5 format. Pre-set is the PHOENIX stellar spectrum of HD 189733. If you wish to employ an own spectrum, create a new data set analogously to the existing one. In order for HELIOS to work, the wavelength grid of the stellar spectrum needs to be consistent with the wavelength grid of the opacities.</p>
+<p><code class="docutils literal notranslate"><span class="pre">planet_data.dat</span></code></p>
+<p>Here you can save planetary parameters for later use, which can be loaded in the parameter files under the entry <code class="docutils literal notranslate"><span class="pre">planet</span></code>. Two planets are pre-saved, HD 198733b and WASP-43b (no guarantee for the correctness of the parameters). See <a class="reference internal" href="structure.html"><span class="doc">Structure</span></a>, section “planet parameters” for more info.</p>
+</div>
 </div>
 
 
@@ -74,7 +165,13 @@
 <li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
 <li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#step-by-step-installation">Step-by-step Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#esp-summer-school-2019">ESP Summer School 2019</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#first-run">First Run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sample-files">Sample Files</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="structure.html">Structure</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ktable.html">k-Table Generator</a></li>

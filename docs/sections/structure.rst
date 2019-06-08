@@ -21,7 +21,7 @@ The root (or parent, or main) directory contains the main HELIOS run file, and t
 Files
 -----
 
-In the following the included files are briefly described. They are ordered from a user perspective from most to least interesting (from a developer perspective the order is probably exactly the other way around).
+In the following the included files are briefly described. They are ordered from a user perspective from most to least interesting (from a developer perspective the order is probably the other way around).
 
 * ``param.dat``: the main parameter/configuration file. That's the file altered on a daily basis. See the :doc:`parameters` for more info.
 
@@ -33,7 +33,7 @@ In the following the included files are briefly described. They are ordered from
 
 * ``helios.py``: main run file. It calls the other files and exhibits the chronological workflow. This is the conductor of HELIOS.
 
-* ``host_functions.py``: contains the functions and short scripts executed on the CPU (aka host). If you want to include a short feature, which is not computation-heavy, you probably want to dump it here.
+* ``host_functions.py``: contains the functions and short scripts executed on the CPU (aka host). If you want to include a short feature, which is not computation-heavy, you probably want to include it here.
 
 * ``quantities.py``: contains all scalar variables and arrays. It is responsible for data management, like copying arrays between the host and the device (GPU), and allocating memory. 
 
@@ -53,7 +53,7 @@ The following input is required to be present and needs to be in the correct for
 opacity table
 ^^^^^^^^^^^^^
 
-The opacity table is best produced with the k-table generator program, using the output of HELIOS-K. If you want to use your own opacity table, the following format needs to met.
+The opacity table is best produced with the k-table generator program, using the output of HELIOS-K. If you want to use your own opacity table, the following format needs to met. First of all, it needs to be in HDF5 format. See `h5py <http://www.h5py.org/>`_ or `HDF5 <https://www.hdfgroup.org/>`_ for more info on this format and how to use it.
 
 The opacity table may come in two versions. For the temperature iteration, the k-distribution method. The integration over one wavelength bin is performed via Gaussian quadrature. For pure-postprocessing an opacity table is used in pure opacity sampling format, i.e., one opacity value per wavelength. 
 
@@ -174,6 +174,36 @@ VULCAN mixing ratios
 There are ongoing tests to couple HELIOS with the chemical kinetics code `VULCAN <https:github.com/exoclime/vulcan>`_. To this end, the calculated chemical abundances obtained with VULCAN are used for each radiative transfer run. 
 
 *This feature is still in development. Thank you for your patience.*
+
+Command Line Options
+--------------------
+
+In addition to the parameter file, the most important parameters can also be set as command line options or console arguments. These options are ::
+
+	-name: 			name of output
+        -isothermal: 		isothermal layers?
+        -postprocess: 		pure post-processing?
+        -nlayers: 		number of layers in the grid
+        -plot: 			realtime plotting?
+        -ptoa: 			pressure at the TOA
+        -pboa: 			pressure at the BOA
+        -temperaturepath: 	path to the temperature file
+        -opacitypath: 		path to the opacity table file
+        -energycorrection: 	include correction for global incoming energy?
+        -tintern: 		internal flux temperature [K]
+        -angle: 		zenith angle measured from the vertical [deg]
+        -planet: 		name of the planet (manual or entry in planet data file)
+	-g: 			surface gravity [cm s^-2]
+        -a: 			orbital distance [AU]
+        -rstar: 		stellar radius [R_sun]
+        -tstar: 		stellar temperature [K]
+        -f: 			f heat redistribution factor
+        -star: 			spectral model of the star
+        -kappa: 		adiabatic coefficient, kappa = (ln T / ln P)_S
+	-Vfile: 		path to the file with VULCAN mixing ratios
+	-Viter: 		VULCAN coupling iteration step nr.
+	-tau_lw: 		longwave optical depth (used for f approximation)
+
 
 Output
 ------
