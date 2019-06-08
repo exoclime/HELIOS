@@ -20,7 +20,7 @@ BOA pressure [10^-6 bar] =              1e9                                    (
 ### ITERATION ###
 
 post-processing only =                  no                                     (yes: pure post-processing of given TP-profile, no: iterative run)
-path to temperature file =              ./output/0_tp.dat
+path to temperature file =              ./output/0/0_tp.dat
 temperature file format & P unit =      helios                                 (helios, TP (bar), PT (bar))
 varying timestep =                      yes                                    (always use 'yes')
 timestep [s] =                          1e3                                    (can be ignored)
