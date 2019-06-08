@@ -67,6 +67,9 @@ Sets the path to the final mixed opacity table and corresponding temporary and i
 
 Note: Many temporary files are being generated to save intermediate calculations, e.g., the weighted opacities weighted by the mixing ratios. This allows for a large speed-up the next time the same species and abundances are employed. These temporary files can be safely deleted, should they clog up too much storage space.
 
+**EXPERIMENTAL / DANGER ZONE**
+
+There are experimental options, which are under testing for functionality. For the moment these parameters should be left alone. *Beware of the danger zone!*
 
 Sample Files for Reference
 --------------------------

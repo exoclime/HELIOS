@@ -1,7 +1,7 @@
 Parameter File
 ==============
 
-The input parameters are set in the file ``param.dat``. The individual parameters are the following, with input type and suggested values in round brackets. The respective units are also given in ``param.dat``.
+The input parameters are set in the file ``param.dat``. The individual parameters are the following, with additional info given in round brackets. The respective units are also given.
 
 **GENERAL**
 
@@ -79,13 +79,13 @@ Determines whether gas (Rayleigh) scattering is used.
 
 Includes the scattering correction of `Heng et al. 2018 <http://adsabs.harvard.edu/abs/2018ApJS..237...29H>`_. This option should generally be on. 
 
+    ``asymmetry factor g_0 (in range [-1, 1])``
+
+Determines the scattering orientation. As Rayleigh scattering is mostly isotropic, it is recommended to choose zero. A positive value implies forward scattering and a negative value backward scattering. 
+
    ``path to opacity file``
 
 Sets the path to the opacity table file. For more info on the format of this file see :doc:`structure`. 
-
-   ``opacity format (ktable, sampling)``
-
-Determines whether the opacity values, which are read in, are treated as k-coefficients or standard opacity values per wavelength. 
 
    ``diffusivity factor (typically 1.5 - 2)``
 
@@ -95,13 +95,25 @@ Sets the value of the diffusivity factor. If you are not sure, pick 2.
 
 The f factor determines the heat redistribution efficiency in the atmosphere. For day-side emission spectra one typically assumes f = 2/3 = 0.6667 or 0.5. For no redistribution (substellar point) f = 1 and for a full/global redistribution f = 0.25. This option is irrelevant if a direct irradiation beam is used. 
 
+   ``stellar zenith angle [deg] (values: 0 - 89)`` 
+
+The zenith angle of the star with 0 here being vertical irradiation. This parameter is exclusive with the f factor, because the latter is only used for hemispherically averaged condition.
+
+   ``geom. zenith angle corr. (yes, no)``
+
+Switches the geometric correction of the zenith angle on/off. For zenith angles > 70 including the correction is recommended. For smaller angles it is negligible.
+
    ``internal temperature [K] (typically 0 - 300 for irrad. planets)``
 
 The internal temperature determines the strength of the internal heating. In this case the internal heat is modeled as blackbody ration with the internal temperature. If internal heating is negligible on the resulting spectrum (e.g. strongly irradiated planets) it is safe to assume this parameter as zero. 
 
-    ``asymmetry factor g_0 (in range [-1, 1])``
+   `` surface temperature [K]``
 
-Determines the scattering orientation. As Rayleigh scattering is mostly isotropic, it is recommended to choose zero. A positive value implies forward scattering and a negative value backward scattering. 
+Sets the surface temperature manually. This is only relevant for post-processing as otherwise the surface temperature is self-consistently calculated during the iterative run. Even for post-processing purposes, if the standard Helios TP-profile file is used, the value is already included there. No need to write here.
+
+   ``surface albedo (0-0.999)``
+
+Sets the albedo of the surface. Numerically it sets the reflectivity at the BOA. If set to "1", all radiation is perfectly reflected at the bottom boundary. If set to "0", all radiation is absorbed and re-emitted. For numerical stability reasons, the maximum value is 0.999. For gas planets without any surface the recommended value is "0". In that case the atmosphere below the modeled grid is assumed to possess BOA conditions.
 
    ``energy budget correction (yes, no)``
 
@@ -123,6 +135,14 @@ Sets the path to the file with the tabulated adiabatic coefficient (and optional
 
 **ASTRONOMICAL PARAMETERS**
 
+   ``spectral model (blackbody, HDF5 data set)``
+
+Sets the model for the stellar irradiation. Simplest approach is to use a blackbody spectrum with the stellar temperature. For this choice no additional input is required. If a realistic stellar spectrum is desired, the spectrum needs to be provided in a HDF5 file with the correct format. A sample file is provided with the installation. See :doc:`structure` for more info.
+
+   ``path to stellar spectrum file``
+
+Sets the path to the HDF5 file containing the stellar spectrum. If "blackbody" is chosen above, this parameter is irrelevant.
+
    ``planet (manual, pre-defined name)``
 
 The planetary parameters can be either specified manually or read in from a file. A sample file is provided with the installation. See :doc:`structure` for more info.
@@ -141,18 +161,8 @@ Sets the path to the file with the planetary parameters.
 
    ``temperature star [K]``
 
-Manual entry for the planetary, stellar and orbital parameters. The stellar temperature is only relevant if "blackbody" is chosen for the stellar spectrum (next parameter).
+Manual entry for the planetary, stellar and orbital parameters. The stellar temperature is only relevant if "blackbody" is chosen for the stellar spectrum.
 
-   ``spectral model (blackbody, HDF5 data set)``
+**EXPERIMENTAL / DANGER ZONE**
 
-Sets the model for the stellar irradiation. Simplest approach is to use a blackbody spectrum with the stellar temperature. For this choice no additional input is required. If a realistic stellar spectrum is desired, the spectrum needs to be provided in a HDF5 file with the correct format. A sample file is provided with the installation. See :doc:`structure` for more info.
-
-Sets the stellar temperature. 
-
-   ``path to stellar spectrum file``
-
-Sets the path to the HDF5 file containing the stellar spectrum. If "blackbody" is chosen above, this parameter is irrelevant.
-
-**EXPERIMENTAL**
-
-These are several experimental options, which are under testing for functionality. For the moment these parameters can simply be ignored.
+There are several experimental options, which are under testing for functionality. For the moment these parameters should be left alone. *Beware of the danger zone!*

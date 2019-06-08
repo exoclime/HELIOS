@@ -36,7 +36,7 @@
             
   <div class="section" id="parameter-file">
 <h1>Parameter File<a class="headerlink" href="#parameter-file" title="Permalink to this headline">¶</a></h1>
-<p>The input parameters are set in the file <code class="docutils literal notranslate"><span class="pre">param.dat</span></code>. The individual parameters are the following, with input type and suggested values in round brackets. The respective units are also given in <code class="docutils literal notranslate"><span class="pre">param.dat</span></code>.</p>
+<p>The input parameters are set in the file <code class="docutils literal notranslate"><span class="pre">param.dat</span></code>. The individual parameters are the following, with additional info given in round brackets. The respective units are also given.</p>
 <p><strong>GENERAL</strong></p>
 <blockquote>
 <div><code class="docutils literal notranslate"><span class="pre">name</span></code></div></blockquote>
@@ -93,11 +93,11 @@
 <div><code class="docutils literal notranslate"><span class="pre">imp.</span> <span class="pre">scattering</span> <span class="pre">corr.</span> <span class="pre">(yes,</span> <span class="pre">no)</span></code></div></blockquote>
 <p>Includes the scattering correction of <a class="reference external" href="http://adsabs.harvard.edu/abs/2018ApJS..237...29H">Heng et al. 2018</a>. This option should generally be on.</p>
 <blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">asymmetry</span> <span class="pre">factor</span> <span class="pre">g_0</span> <span class="pre">(in</span> <span class="pre">range</span> <span class="pre">[-1,</span> <span class="pre">1])</span></code></div></blockquote>
+<p>Determines the scattering orientation. As Rayleigh scattering is mostly isotropic, it is recommended to choose zero. A positive value implies forward scattering and a negative value backward scattering.</p>
+<blockquote>
 <div><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">opacity</span> <span class="pre">file</span></code></div></blockquote>
 <p>Sets the path to the opacity table file. For more info on the format of this file see <a class="reference internal" href="structure.html"><span class="doc">Structure</span></a>.</p>
-<blockquote>
-<div><code class="docutils literal notranslate"><span class="pre">opacity</span> <span class="pre">format</span> <span class="pre">(ktable,</span> <span class="pre">sampling)</span></code></div></blockquote>
-<p>Determines whether the opacity values, which are read in, are treated as k-coefficients or standard opacity values per wavelength.</p>
 <blockquote>
 <div><code class="docutils literal notranslate"><span class="pre">diffusivity</span> <span class="pre">factor</span> <span class="pre">(typically</span> <span class="pre">1.5</span> <span class="pre">-</span> <span class="pre">2)</span></code></div></blockquote>
 <p>Sets the value of the diffusivity factor. If you are not sure, pick 2.</p>
@@ -105,11 +105,20 @@
 <div><code class="docutils literal notranslate"><span class="pre">f</span> <span class="pre">factor</span> <span class="pre">(typically</span> <span class="pre">0.25</span> <span class="pre">-</span> <span class="pre">1)</span></code></div></blockquote>
 <p>The f factor determines the heat redistribution efficiency in the atmosphere. For day-side emission spectra one typically assumes f = 2/3 = 0.6667 or 0.5. For no redistribution (substellar point) f = 1 and for a full/global redistribution f = 0.25. This option is irrelevant if a direct irradiation beam is used.</p>
 <blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">stellar</span> <span class="pre">zenith</span> <span class="pre">angle</span> <span class="pre">[deg]</span> <span class="pre">(values:</span> <span class="pre">0</span> <span class="pre">-</span> <span class="pre">89)</span></code></div></blockquote>
+<p>The zenith angle of the star with 0 here being vertical irradiation. This parameter is exclusive with the f factor, because the latter is only used for hemispherically averaged condition.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">geom.</span> <span class="pre">zenith</span> <span class="pre">angle</span> <span class="pre">corr.</span> <span class="pre">(yes,</span> <span class="pre">no)</span></code></div></blockquote>
+<p>Switches the geometric correction of the zenith angle on/off. For zenith angles &gt; 70 including the correction is recommended. For smaller angles it is negligible.</p>
+<blockquote>
 <div><code class="docutils literal notranslate"><span class="pre">internal</span> <span class="pre">temperature</span> <span class="pre">[K]</span> <span class="pre">(typically</span> <span class="pre">0</span> <span class="pre">-</span> <span class="pre">300</span> <span class="pre">for</span> <span class="pre">irrad.</span> <span class="pre">planets)</span></code></div></blockquote>
 <p>The internal temperature determines the strength of the internal heating. In this case the internal heat is modeled as blackbody ration with the internal temperature. If internal heating is negligible on the resulting spectrum (e.g. strongly irradiated planets) it is safe to assume this parameter as zero.</p>
 <blockquote>
-<div><code class="docutils literal notranslate"><span class="pre">asymmetry</span> <span class="pre">factor</span> <span class="pre">g_0</span> <span class="pre">(in</span> <span class="pre">range</span> <span class="pre">[-1,</span> <span class="pre">1])</span></code></div></blockquote>
-<p>Determines the scattering orientation. As Rayleigh scattering is mostly isotropic, it is recommended to choose zero. A positive value implies forward scattering and a negative value backward scattering.</p>
+<div>`` surface temperature [K]``</div></blockquote>
+<p>Sets the surface temperature manually. This is only relevant for post-processing as otherwise the surface temperature is self-consistently calculated during the iterative run. Even for post-processing purposes, if the standard Helios TP-profile file is used, the value is already included there. No need to write here.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">surface</span> <span class="pre">albedo</span> <span class="pre">(0-0.999)</span></code></div></blockquote>
+<p>Sets the albedo of the surface. Numerically it sets the reflectivity at the BOA. If set to “1”, all radiation is perfectly reflected at the bottom boundary. If set to “0”, all radiation is absorbed and re-emitted. For numerical stability reasons, the maximum value is 0.999. For gas planets without any surface the recommended value is “0”. In that case the atmosphere below the modeled grid is assumed to possess BOA conditions.</p>
 <blockquote>
 <div><code class="docutils literal notranslate"><span class="pre">energy</span> <span class="pre">budget</span> <span class="pre">correction</span> <span class="pre">(yes,</span> <span class="pre">no)</span></code></div></blockquote>
 <p>Corrects for cut-off wavelengths in the total incoming flux. Due to the lower bound of the wavelength range at 0.3 micron, the fraction of the external radiation at smaller wavelengths is not accounted for. This correction shifts all flux values to give the correct wavelength-integrated flux according to the Stefan-Boltzmann law.</p>
@@ -125,6 +134,12 @@
 <p>Sets the path to the file with the tabulated adiabatic coefficient (and optionally the entropy).</p>
 <p><strong>ASTRONOMICAL PARAMETERS</strong></p>
 <blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">spectral</span> <span class="pre">model</span> <span class="pre">(blackbody,</span> <span class="pre">HDF5</span> <span class="pre">data</span> <span class="pre">set)</span></code></div></blockquote>
+<p>Sets the model for the stellar irradiation. Simplest approach is to use a blackbody spectrum with the stellar temperature. For this choice no additional input is required. If a realistic stellar spectrum is desired, the spectrum needs to be provided in a HDF5 file with the correct format. A sample file is provided with the installation. See <a class="reference internal" href="structure.html"><span class="doc">Structure</span></a> for more info.</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">stellar</span> <span class="pre">spectrum</span> <span class="pre">file</span></code></div></blockquote>
+<p>Sets the path to the HDF5 file containing the stellar spectrum. If “blackbody” is chosen above, this parameter is irrelevant.</p>
+<blockquote>
 <div><code class="docutils literal notranslate"><span class="pre">planet</span> <span class="pre">(manual,</span> <span class="pre">pre-defined</span> <span class="pre">name)</span></code></div></blockquote>
 <p>The planetary parameters can be either specified manually or read in from a file. A sample file is provided with the installation. See <a class="reference internal" href="structure.html"><span class="doc">Structure</span></a> for more info.</p>
 <blockquote>
@@ -137,16 +152,9 @@
 <p><code class="docutils literal notranslate"><span class="pre">radius</span> <span class="pre">star</span> <span class="pre">[R_Sun]</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">temperature</span> <span class="pre">star</span> <span class="pre">[K]</span></code></p>
 </div></blockquote>
-<p>Manual entry for the planetary, stellar and orbital parameters. The stellar temperature is only relevant if “blackbody” is chosen for the stellar spectrum (next parameter).</p>
-<blockquote>
-<div><code class="docutils literal notranslate"><span class="pre">spectral</span> <span class="pre">model</span> <span class="pre">(blackbody,</span> <span class="pre">HDF5</span> <span class="pre">data</span> <span class="pre">set)</span></code></div></blockquote>
-<p>Sets the model for the stellar irradiation. Simplest approach is to use a blackbody spectrum with the stellar temperature. For this choice no additional input is required. If a realistic stellar spectrum is desired, the spectrum needs to be provided in a HDF5 file with the correct format. A sample file is provided with the installation. See <a class="reference internal" href="structure.html"><span class="doc">Structure</span></a> for more info.</p>
-<p>Sets the stellar temperature.</p>
-<blockquote>
-<div><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">stellar</span> <span class="pre">spectrum</span> <span class="pre">file</span></code></div></blockquote>
-<p>Sets the path to the HDF5 file containing the stellar spectrum. If “blackbody” is chosen above, this parameter is irrelevant.</p>
-<p><strong>EXPERIMENTAL</strong></p>
-<p>These are several experimental options, which are under testing for functionality. For the moment these parameters can simply be ignored.</p>
+<p>Manual entry for the planetary, stellar and orbital parameters. The stellar temperature is only relevant if “blackbody” is chosen for the stellar spectrum.</p>
+<p><strong>EXPERIMENTAL / DANGER ZONE</strong></p>
+<p>There are several experimental options, which are under testing for functionality. For the moment these parameters should be left alone. <em>Beware of the danger zone!</em></p>
 </div>
 
 
@@ -183,7 +191,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
 <li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="software.html">Software</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Parameter File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="structure.html">Structure</a></li>
