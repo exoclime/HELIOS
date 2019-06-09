@@ -1,7 +1,7 @@
 Tutorial
 ========
 
-**Dear ESP school participants, read below under sections "ESP Summer School 2019".**
+**Dear ESP school participants, you may skip until section "ESP Summer School 2019".**
 
 Welcome! I assume this is the first time you are looking at HELIOS. Thus, I will guide you here in the most straightforward way towards the first run of the code on your machine. In order to keep the tutorial short and clear, in-depths explanations are omitted. Please refer to the appropriate sections in the in-depth documentation for more info.
 
@@ -85,7 +85,13 @@ To run the plotting scripts on Hulk, type ::
 
 or ``plot_spectrum.py``, respectively.
 
-**Further Tasks**: Please see the tasks document in the HELIOS main directory for further tasks to do.
+**Further Tasks**: Please see the ``tasks.txt`` document in the HELIOS main directory for further tasks to do. Please see :doc:`parameters` for a extensive description of the HELIOS parameters, or see below for the most important parameters for HELIOS beginners.
+
+.. figure:: ../figures/parameters.png
+   :scale: 40 %
+   :alt: map to buried treasure
+
+   *Figure: Most important parameters for HELIOS beginners*
 
 Sample Files
 ------------

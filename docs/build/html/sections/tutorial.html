@@ -36,7 +36,7 @@
             
   <div class="section" id="tutorial">
 <h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
-<p><strong>Dear ESP school participants, read below under sections “ESP Summer School 2019”.</strong></p>
+<p><strong>Dear ESP school participants, you may skip until section “ESP Summer School 2019”.</strong></p>
 <p>Welcome! I assume this is the first time you are looking at HELIOS. Thus, I will guide you here in the most straightforward way towards the first run of the code on your machine. In order to keep the tutorial short and clear, in-depths explanations are omitted. Please refer to the appropriate sections in the in-depth documentation for more info.</p>
 <p>In the following I merely expect that you possess an NVIDIA GPU and are either on a Linux or Mac Os X system (sorry, Windows users. You are on your own).</p>
 <div class="section" id="step-by-step-installation">
@@ -114,7 +114,11 @@ export DYLD_LIBRARY_PATH=/usr/local/cuda-10.0/lib:$DYLD_LIBRARY_PATH
 </pre></div>
 </div>
 <p>or <code class="docutils literal notranslate"><span class="pre">plot_spectrum.py</span></code>, respectively.</p>
-<p><strong>Further Tasks</strong>: Please see the tasks document in the HELIOS main directory for further tasks to do.</p>
+<p><strong>Further Tasks</strong>: Please see the <code class="docutils literal notranslate"><span class="pre">tasks.txt</span></code> document in the HELIOS main directory for further tasks to do. Please see <a class="reference internal" href="parameters.html"><span class="doc">Parameter File</span></a> for a extensive description of the HELIOS parameters, or see below for the most important parameters for HELIOS beginners.</p>
+<div class="figure" id="id2">
+<a class="reference internal image-reference" href="../_images/parameters.png"><img alt="map to buried treasure" src="../_images/parameters.png" style="width: 768.0px; height: 576.0px;" /></a>
+<p class="caption"><span class="caption-text"><em>Figure: Most important parameters for HELIOS beginners</em></span></p>
+</div>
 </div>
 </div>
 <div class="section" id="sample-files">
@@ -127,7 +131,7 @@ export DYLD_LIBRARY_PATH=/usr/local/cuda-10.0/lib:$DYLD_LIBRARY_PATH
 <p><code class="docutils literal notranslate"><span class="pre">stellar_sample.dat</span></code></p>
 <p>This is a sample file on how to include a realistic stellar spectrum. As the opacity, this is in HDF5 format. Pre-set is the PHOENIX stellar spectrum of HD 189733. If you wish to employ an own spectrum, create a new data set analogously to the existing one. In order for HELIOS to work, the wavelength grid of the stellar spectrum needs to be consistent with the wavelength grid of the opacities.</p>
 <p><code class="docutils literal notranslate"><span class="pre">planet_data.dat</span></code></p>
-<p>Here you can save planetary parameters for later use, which can be loaded in the parameter files under the entry <code class="docutils literal notranslate"><span class="pre">planet</span></code>. Two planets are pre-saved, HD 198733b and WASP-43b (no guarantee for the correctness of the parameters). See <a class="reference internal" href="structure.html"><span class="doc">Structure</span></a>, section “planet parameters” for more info.</p>
+<p>Here you can save planetary parameters for later use, which can be loaded in the parameter files under the entry <code class="docutils literal notranslate"><span class="pre">planet</span></code>. Two planets are pre-saved, HD 198733b and WASP-43b (no guarantee for the correctness of the parameters). See <a class="reference internal" href="structure.html"><span class="doc">Structure &amp; I/O</span></a>, section “planet parameters” for more info.</p>
 </div>
 </div>
 
@@ -174,7 +178,7 @@ export DYLD_LIBRARY_PATH=/usr/local/cuda-10.0/lib:$DYLD_LIBRARY_PATH
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter File</a></li>
-<li class="toctree-l1"><a class="reference internal" href="structure.html">Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">Structure &amp; I/O</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ktable.html">k-Table Generator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
