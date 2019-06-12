@@ -93,7 +93,15 @@ export DYLD_LIBRARY_PATH=/usr/local/cuda-10.0/lib:$DYLD_LIBRARY_PATH
 </div>
 <div class="section" id="esp-summer-school-2019">
 <h2>ESP Summer School 2019<a class="headerlink" href="#esp-summer-school-2019" title="Permalink to this headline">¶</a></h2>
-<p>Everything is pre-installed on Hulk for your convenience. To run HELIOS, simply go to the main directory, as was shared with you. Type</p>
+<p>** UPDATE**: It appears that two dependencies are not installed for everyone. You will have to install first the astropy and pycuda packages before being able to run HELIOS. You do that via typing</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip3</span> <span class="n">install</span> <span class="n">astropy</span>
+</pre></div>
+</div>
+<p>and</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip3</span> <span class="n">install</span> <span class="n">pycuda</span>
+</pre></div>
+</div>
+<p>This should be it. To run HELIOS, simply go now to the main directory of <code class="docutils literal notranslate"><span class="pre">helios_summer_school</span></code> and type</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">srun</span> <span class="o">--</span><span class="n">gres</span><span class="o">=</span><span class="n">gpu</span><span class="p">:</span><span class="mi">1</span> <span class="o">--</span><span class="n">x11</span> <span class="n">python3</span> <span class="n">helios</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>

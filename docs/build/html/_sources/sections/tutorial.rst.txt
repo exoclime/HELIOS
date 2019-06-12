@@ -58,11 +58,20 @@ Step-by-step Installation
 ESP Summer School 2019
 ----------------------
 
-Everything is pre-installed on Hulk for your convenience. To run HELIOS, simply go to the main directory, as was shared with you. Type ::
+** UPDATE**: It appears that two dependencies are not installed for everyone. You will have to install first the astropy and pycuda packages before being able to run HELIOS. You do that via typing ::
+
+	pip3 install astropy
+
+and ::
+
+	pip3 install pycuda
+
+This should be it. To run HELIOS, simply go now to the main directory of ``helios_summer_school`` and type ::
 
 	srun --gres=gpu:1 --x11 python3 helios.py
 
-Voilà! Please continue with reading section "First Run" (ignore first instruction).
+Voilà! Please continue with reading section "First Run" (ignore first instruction). 
+
 
 
 First Run
