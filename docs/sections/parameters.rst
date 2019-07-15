@@ -107,7 +107,7 @@ Switches the geometric correction of the zenith angle on/off. For zenith angles 
 
 The internal temperature determines the strength of the internal heating. In this case the internal heat is modeled as blackbody ration with the internal temperature. If internal heating is negligible on the resulting spectrum (e.g. strongly irradiated planets) it is safe to assume this parameter as zero. 
 
-   `` surface temperature [K]``
+   ``surface temperature [K]``
 
 Sets the surface temperature manually. This is only relevant for post-processing as otherwise the surface temperature is self-consistently calculated during the iterative run. Even for post-processing purposes, if the standard Helios TP-profile file is used, the value is already included there. No need to write here.
 
