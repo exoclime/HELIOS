@@ -92,7 +92,8 @@ class Store(object):
         self.cloud_press = None
         self.cloud_width = None
         self.star_corr_factor = np.int32(1)
-        self.dampara = 512.0
+        self.input_dampara = None
+        self.dampara = None
         self.F_intern = None
         self.adapt_interval = None
         self.smooth = None
@@ -115,7 +116,6 @@ class Store(object):
         self.F_net_conv = []
         self.F_ratio = []
         self.marked_red = None
-        self.conv_layer = None
 
         # input arrays to be copied CPU --> GPU
         # these need to be converted from lists to np.arrays of correct data format
@@ -213,6 +213,8 @@ class Store(object):
         self.dev_f_k_tab = None
         self.f_na_tab = None
         self.dev_f_na_tab = None
+        self.conv_layer = None
+        self.dev_conv_layer = None
 
         # only used by Vmod
         self.f_h2o_lay = None
@@ -335,7 +337,6 @@ class Store(object):
         self.dev_delta_col_upper = None
         self.dev_delta_col_lower = None
         self.dev_delta_t_prefactor = None
-        self.dev_dampara_rad = None
         self.dev_T_store = None
         self.dev_planckband_grid = None
         self.dev_opac_int = None
@@ -587,6 +588,7 @@ class Store(object):
         self.contr_cia_h2he = np.zeros(self.nbin, self.fl_prec)
         self.contr_rayleigh = np.zeros(self.nbin, self.fl_prec)
         self.contr_cloud = np.zeros(self.nbin, self.fl_prec)
+        self.conv_layer = np.zeros(self.nlayer, np.int32)
 
         if Vmod.V_iter_nr == 0: ## otherwise already filled with values
             self.meanmolmass_lay = np.zeros(self.nlayer, self.fl_prec)
@@ -824,7 +826,6 @@ class Store(object):
         self.dev_delta_col_upper = cuda.mem_alloc(size_nlayer)
         self.dev_delta_col_lower = cuda.mem_alloc(size_nlayer)
         self.dev_delta_t_prefactor = cuda.mem_alloc(size_nlayer)
-        self.dev_dampara_rad = cuda.mem_alloc(size_nlayer)
         self.dev_T_store = cuda.mem_alloc(size_nlayer)
         self.dev_planckband_grid = cuda.mem_alloc(size_nplanckgrid)
         self.dev_opac_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)

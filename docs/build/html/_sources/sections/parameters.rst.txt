@@ -131,7 +131,11 @@ Sets manually a constant value to the adiabatic coefficient. For an ideal gas, t
 
    ``entropy/kappa file path``
 
-Sets the path to the file with the tabulated adiabatic coefficient (and optionally the entropy). 
+Sets the path to the file with the tabulated adiabatic coefficient (and optionally the entropy).
+
+   ``damping parameter (auto, 1 - 5000)``
+
+Sets the damping strength of the convective adjustment shift to match the global radiative equilibrium. In almost all cases, this should be set to "auto". For debugging purposes, e.g. if a convergence in a particular case fails, one can try with a a fixed value. Usually a value between 1 and 5000 is a good starting point. The larger the number the more stable the model. However, it is also harder to achieve global equilibrium then.
 
 **ASTRONOMICAL PARAMETERS**
 

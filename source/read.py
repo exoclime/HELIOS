@@ -225,7 +225,7 @@ class Read(object):
                             quant.energy_correction = self.__read_yes_no__(column[4])
                         elif column[0] == "surface" and column[1] == "albedo":
                             quant.surf_albedo = quant.fl_prec(column[3])
-                            quant.surf_albedo = min(0.999, quant.surf_albedo) # everything above 0.999 albedo is not physical. fullstop.
+                            quant.surf_albedo = min(0.999, quant.surf_albedo)  # everything above 0.999 albedo is not physical. fullstop.
                             quant.surf_albedo = quant.fl_prec(quant.surf_albedo)
 
                         # CONVECTIVE ADJUSTMENT
@@ -235,6 +235,8 @@ class Read(object):
                             quant.kappa_manual_value = column[3]
                         elif column[0] == "entropy/kappa" and column[2] == "path":
                             self.entr_kappa_path = column[4]
+                        elif column[0] == "damping" and column[1] == "parameter":
+                            quant.input_dampara = column[3]
 
                         # ASTRONOMICAL PARAMETERS
                         elif column[0] == "stellar" and column[2] == "model":

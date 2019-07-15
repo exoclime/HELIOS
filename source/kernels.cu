@@ -2132,8 +2132,9 @@ __global__ void rad_temp_iter(
         tlay[i] = tlay[i] + delta_T;
         
         // prevent too low temperatures and too high temperatures
+        // to decrease the runtime, the temperature are limited to max. 15'000 K or the maximum value of pre-tabulated BB values
         utype max_limit = min(15000.0, dim * step - 1.001);
-        tlay[i] = min(max(tlay[i],1.001), max_limit); // temperature limited to max. 2e4 K, to decrease the runtime.
+        tlay[i] = min(max(tlay[i],1.001), max_limit); 
 
         // abort conditions
         // local radiative equilibrium
@@ -2162,8 +2163,8 @@ __global__ void conv_temp_iter(
         utype* pint,
         utype* c_p_lay,
         utype* T_store, 
-        utype* deltat_prefactor, 
-        utype* dampara_rad,
+        utype* deltat_prefactor,
+        int*   conv_layer,
         utype 	g, 
         int 	numlayers,
         int 	itervalue,
@@ -2205,7 +2206,7 @@ __global__ void conv_temp_iter(
         utype combined_F_net_diff =  F_net_diff[i] + F_temp;
 
         if(combined_F_net_diff != 0){
-            delta_t = deltat_prefactor[i] * t_rad / pow(abs(combined_F_net_diff), 0.5); // 0.5 found to be most stable for the radiative-convective interplay
+            delta_t = deltat_prefactor[i] * t_rad / pow(abs(combined_F_net_diff), 0.5); // 0.5 was found to be most stable for the radiative-convective interplay
         }
         
         utype delta_T = g / c_p_lay[i] * combined_F_net_diff / (pint[i] - pint[i+1]) * delta_t;
@@ -2231,7 +2232,7 @@ __global__ void conv_temp_iter(
         
         // update layer temperatures
         tlay[i] = tlay[i] + delta_T;
-
+        
         // prevent too low temperatures
         tlay[i] = max(tlay[i],1.0);
     }

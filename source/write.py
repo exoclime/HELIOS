@@ -165,6 +165,7 @@ These are the parameters used in the production of this HELIOS output.
                 file.writelines("\nconvective adjustment = " + self.convert_1_0_to_yes_no(quant.convection))
                 file.writelines("\nkappa value = " + quant.kappa_manual_value)
                 file.writelines("\nentropy/kappa file path = " + read.entr_kappa_path)
+                file.writelines("\ndamping parameter = " + quant.input_dampara)
                 file.writelines("\n---")
                 file.writelines("\n")
                 file.writelines("\n### ASTRONOMICAL PARAMETERS ###")

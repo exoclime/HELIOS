@@ -746,7 +746,7 @@ class Compute(object):
                      quant.dev_c_p_lay,
                      quant.dev_T_store,
                      quant.dev_delta_t_prefactor,
-                     quant.dev_dampara_rad,
+                     quant.dev_conv_layer,
                      quant.g,
                      quant.nlayer,
                      quant.iter_value,
@@ -871,7 +871,7 @@ class Compute(object):
                     time_loop = start_loop.time_till(end_loop)
 
                 # time restriction for the run. It aborts automatically after the following time steps and prevents a hung job.
-                if quant.iter_value > 2e4:
+                if quant.iter_value > 1e5:
                     write.write_abort_file(quant)
 
                     print("\nRun exceeds allowed maximum allowed number of iteration steps. Aborting...")
@@ -899,7 +899,7 @@ class Compute(object):
         if quant.iso == 0:
             quant.kappa_int = quant.dev_kappa_int.get()
             hsfunc.conv_check(quant)
-            hsfunc.mark_convective_layers(quant)
+            hsfunc.mark_convective_layers(quant, stitching=0)
 
         # only starts the loop if convective adjustment is switched on
         if quant.singlewalk == 0 and quant.convection == 1:
@@ -995,7 +995,7 @@ class Compute(object):
                 quant.kappa_int = quant.dev_kappa_int.get()
 
                 # mark convection zone. used by realtime plotting
-                hsfunc.mark_convective_layers(quant)
+                hsfunc.mark_convective_layers(quant, stitching=1)
 
                 # chunk for the calculation of surface temperature
                 hsfunc.calc_surf_temperature(quant)
@@ -1004,6 +1004,10 @@ class Compute(object):
 
                 # checks whether to continue the loop
                 condition = not(hsfunc.check_for_global_local_equilibrium(quant)) or quant.iter_value < 100
+
+                # relax global convergence limit somewhat if taking too long to converge
+                if quant.iter_value == 1e4:
+                    hsfunc.relax_global_limit(quant)
 
                 # radiative forward stepping if local flux criterium not satisfied
                 if condition:
@@ -1015,6 +1019,7 @@ class Compute(object):
                             rt_plot.plot_convective_feedback(quant)
 
                     # kernel that advances the temperature in a radiative way
+                    quant.dev_conv_layer = gpuarray.to_gpu(quant.conv_layer)
                     self.conv_temp_iteration(quant)
 
                     # records the time needed for 100 loops
@@ -1026,8 +1031,8 @@ class Compute(object):
                     quant.iter_value += 1
                     quant.iter_value = np.int32(quant.iter_value)
 
-                # time restriction for the run. It aborts automatically after the following timesteps and thus prevents a hung up job.
-                if quant.iter_value > 2e4:
+                # length restriction for the run. aborts after a upper limit on the number of steps and thus prevents a hung up job.
+                if quant.iter_value > 1e5:
 
                     write.write_abort_file(quant)
 

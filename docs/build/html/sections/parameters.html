@@ -16,7 +16,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Structure" href="structure.html" />
+    <link rel="next" title="Structure &amp; I/O" href="structure.html" />
     <link rel="prev" title="Tutorial" href="tutorial.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -69,7 +69,7 @@
 <p>Sets the path to the temperature file. This parameter is irrelevant if the option “restart temperatures” is set to “no”.</p>
 <blockquote>
 <div><code class="docutils literal notranslate"><span class="pre">temperature</span> <span class="pre">file</span> <span class="pre">format</span> <span class="pre">&amp;</span> <span class="pre">P</span> <span class="pre">unit</span> <span class="pre">(helios,</span> <span class="pre">TP,</span> <span class="pre">PT,</span> <span class="pre">TP</span> <span class="pre">bar,</span> <span class="pre">PT</span> <span class="pre">bar)</span></code></div></blockquote>
-<p>Sets the format of the temperature file. See <a class="reference internal" href="structure.html"><span class="doc">Structure</span></a> for more info.</p>
+<p>Sets the format of the temperature file. See <a class="reference internal" href="structure.html"><span class="doc">Structure &amp; I/O</span></a> for more info.</p>
 <blockquote>
 <div><code class="docutils literal notranslate"><span class="pre">varying</span> <span class="pre">timestep</span> <span class="pre">(yes,</span> <span class="pre">no)</span></code></div></blockquote>
 <p>Determines whether the model uses a fixed timestep (“no”) or a varying, adaptive timestep (“yes”) to advance during the temperature iteration process. It is recommended to set this parameter always to “yes”. If “post-processing only” is set to “yes”, this parameter is irrelevant.</p>
@@ -97,7 +97,7 @@
 <p>Determines the scattering orientation. As Rayleigh scattering is mostly isotropic, it is recommended to choose zero. A positive value implies forward scattering and a negative value backward scattering.</p>
 <blockquote>
 <div><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">opacity</span> <span class="pre">file</span></code></div></blockquote>
-<p>Sets the path to the opacity table file. For more info on the format of this file see <a class="reference internal" href="structure.html"><span class="doc">Structure</span></a>.</p>
+<p>Sets the path to the opacity table file. For more info on the format of this file see <a class="reference internal" href="structure.html"><span class="doc">Structure &amp; I/O</span></a>.</p>
 <blockquote>
 <div><code class="docutils literal notranslate"><span class="pre">diffusivity</span> <span class="pre">factor</span> <span class="pre">(typically</span> <span class="pre">1.5</span> <span class="pre">-</span> <span class="pre">2)</span></code></div></blockquote>
 <p>Sets the value of the diffusivity factor. If you are not sure, pick 2.</p>
@@ -128,20 +128,23 @@
 <p>Switches convective adjustment on or off. If set to off, only radiative equilibrium is sought during the temperature iteration. If this option is activated, convective adjustment is applied after a radiative solution has been found. In this way the temperature profile in radiative-convective equilibrium is obtained.</p>
 <blockquote>
 <div><code class="docutils literal notranslate"><span class="pre">kappa</span> <span class="pre">value</span> <span class="pre">(value,</span> <span class="pre">file)</span></code></div></blockquote>
-<p>Sets manually a constant value to the adiabatic coefficient. For an ideal gas, the value is given by 2 / (2 + n), where n is the number of degrees of freedom for the gas particles. For diatomic particles n = 5. If “file” is set, pre-tabulated values are to be read from a file. See <a class="reference internal" href="structure.html"><span class="doc">Structure</span></a> for more info on the format of this file.</p>
+<p>Sets manually a constant value to the adiabatic coefficient. For an ideal gas, the value is given by 2 / (2 + n), where n is the number of degrees of freedom for the gas particles. For diatomic particles n = 5. If “file” is set, pre-tabulated values are to be read from a file. See <a class="reference internal" href="structure.html"><span class="doc">Structure &amp; I/O</span></a> for more info on the format of this file.</p>
 <blockquote>
 <div><code class="docutils literal notranslate"><span class="pre">entropy/kappa</span> <span class="pre">file</span> <span class="pre">path</span></code></div></blockquote>
 <p>Sets the path to the file with the tabulated adiabatic coefficient (and optionally the entropy).</p>
+<blockquote>
+<div><code class="docutils literal notranslate"><span class="pre">damping</span> <span class="pre">parameter</span> <span class="pre">(auto,</span> <span class="pre">1</span> <span class="pre">-</span> <span class="pre">5000)</span></code></div></blockquote>
+<p>Sets the damping strength of the convective adjustment shift to match the global radiative equilibrium. In almost all cases, this should be set to “auto”. For debugging purposes, e.g. if a convergence in a particular case fails, one can try with a a fixed value. Usually a value between 1 and 5000 is a good starting point. The larger the number the more stable the model. However, it is also harder to achieve global equilibrium then.</p>
 <p><strong>ASTRONOMICAL PARAMETERS</strong></p>
 <blockquote>
 <div><code class="docutils literal notranslate"><span class="pre">spectral</span> <span class="pre">model</span> <span class="pre">(blackbody,</span> <span class="pre">HDF5</span> <span class="pre">data</span> <span class="pre">set)</span></code></div></blockquote>
-<p>Sets the model for the stellar irradiation. Simplest approach is to use a blackbody spectrum with the stellar temperature. For this choice no additional input is required. If a realistic stellar spectrum is desired, the spectrum needs to be provided in a HDF5 file with the correct format. A sample file is provided with the installation. See <a class="reference internal" href="structure.html"><span class="doc">Structure</span></a> for more info.</p>
+<p>Sets the model for the stellar irradiation. Simplest approach is to use a blackbody spectrum with the stellar temperature. For this choice no additional input is required. If a realistic stellar spectrum is desired, the spectrum needs to be provided in a HDF5 file with the correct format. A sample file is provided with the installation. See <a class="reference internal" href="structure.html"><span class="doc">Structure &amp; I/O</span></a> for more info.</p>
 <blockquote>
 <div><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">stellar</span> <span class="pre">spectrum</span> <span class="pre">file</span></code></div></blockquote>
 <p>Sets the path to the HDF5 file containing the stellar spectrum. If “blackbody” is chosen above, this parameter is irrelevant.</p>
 <blockquote>
 <div><code class="docutils literal notranslate"><span class="pre">planet</span> <span class="pre">(manual,</span> <span class="pre">pre-defined</span> <span class="pre">name)</span></code></div></blockquote>
-<p>The planetary parameters can be either specified manually or read in from a file. A sample file is provided with the installation. See <a class="reference internal" href="structure.html"><span class="doc">Structure</span></a> for more info.</p>
+<p>The planetary parameters can be either specified manually or read in from a file. A sample file is provided with the installation. See <a class="reference internal" href="structure.html"><span class="doc">Structure &amp; I/O</span></a> for more info.</p>
 <blockquote>
 <div><code class="docutils literal notranslate"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">planet</span> <span class="pre">data</span> <span class="pre">file</span></code></div></blockquote>
 <p>Sets the path to the file with the planetary parameters.</p>
@@ -194,7 +197,7 @@
 <li class="toctree-l1"><a class="reference internal" href="software.html">Software</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Parameter File</a></li>
-<li class="toctree-l1"><a class="reference internal" href="structure.html">Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">Structure &amp; I/O</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ktable.html">k-Table Generator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>

@@ -500,7 +500,7 @@ plus stellar and internal blackbody</p>
 
 <dl class="function">
 <dt id="host_functions.conv_correct">
-<code class="descclassname">host_functions.</code><code class="descname">conv_correct</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.conv_correct" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">host_functions.</code><code class="descname">conv_correct</code><span class="sig-paren">(</span><em>quant</em>, <em>fudging</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.conv_correct" title="Permalink to this definition">¶</a></dt>
 <dd><p>corrects unstable lapse rates to dry adiabats, conserving the total enthalpy</p>
 </dd></dl>
 
@@ -518,7 +518,7 @@ plus stellar and internal blackbody</p>
 
 <dl class="function">
 <dt id="host_functions.mark_convective_layers">
-<code class="descclassname">host_functions.</code><code class="descname">mark_convective_layers</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.mark_convective_layers" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">host_functions.</code><code class="descname">mark_convective_layers</code><span class="sig-paren">(</span><em>quant</em>, <em>stitching</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.mark_convective_layers" title="Permalink to this definition">¶</a></dt>
 <dd><p>marks the layers where convection dominates over radiative transfer</p>
 </dd></dl>
 
@@ -529,9 +529,21 @@ plus stellar and internal blackbody</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="host_functions.relax_global_limit">
+<code class="descclassname">host_functions.</code><code class="descname">relax_global_limit</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.relax_global_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>makes the global convergence limit less strict for difficult cases</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="host_functions.set_up_numerical_parameters">
 <code class="descclassname">host_functions.</code><code class="descname">set_up_numerical_parameters</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.set_up_numerical_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>sets up additional parameters used in the calculation</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="host_functions.stitching_convective_zone_holes">
+<code class="descclassname">host_functions.</code><code class="descname">stitching_convective_zone_holes</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.stitching_convective_zone_holes" title="Permalink to this definition">¶</a></dt>
+<dd><p>fills up holes in the convective zones if they are preventing convergence</p>
 </dd></dl>
 
 <dl class="function">

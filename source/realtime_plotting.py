@@ -61,6 +61,9 @@ class Plot(object):
         if video == 1:
             plt.xlim(800, 3600)
 
+        majorloc_y = tkr.MultipleLocator(10)
+        plt.axes().yaxis.set_major_locator(majorloc_y)
+
         plt.xlabel('temperature (K)')
         plt.ylabel('number of layer')
 
@@ -110,14 +113,18 @@ class Plot(object):
         plt.ylim(0, quant.nlayer-1)
         # plt.xlim(800, 3600)
 
-        x_low_lim = max(0, 100*(min(quant.T_lay) // 100 - 1))
-        x_up_lim = 100*(max(quant.T_lay) // 100 + 2)
-        plt.xlim(x_low_lim, x_up_lim)
+        #x_low_lim = max(0, 100*(min(quant.T_lay) // 100 - 1))
+        #x_up_lim = 100*(max(quant.T_lay) // 100 + 2)
+        #plt.xlim(x_low_lim, x_up_lim)
         plt.xlabel('temperature (K)')
         plt.ylabel('number of layer')
-        plt.xticks(np.arange(x_low_lim, x_up_lim+400, 400))
-        minorloc = tkr.MultipleLocator(50)
-        subtp.xaxis.set_minor_locator(minorloc)
+        #plt.xticks(np.arange(x_low_lim, x_up_lim+400, 400))
+
+        #minorloc_x = tkr.MultipleLocator(50)
+        #subtp.xaxis.set_minor_locator(minorloc_x)
+        majorloc_y = tkr.MultipleLocator(10)
+        subtp.yaxis.set_major_locator(majorloc_y)
+
         subtp.xaxis.grid(True, 'minor', color='grey')
         subtp.xaxis.grid(True, 'major', color='grey')
         subtp.yaxis.grid(True, 'minor', color='grey')
@@ -137,19 +144,31 @@ class Plot(object):
 
         plt.ylim(0, quant.ninterface - 1)
 
+        plt.vlines(quant.F_intern, 0, quant.ninterface, colors='blue', linestyles='--', linewidth=2.0, alpha=0.5)
+
+        if quant.F_intern > 0:
+            plt.xlim(-quant.F_intern/2, quant.F_intern*2)
+
         if video == 1:
             plt.xlim(0, 40000)
 
         plt.xlabel('rad. net flux (erg s$^{-1}$ cm$^{-2}$)')
         plt.ylabel('number of interface')
 
+        majorloc_y = tkr.MultipleLocator(10)
+        subfnet.yaxis.set_major_locator(majorloc_y)
+
         subfnet.xaxis.grid(True, 'minor', color='grey')
         subfnet.xaxis.grid(True, 'major', color='grey')
         subfnet.yaxis.grid(True, 'minor', color='grey')
         subfnet.yaxis.grid(True, 'major', color='grey')
 
+
         # show and close figure
         plt.show()
+
+        # for debugging uncomment the next line
+        # input("\n\nplease hit enter\n\n")
 
         if video == 1:
             plt.savefig("./video/radconv_{:0>4d}.png".format(quant.iter_value))
