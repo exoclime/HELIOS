@@ -487,8 +487,9 @@ def convective_adjustment(quant):
 
     while unstable_found:
 
-        sys.stdout.write("Adjusting temperatures: {:6d} \r".format(iter))
-        sys.stdout.flush()
+        # uncomment for debugging
+        # sys.stdout.write("Adjusting temperatures: {:6d} \r".format(iter))
+        # sys.stdout.flush()
 
         mark_convective_layers(quant, stitching=0)
 
@@ -509,9 +510,9 @@ def convective_adjustment(quant):
 
     conv_correct(quant, fudging=1)
 
-    sys.stdout.write("Adjusting temperatures:                                  \r".format("DONE"))
-    sys.stdout.write("Adjusting temperatures: {:6s}\r".format("DONE"))
-    sys.stdout.flush()
+    # uncomment for debugging
+    # sys.stdout.write("Adjusting temperatures: {:6s}\r".format("DONE"))
+    # sys.stdout.flush()
 
 
 def mark_convective_layers(quant, stitching):
