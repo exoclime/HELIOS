@@ -549,20 +549,23 @@ def stitching_convective_zone_holes(quant):
     start_layers = []
     end_layers = []
 
-    if quant.conv_layer[0] == 1:
-        start_layers.append(0)
+    for i in range(0, quant.nlayer):
 
-    for i in range(1, quant.nlayer-1):
         if quant.conv_layer[i] == 1:
 
-            if quant.conv_layer[i-1] == 0:
-                start_layers.append(i)
+            if i > 0:
+                if quant.conv_layer[i-1] == 0:
+                    start_layers.append(i)
+            else:
+                if quant.conv_layer[i] == 1:
+                    start_layers.append(i)
 
-            if quant.conv_layer[i+1] == 0:
-                end_layers.append(i)
-
-    if quant.conv_layer[quant.nlayer-1] == 1:
-        end_layers.append(quant.nlayer-1)
+            if i < quant.nlayer - 1:
+                if quant.conv_layer[i+1] == 0:
+                    end_layers.append(i)
+            else:
+                if quant.conv_layer[i] == 1:
+                    end_layers.append(i)
 
     # quick self-check
     if len(start_layers) != len(end_layers):
@@ -576,6 +579,7 @@ def stitching_convective_zone_holes(quant):
             for m in range(end_layers[n]+1, start_layers[n+1]):
 
                 quant.conv_layer[m] = 1
+
 
 def calculate_conv_flux(quant):
     """ calculates the convective net flux in the atmosphere. """
