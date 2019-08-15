@@ -560,7 +560,7 @@ __global__ void corr_surface_emission(
         if(uncorr_emission > 0){
             corr_factor = STEFANBOLTZMANN * pow(T_surf, 4.0) / uncorr_emission;
         }
-        // correction info suppressed for the moment
+        // correction info -- for debugging purposes
         //if(x == 0 and itervalue % 100 == 0) printf("Surface emission corrected by %.2f ppm.\n", 1e6 * (corr_factor - 1.0));
         
         planckband_lay[(numlayers+1) + x * (numlayers + 2)] *= corr_factor;
@@ -2182,6 +2182,9 @@ __global__ void conv_temp_iter(
         // set initial timestep prefactor
         if (itervalue == 0){
             deltat_prefactor[i] = 1e-3; // 1e-3 found to be most stable. previous value was 1e2.
+        }
+        if (itervalue == 6000){
+            deltat_prefactor[i] = 1e-4; // cheap fix to unstuck calculations after convective stitching
         }
         
         // net flux divergence for each layer

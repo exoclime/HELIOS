@@ -174,6 +174,8 @@ class Read(object):
                             quant.p_toa = quant.fl_prec(column[5])
                         elif column[0] == "BOA" and column[1] == "pressure":
                             quant.p_boa = quant.fl_prec(column[5])
+                        elif column[0] == "planet" and column[1] == "type":
+                            quant.planet_type = column[3]
 
                         # ITERATION
                         elif column[0] == "post-processing":
@@ -477,12 +479,12 @@ class Read(object):
             #                 #if temp 14 fixed at 800K, 22 1200K
             #                 # quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t] = quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * 14]
             #
-            #                 # if press fixed at 1bar
-            #                 # quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t] = quant.opac_k[y + ny * x + ny * nx * 18 + ny * nx * nump * t]
+            #                 #if press fixed at 1bar
+            #                 #quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t] = quant.opac_k[y + ny * x + ny * nx * 18 + ny * nx * nump * t]
             #
-            #                 # max value at 1e0
-            #                 # if x < 275:
-            #                 #     quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t] = min(1e-1, quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t])
+            #                 #max value at 1e0
+            #                 #if x < 275:
+            #                 #    quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t] = min(1e-1, quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t])
 
 
     @staticmethod

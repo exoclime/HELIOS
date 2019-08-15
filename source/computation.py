@@ -764,6 +764,7 @@ class Compute(object):
         condition = True
         quant.iter_value = np.int32(0)
         quant.p_lay = quant.dev_p_lay.get()
+        quant.p_int = quant.dev_p_int.get()
 
         # measures the runtime of a specified number of iterations
         start_loop = cuda.Event()
@@ -784,7 +785,7 @@ class Compute(object):
 
             # chunk for the calculation of surface emission
             self.calc_surface_planck(quant)
-            if quant.iter_value > 0 == 0:
+            if quant.iter_value > 0:
                 self.correct_surface_emission(quant)
 
             self.interpolate_temperatures(quant)
@@ -836,8 +837,7 @@ class Compute(object):
                     quant.F_down_tot = quant.dev_F_down_tot.get()
                     quant.F_up_tot = quant.dev_F_up_tot.get()
                     quant.F_net = quant.dev_F_net.get()
-                    quant.p_int = quant.dev_p_int.get()
-                    hsfunc.calc_surf_temperature(quant)
+                    hsfunc.calc_surf_temperature_and_flux(quant)
                     quant.dev_F_up_tot = gpuarray.to_gpu(quant.F_up_tot)
                     quant.dev_F_net = gpuarray.to_gpu(quant.F_net)
 
@@ -998,7 +998,7 @@ class Compute(object):
                 hsfunc.mark_convective_layers(quant, stitching=1)
 
                 # chunk for the calculation of surface temperature
-                hsfunc.calc_surf_temperature(quant)
+                hsfunc.calc_surf_temperature_and_flux(quant)
                 quant.dev_F_up_tot = gpuarray.to_gpu(quant.F_up_tot)
                 quant.dev_F_net = gpuarray.to_gpu(quant.F_net)
 

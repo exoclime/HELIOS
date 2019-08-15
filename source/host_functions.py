@@ -69,7 +69,7 @@ def approx_f_from_formula(quant):
     # calculates the f factor
     T_eq = (quant.R_star / (2*quant.a))**0.5 * quant.T_star
 
-    term = quant.tau_lw * (quant.p_boa / 1e6) ** (2 / 3) * (T_eq / 6000) ** (-4 / 3)
+    term = quant.tau_lw * (quant.p_boa / 1e6) ** (2 / 3) * (T_eq / 600) ** (-4 / 3)
 
     quant.f_factor = 2 / 3 - 5 / 12 * term / (2 + term)
 
@@ -253,17 +253,29 @@ def check_for_global_eq(quant):
     return criterion
 
 
-def calc_surf_temperature(quant):
+def calc_surf_temperature_and_flux(quant):
     """ calculates the surface temperature from the downward incoming (and absorbed) flux and the interior heat flux """
 
-    # leaving away (1-albedo)/emissivity in the first term for clarity
-    quant.T_surf = (quant.F_down_tot[0]/pc.SIGMA_SB + quant.T_intern**4.0/(1.0 - quant.surf_albedo))**0.25
+    # limit F_sens for numerical stability
+    F_sens_limited = min(0.99 * (1.0 - quant.surf_albedo) * quant.F_down_tot[0], abs(quant.F_sens)) * np.sign(quant.F_sens)
 
+    # emissivity = 1 - albedo
+    quant.T_surf = (((1.0 - quant.surf_albedo) * quant.F_down_tot[0] - F_sens_limited) / ((1.0 - quant.surf_albedo) * pc.SIGMA_SB) + quant.T_intern**4.0/(1.0 - quant.surf_albedo))**0.25
+    # print("T_surf:", quant.T_surf)
     # change the upward BOA flux to match the Stefan-Boltzmann law and to include the surface albedo
-    quant.F_up_tot[0] = quant.surf_albedo * quant.F_down_tot[0] + (1.0 - quant.surf_albedo) * pc.SIGMA_SB * quant.T_surf**4.0
+    F_up_BOA_radiative = quant.surf_albedo * quant.F_down_tot[0] + (1.0 - quant.surf_albedo) * pc.SIGMA_SB * quant.T_surf**4.0
+
+    # the total flux is the radiative flux plus the sensible heat flux
+    quant.F_up_tot[0] = F_up_BOA_radiative + F_sens_limited
 
     # the corresponding net flux needs to be tweaked as well in order for the temperature iteration to work properly
     quant.F_net[0] = quant.F_up_tot[0] - quant.F_down_tot[0]
+    # print("Fup_tot: {:.2e}, Fup_rad: {:.2e}, F_sens: {:.2e}, Fdown_tot: {:.2e}, Fnet: {:.2e}".format(quant.F_up_tot[0], F_up_BOA_radiative, F_sens_limited, quant.F_down_tot[0], quant.F_net[0]))
+
+    if quant.planet_type == 'rocky':
+        # calculate the sensible heat flux for next iteration -- commented out for the moment
+        # calc_sensible_heat_flux(quant)
+        pass
 
 
 def relax_global_limit(quant):
@@ -409,6 +421,9 @@ def conv_correct(quant, fudging):
                 # dampara as in damping parameter. It is a sad attempt at playing with words.
                 if quant.input_dampara == "auto":
                     quant.dampara = 128
+                    if quant.iter_value > 5000:
+                        quant.dampara = quant.iter_value / 5.0
+
                 else:
                     quant.dampara=int(quant.input_dampara)
 
@@ -417,6 +432,9 @@ def conv_correct(quant, fudging):
                     fudge_factor[n] = (100 * quant.F_intern / (max(0,quant.F_net[interface_to_be_tested]) + 99 * quant.F_intern)) ** (1.0 / quant.dampara)
                 elif quant.F_intern == 0:
                     fudge_factor[n] = (quant.F_down_tot[interface_to_be_tested] / quant.F_up_tot[interface_to_be_tested]) ** (1.0 / quant.dampara)
+
+                # uncomment for debugging
+                # print("F_intern: {:.2e}, F_net_TOA: {:.2e}".format(quant.F_intern, quant.F_net[interface_to_be_tested]))
 
             # same procedure without a stellar energy source
             else:
@@ -429,13 +447,12 @@ def conv_correct(quant, fudging):
                 fudge_factor[n] = (quant.F_intern / quant.F_net[interface_to_be_tested]) ** (1.0 / quant.dampara)
 
         # uncomment next few lines for debugging
-        # if quant.iter_value % 10 == 1 and fudging == 1:
-        #     for n in range(len(start_layers)):
-        #         if n < len(start_layers) - 1:
-        #             print("\tIntermediate RT layers found from layer", end_layers[n],"to", start_layers[n+1], "with fudge_factor = ",
-        #                   fudge_factor[n], ". pressure ratio.:", quant.p_lay[start_layers[n+1]]/quant.p_lay[end_layers[n]])
-        #         else:
-        #             print("\tTop RT layer fudge_factor = ", fudge_factor[n], ".")
+        # for n in range(len(start_layers)):
+        #     if n < len(start_layers) - 1:
+        #         print("\tIntermediate RT layers found from layer", end_layers[n],"to", start_layers[n+1], "with fudge_factor = ",
+        #               fudge_factor[n], ". pressure ratio.:", quant.p_lay[start_layers[n+1]]/quant.p_lay[end_layers[n]])
+        #     else:
+        #         print("\tTop RT layer fudge_factor = ", fudge_factor[n], ".")
 
     for n in range(len(start_layers)):
 
@@ -549,20 +566,23 @@ def stitching_convective_zone_holes(quant):
     start_layers = []
     end_layers = []
 
-    if quant.conv_layer[0] == 1:
-        start_layers.append(0)
+    for i in range(0, quant.nlayer):
 
-    for i in range(1, quant.nlayer-1):
         if quant.conv_layer[i] == 1:
 
-            if quant.conv_layer[i-1] == 0:
-                start_layers.append(i)
+            if i > 0:
+                if quant.conv_layer[i-1] == 0:
+                    start_layers.append(i)
+            else:
+                if quant.conv_layer[i] == 1:
+                    start_layers.append(i)
 
-            if quant.conv_layer[i+1] == 0:
-                end_layers.append(i)
-
-    if quant.conv_layer[quant.nlayer-1] == 1:
-        end_layers.append(quant.nlayer-1)
+            if i < quant.nlayer - 1:
+                if quant.conv_layer[i+1] == 0:
+                    end_layers.append(i)
+            else:
+                if quant.conv_layer[i] == 1:
+                    end_layers.append(i)
 
     # quick self-check
     if len(start_layers) != len(end_layers):
@@ -576,6 +596,7 @@ def stitching_convective_zone_holes(quant):
             for m in range(end_layers[n]+1, start_layers[n+1]):
 
                 quant.conv_layer[m] = 1
+
 
 def calculate_conv_flux(quant):
     """ calculates the convective net flux in the atmosphere. """
@@ -617,24 +638,68 @@ def calc_F_ratio(quant):
 def calculate_height_z(quant):
     """ prints the message that you have been desperately waiting for """
 
-    # rocky planets: white light radius is the surface
-    i_white_light_radius = 0
+    if quant.planet_type == 'gas':
 
-    # gas planets with pressures of more than 10 bar: white light radius at 10 bar
-    if quant.p_lay[0] >= 1e7:
+        # gas planets with pressures of more than 10 bar: white light radius at 10 bar
         i_white_light_radius = max([i for i in range(quant.nlayer) if quant.p_lay[i] >= 1e7])
 
-    quant.z_lay[i_white_light_radius] = 0
+        quant.z_lay[i_white_light_radius] = 0
 
-    # calculates the height of layers above and the height of layers below z = 0
-    for i in range(i_white_light_radius + 1, quant.nlayer):
+        # calculates the height of layers above and the height of layers below z = 0
+        for i in range(i_white_light_radius + 1, quant.nlayer):
 
-        quant.z_lay[i] = quant.z_lay[i-1] + 0.5 * quant.delta_z_lay[i-1] + 0.5 * quant.delta_z_lay[i]
+            quant.z_lay[i] = quant.z_lay[i-1] + 0.5 * quant.delta_z_lay[i-1] + 0.5 * quant.delta_z_lay[i]
 
-    for i in range(i_white_light_radius - 1, 0 - 1, -1):
+        for i in range(i_white_light_radius - 1, 0 - 1, -1):
 
-        quant.z_lay[i] = quant.z_lay[i + 1] - 0.5 * quant.delta_z_lay[i + 1] - 0.5 * quant.delta_z_lay[i]
+            quant.z_lay[i] = quant.z_lay[i + 1] - 0.5 * quant.delta_z_lay[i + 1] - 0.5 * quant.delta_z_lay[i]
 
+    elif quant.planet_type == 'rocky':
+
+        quant.z_lay[0] = 0.5 * quant.delta_z_lay[0]
+
+        for i in range(1, quant.nlayer):
+
+            quant.z_lay[i] = quant.z_lay[i-1] + 0.5 * quant.delta_z_lay[i-1] + 0.5 * quant.delta_z_lay[i]
+
+
+def calc_sensible_heat_flux(quant):
+    """ calculates the sensible heat flux for the surface layers """
+
+    # get arrays from GPU
+    quant.meanmolmass_lay = quant.dev_meanmolmass_lay.get()
+    quant.c_p_lay = quant.dev_c_p_lay.get()
+
+    # horizontal wind speed in cgs
+    U = 1e4
+
+    # simplified drag coefficient for simple tests
+    C_D = 1
+
+    # drag coefficient after similarity theory -- commented out for the moment
+    # K_vk = 0.4 # von Karman constant
+    # C_D = (K_vk / np.log(z_surf_lay_top/z_surf))**2
+
+    rho_surface = quant.p_int[0] * quant.meanmolmass_lay[0] / (pc.K_B * quant.T_surf)
+
+    # calculating the top temperature of the surface layer
+    # top altitude in cgs
+    z_surf_lay_top = 1e4
+    z_surf_lay_bot = 1
+
+    delta_z_surf_lay = z_surf_lay_top - z_surf_lay_bot
+    p_surf_lay_top = quant.p_int[0] - rho_surface * quant.g * delta_z_surf_lay
+
+    T_surf_lay_top = (np.log10(quant.p_int[0]/p_surf_lay_top) * quant.T_lay[0] + np.log10(p_surf_lay_top/quant.p_lay[0]) * quant.T_surf) \
+                     / np.log10(quant.p_int[0]/quant.p_lay[0])
+
+    # screen feedback for debugging purposes
+    # print("P_surf, P_surf_layer_top, P_middle_layer", quant.p_int[0], p_surf_lay_top, quant.p_lay[0])
+    # print("T_surf, T_surf_layer_top, T_middle_layer", quant.T_surf, T_surf_lay_top, quant.T_lay[0])
+    #print("cp:", quant.c_p_lay[0], "rho:", rho_surface)
+
+    quant.F_sens = quant.c_p_lay[0] * rho_surface * C_D * U * (quant.T_surf - T_surf_lay_top)
+    # side note: c_p_lay because c_p_int is not calculated and the difference will be negligible
 
 def success_message(quant):
     """ prints the message that you have been desperately waiting for """

@@ -105,6 +105,8 @@ class Store(object):
         self.T_surf = None
         self.approx_f = None
         self.tau_lw = 1
+        self.planet_type = None
+        self.F_sens = 0
         # number of pre-tabulated temperature values for the planck table
         self.plancktable_dim = np.int32(8000)
         # temperature step for the planck table. e.g. dim = 10000 and step = 2 will give a table from 1 K to 19999 K in 2 K steps

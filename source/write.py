@@ -85,7 +85,7 @@ class Write(object):
                 file.writelines("This file contains the temporary (restart) central layer temperatures and pressures.")
                 file.writelines(
                     "\n{:<8}{:<18}{:<24}".format(
-                        "layer", "cent.temp.[K]", "cent.press.[10^-6 bar]"
+                        "layer", "cent.temp.[K]", "cent.press.[10^-6bar]"
                     )
                 )
                 for i in range(quant.nlayer):
@@ -130,6 +130,7 @@ These are the parameters used in the production of this HELIOS output.
                 file.writelines("\nnumber of layers = {:g}".format(quant.nlayer))
                 file.writelines("\nTOA pressure [10^-6 bar] = {:g}".format(quant.p_toa))
                 file.writelines("\nBOA pressure [10^-6 bar] = {:g}".format(quant.p_boa))
+                file.writelines("\nplanet type = " + quant.planet_type)
                 file.writelines("\n---")
                 file.writelines("\n")
                 file.writelines("\n### ITERATION ###")
@@ -221,7 +222,7 @@ These are the parameters used in the production of this HELIOS output.
                 file.writelines("This file contains the corresponding layer temperatures and pressures, and the altitude and the height of each layer.")
                 file.writelines(
                     "\n{:<8}{:<18}{:<24}{:<21}{:<23}{:<30}{:<32}{:<18}{:<19}".format(
-                        "layer", "cent.temp.[K]", "cent.press.[10^-6 bar]", "cent.altitude[cm]", "height.of.layer[cm]",
+                        "layer", "cent.temp.[K]", "cent.press.[10^-6bar]", "cent.altitude[cm]", "height.of.layer[cm]",
                         "conv.unstable?[1:yes,0:no]", "conv.lapse-rate?[1:yes,0:no]", "pl.eff.temp.[K]", "pl.surf.temp.[K]")
                 )
                 for i in range(quant.nlayer):
@@ -251,7 +252,7 @@ These are the parameters used in the production of this HELIOS output.
                 file.writelines("This file contains the corresponding layer temperatures and pressures.")
                 file.writelines(
                     "\n{:<8}{:<18}{:<24}".format(
-                        "layer", "cent.temp.[K]", "cent.press.[10^-6 bar]")
+                        "layer", "cent.temp.[K]", "cent.press.[10^-6bar]")
                 )
                 for i in range(quant.nlayer):
                     file.writelines(
@@ -274,7 +275,7 @@ These are the parameters used in the production of this HELIOS output.
                     "This file contains the corresponding layer temperatures and pressures, and the altitude and the height of each layer.")
                 file.writelines(
                     "\n{:<8}{:<18}{:<24}{:<21}{:<23}{:<30}{:<32}{:<18}{:<19}".format(
-                        "layer", "cent.temp.[K]", "cent.press.[10^-6 bar]", "cent.altitude[cm]", "height.of.layer[cm]",
+                        "layer", "cent.temp.[K]", "cent.press.[10^-6bar]", "cent.altitude[cm]", "height.of.layer[cm]",
                         "conv.unstable?[1:yes,0:no]", "conv.lapse-rate?[1:yes,0:no]", "pl.eff.temp.[K]", "pl.surf.temp.[K]")
                 )
                 for i in range(quant.nlayer):
@@ -307,7 +308,7 @@ These are the parameters used in the production of this HELIOS output.
                                 "mean molecular weight and specific heat capacity of each layer.")
                 file.writelines(
                     "\n{:<8}{:<24}{:<26}{:<21}{:<32}{:<23}{:<30}".format(
-                        "layer", "cent.press.[10^-6 bar]", "delta_col.mass[g cm^-2]",
+                        "layer", "cent.press.[10^-6bar]", "delta_col.mass[g cm^-2]",
                         "mean mol. weight", "spec.heat cap.[erg g^-1 K^-1]", "adiabat. index kappa", "entropy [Boltzmann const.]")
                 )
                 for i in range(quant.nlayer):
@@ -341,7 +342,7 @@ These are the parameters used in the production of this HELIOS output.
                                 "layer. \nFluxes given in [erg s^-1 cm^-2].")
                 file.writelines(
                     "\n{:<20}{:<24}{:<25}{:<25}{:<23}{:<25}{:<44}{:<24}{:<12}".format(
-                        "interface/layer", "cent.press.[10^-6 bar]", "F_bol_down_at_interf.", "F_bol_up_at_interf.", "F_net_at_interf.", "F_bol_dir_at_interf.", "delta_F_net_at_cent. (only iterative run)", "F_net_conv_at_interf.", "F_intern")
+                        "interface/layer", "cent.press.[10^-6bar]", "F_bol_down_at_interf.", "F_bol_up_at_interf.", "F_net_at_interf.", "F_bol_dir_at_interf.", "delta_F_net_at_cent. (only iterative run)", "F_net_conv_at_interf.", "F_intern")
                 )
                 for i in range(quant.nlayer):
                     file.writelines(
@@ -630,7 +631,7 @@ These are the parameters used in the production of this HELIOS output.
                 file.writelines("This file contains the cloud absorption opacities "
                                 "at each layer center.")
                 file.writelines(
-                    "\n{:<8}{:<25}{:<22}".format("layer", "cent.press.[10^-6 bar]", "opacity[cm^2 g^-1]")
+                    "\n{:<8}{:<25}{:<22}".format("layer", "cent.press.[10^-6bar]", "opacity[cm^2 g^-1]")
                 )
                 for i in range(quant.nlayer):
                     file.writelines("\n{:<8g}".format(i)
@@ -762,7 +763,7 @@ These are the parameters used in the production of this HELIOS output.
                                 "\nMean opacity given in [cm^2 g^-1].")
 
                 file.writelines("\n{:<10}{:<24}{:<20}{:<20}{:<20}{:<20}{:<20}{:<20}{:<20}{:<20}".format(
-                                "layer","cent.press.[10^-6 bar]",
+                                "layer","cent.press.[10^-6bar]",
                                 "Planck_opac_T_lay","Ross_opac_T_lay",
                                 "Planck_opac_T_star","Ross_opac_T_star",
                                 "Planck_tau_T_lay","Ross_tau_T_lay",
