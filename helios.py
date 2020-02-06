@@ -59,10 +59,12 @@ def run_helios():
     reader.read_star(keeper)
     hsfunc.planet_param(keeper, reader)
     hsfunc.set_up_numerical_parameters(keeper)
+    hsfunc.construct_grid(keeper)
     hsfunc.initial_temp(keeper, reader, Vmodder)
     if keeper.approx_f == 1:
-        hsfunc.approx_f_from_formula(keeper)
+        hsfunc.approx_f_from_formula(keeper, reader)
     hsfunc.calc_F_intern(keeper)
+
 
     # get ready for GPU computations
     keeper.create_zero_arrays(Vmodder)
@@ -73,7 +75,6 @@ def run_helios():
     # conduct the GPU core computations
     computer.construct_planck_table(keeper)
     computer.correct_incident_energy(keeper)
-    computer.construct_grid(keeper)
 
     if Vmodder.V_coupling == 1:
         if Vmodder.V_iter_nr > 0:
@@ -81,6 +82,7 @@ def run_helios():
             Vmodder.combine_to_scat_cross(keeper)
 
     computer.radiation_loop(keeper, writer, plotter, Vmodder)
+
     computer.convection_loop(keeper, writer, plotter, Vmodder)
 
     computer.integrate_optdepth_transmission(keeper)
@@ -94,33 +96,31 @@ def run_helios():
     hsfunc.calculate_conv_flux(keeper)
     hsfunc.calc_F_ratio(keeper)
     writer.write_info(keeper, reader, Vmodder)
-    writer.write_colmass_mu_cp_entropy(keeper)
-    writer.write_integrated_flux(keeper)
-    writer.write_downward_spectral_flux(keeper)
-    writer.write_upward_spectral_flux(keeper)
-    writer.write_TOA_flux_eclipse_depth(keeper)
-    writer.write_direct_spectral_beam_flux(keeper)
-    writer.write_planck_interface(keeper)
-    writer.write_planck_center(keeper)
-    writer.write_tp(keeper)
-    writer.write_tp_pure(keeper)
-    writer.write_tp_cut(keeper)
-    writer.write_opacities(keeper)
-    writer.write_Rayleigh_cross_sections(keeper)
-    writer.write_cloud_scat_cross_sections(keeper)
-    writer.write_cloud_absorption(keeper)
-    writer.write_g_0(keeper)
-    writer.write_transmission(keeper)
-    writer.write_opt_depth(keeper)
-    writer.write_trans_weight_function(keeper)
-    writer.write_contribution_function(keeper)
-    writer.write_mean_extinction(keeper)
-    writer.write_T10(keeper)
-    writer.write_TOA_flux_Ang(keeper)
-    writer.write_flux_ratio_only(keeper)
+    writer.write_colmass_mu_cp_entropy(keeper, reader)
+    writer.write_integrated_flux(keeper, reader)
+    writer.write_downward_spectral_flux(keeper, reader)
+    writer.write_upward_spectral_flux(keeper, reader)
+    writer.write_TOA_flux_eclipse_depth(keeper, reader)
+    writer.write_direct_spectral_beam_flux(keeper, reader)
+    writer.write_planck_interface(keeper, reader)
+    writer.write_planck_center(keeper, reader)
+    writer.write_tp(keeper, reader)
+    writer.write_tp_cut(keeper, reader)
+    writer.write_opacities(keeper, reader)
+    writer.write_Rayleigh_cross_sections(keeper, reader)
+    writer.write_cloud_scat_cross_sections(keeper, reader)
+    writer.write_cloud_absorption(keeper, reader)
+    writer.write_g_0(keeper, reader)
+    writer.write_transmission(keeper, reader)
+    writer.write_opt_depth(keeper, reader)
+    writer.write_trans_weight_function(keeper, reader)
+    writer.write_contribution_function(keeper, reader)
+    writer.write_mean_extinction(keeper, reader)
+    writer.write_flux_ratio_only(keeper, reader)
     if Vmodder.V_coupling == 1:
         Vmodder.write_tp_VULCAN(keeper)
-    hsfunc.calc_tau_lw_sw(keeper)  # for Daniel Koll collaboration
+    if keeper.approx_f == 1:
+        hsfunc.calc_tau_lw_sw(keeper, reader)
 
     # prints the success message - yay!
     hsfunc.success_message(keeper)

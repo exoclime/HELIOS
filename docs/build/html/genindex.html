@@ -73,9 +73,11 @@
 </li>
       <li><a href="sections/code.html#host_functions.calc_F_ratio">calc_F_ratio() (in module host_functions)</a>
 </li>
-      <li><a href="sections/code.html#host_functions.calc_surf_temperature">calc_surf_temperature() (in module host_functions)</a>
+      <li><a href="sections/code.html#host_functions.calc_planck">calc_planck() (in module host_functions)</a>
 </li>
-      <li><a href="sections/code.html#computation.Compute.calc_surface_planck">calc_surface_planck() (computation.Compute method)</a>
+      <li><a href="sections/code.html#host_functions.calc_sensible_heat_flux">calc_sensible_heat_flux() (in module host_functions)</a>
+</li>
+      <li><a href="sections/code.html#host_functions.calc_tau_lw_sw">calc_tau_lw_sw() (in module host_functions)</a>
 </li>
       <li><a href="sections/code.html#computation.Compute.calculate_c_p">calculate_c_p() (computation.Compute method)</a>
 </li>
@@ -103,10 +105,10 @@
 </li>
       <li><a href="sections/code.html#module-clouds">clouds (module)</a>
 </li>
-      <li><a href="sections/code.html#Vcoupling_modification.Vcoupling.combine_to_mixed_opacities">combine_to_mixed_opacities() (Vcoupling_modification.Vcoupling method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="sections/code.html#Vcoupling_modification.Vcoupling.combine_to_mixed_opacities">combine_to_mixed_opacities() (Vcoupling_modification.Vcoupling method)</a>
+</li>
       <li><a href="sections/code.html#Vcoupling_modification.Vcoupling.combine_to_scat_cross">combine_to_scat_cross() (Vcoupling_modification.Vcoupling method)</a>
 </li>
       <li><a href="sections/code.html#module-computation">computation (module)</a>
@@ -140,8 +142,6 @@
       <li><a href="sections/code.html#quantities.Store.copy_host_to_device">copy_host_to_device() (quantities.Store method)</a>
 </li>
       <li><a href="sections/code.html#computation.Compute.correct_incident_energy">correct_incident_energy() (computation.Compute method)</a>
-</li>
-      <li><a href="sections/code.html#computation.Compute.correct_surface_emission">correct_surface_emission() (computation.Compute method)</a>
 </li>
       <li><a href="sections/code.html#quantities.Store.create_zero_arrays">create_zero_arrays() (quantities.Store method)</a>
 </li>
@@ -381,12 +381,12 @@
 </li>
       <li><a href="sections/code.html#write.Write.write_integrated_flux">write_integrated_flux() (write.Write static method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="sections/code.html#write.Write.write_mean_extinction">write_mean_extinction() (write.Write method)</a>
 </li>
       <li><a href="sections/code.html#write.Write.write_mean_werror">write_mean_werror() (write.Write static method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="sections/code.html#write.Write.write_opacities">write_opacities() (write.Write static method)</a>
 </li>
       <li><a href="sections/code.html#write.Write.write_opt_depth">write_opt_depth() (write.Write static method)</a>
@@ -397,19 +397,11 @@
 </li>
       <li><a href="sections/code.html#write.Write.write_Rayleigh_cross_sections">write_Rayleigh_cross_sections() (write.Write static method)</a>
 </li>
-      <li><a href="sections/code.html#write.Write.write_restart_file">write_restart_file() (write.Write static method)</a>
-</li>
-      <li><a href="sections/code.html#write.Write.write_T10">write_T10() (write.Write static method)</a>
-</li>
-      <li><a href="sections/code.html#write.Write.write_TOA_flux_Ang">write_TOA_flux_Ang() (write.Write static method)</a>
-</li>
       <li><a href="sections/code.html#write.Write.write_TOA_flux_eclipse_depth">write_TOA_flux_eclipse_depth() (write.Write static method)</a>
 </li>
       <li><a href="sections/code.html#write.Write.write_tp">write_tp() (write.Write static method)</a>
 </li>
       <li><a href="sections/code.html#write.Write.write_tp_cut">write_tp_cut() (write.Write static method)</a>
-</li>
-      <li><a href="sections/code.html#write.Write.write_tp_pure">write_tp_pure() (write.Write static method)</a>
 </li>
       <li><a href="sections/code.html#Vcoupling_modification.Vcoupling.write_tp_VULCAN">write_tp_VULCAN() (Vcoupling_modification.Vcoupling method)</a>
 </li>

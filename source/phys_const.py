@@ -22,6 +22,7 @@
 # ==============================================================================
 
 from astropy import constants as const
+import math
 
 
 C = const.c.cgs.value                   # speed of light in cm / s
@@ -40,9 +41,8 @@ M_JUP = const.M_jup.cgs.value           # mass Jupiter
 R_EARTH = const.R_earth.cgs.value       # radius Earth in cm, old value
 M_EARTH = const.M_earth.cgs.value       # mass Earth
 G = const.G.cgs.value                   # gravitational constant
-GAMMA = 0.5772156649                    # Euler-Mascheroni constant
 
-# molecular masses
+# molecular weights (mus)
 M_H2 = 2.01588
 M_H2O = 18.0153
 M_CO2 = 44.01
@@ -71,7 +71,7 @@ M_NAH = 23.99771
 M_ALH = 27.9889
 M_CRH = 53.0040
 
-# ATOMIC MASSES
+# atomic weights (mus)
 M_H = 1.007825
 M_HE = 4.0026
 M_C = 12.0096

@@ -34,18 +34,26 @@ class Plot(object):
     def plot_tp(quant):
         """ plots the TP-profile in realtime """
 
+        #  first we need to get the device arrays back to the host
+        quant.T_lay = quant.dev_T_lay.get()
+
         # set to 1 for video output
         video = 0
 
-        nr_layer = np.arange(0, quant.nlayer)
+        nr_layer = np.arange(-1, quant.nlayer)
 
         red_layer = []
         red_temp = []
 
-        for i in range(quant.nlayer):
+        for i in range(quant.nlayer+1):
             if quant.marked_red[i] == 1:
-                red_layer.append(i)
+                if i < quant.nlayer:
+                    red_layer.append(i)
+                elif i == quant.nlayer:
+                    red_layer.append(-1)
                 red_temp.append(quant.T_lay[i])
+
+        temp_plot = np.insert(quant.T_lay[:-1], 0, quant.T_lay[-1])
 
         plt.ion()
 
@@ -53,11 +61,11 @@ class Plot(object):
             fig=plt.gcf()
             fig.set_size_inches(10,6)
 
-        plt.plot(quant.T_lay, nr_layer, color='cornflowerblue', linewidth=2.0)
-        plt.scatter(quant.T_lay, nr_layer, color='forestgreen', s=40)
+        plt.plot(temp_plot, nr_layer, color='cornflowerblue', linewidth=2)
+        plt.scatter(temp_plot, nr_layer, color='forestgreen', s=40)
         plt.scatter(red_temp, red_layer, color='red', s=40)
 
-        plt.ylim(0, quant.nlayer-1)
+        plt.ylim(-1, quant.nlayer-1)
         if video == 1:
             plt.xlim(800, 3600)
 
@@ -65,7 +73,7 @@ class Plot(object):
         plt.axes().yaxis.set_major_locator(majorloc_y)
 
         plt.xlabel('temperature (K)')
-        plt.ylabel('number of layer')
+        plt.ylabel('layer index')
 
         plt.axes().xaxis.grid(True, 'minor', color='grey')
         plt.axes().xaxis.grid(True, 'major', color='grey')
@@ -86,16 +94,9 @@ class Plot(object):
         # set to 1 for video output
         video = 0
 
-        nr_layer = np.arange(0, quant.nlayer)
-        nr_interface = np.arange(0, quant.ninterface)
+        nr_layer = np.arange(-1, quant.nlayer)
 
-        conv_list = []
-        red_list = []
-        for i in range(quant.nlayer):
-            if quant.conv_layer[i] == 1:
-                conv_list.append(i)
-            if quant.marked_red[i] == 1:
-                red_list.append(i)
+        temp_plot = np.insert(quant.T_lay[:-1], 0, quant.T_lay[-1])
 
         # prepare figure
         plt.ion()
@@ -107,21 +108,14 @@ class Plot(object):
         # left subplot
         subtp = fig.add_subplot(121)
 
-        subtp.plot(quant.T_lay, nr_layer, color='cornflowerblue', linewidth=2.0)
-        subtp.scatter(quant.T_lay, nr_layer, color='orangered', s=20)
+        subtp.plot(temp_plot, nr_layer, color='cornflowerblue', linewidth=2)
+        subtp.scatter(temp_plot, nr_layer, color='orangered', s=30)
 
-        plt.ylim(0, quant.nlayer-1)
-        # plt.xlim(800, 3600)
+        plt.ylim(-1, quant.nlayer-1)
 
-        #x_low_lim = max(0, 100*(min(quant.T_lay) // 100 - 1))
-        #x_up_lim = 100*(max(quant.T_lay) // 100 + 2)
-        #plt.xlim(x_low_lim, x_up_lim)
         plt.xlabel('temperature (K)')
-        plt.ylabel('number of layer')
-        #plt.xticks(np.arange(x_low_lim, x_up_lim+400, 400))
+        plt.ylabel('layer index')
 
-        #minorloc_x = tkr.MultipleLocator(50)
-        #subtp.xaxis.set_minor_locator(minorloc_x)
         majorloc_y = tkr.MultipleLocator(10)
         subtp.yaxis.set_major_locator(majorloc_y)
 
@@ -130,21 +124,39 @@ class Plot(object):
         subtp.yaxis.grid(True, 'minor', color='grey')
         subtp.yaxis.grid(True, 'major', color='grey')
 
-        p_plot = [p * 1e-6 for p in quant.p_int]
-
         # right subplot
+
+        nr_interface = np.arange(-1, quant.ninterface)
+
+        conv_list = []
+        red_list = []
+
+        for i in range(quant.nlayer+1):
+            if quant.marked_red[i] == 1:
+                if i < quant.nlayer:
+                    red_list.append(i)
+                elif i == quant.nlayer:
+                    red_list.append(-1)
+            if quant.conv_layer[i] == 1:
+                if i < quant.nlayer:
+                    conv_list.append(i)
+                elif i == quant.nlayer:
+                    conv_list.append(-1)
+
+        fnet_plot = np.insert(quant.F_net, 0, quant.F_intern)
+
         subfnet = fig.add_subplot(122)
-        subfnet.plot(quant.F_net, nr_interface, color='forestgreen', linewidth=2.0)
-        subfnet.scatter(quant.F_net, nr_interface, color='orangered', s=20)
+        subfnet.plot(fnet_plot, nr_interface, color='forestgreen', linewidth=2.0)
+        subfnet.scatter(fnet_plot, nr_interface, color='orangered', s=20)
 
         for i in conv_list:
             subfnet.axhspan(i, i + 1, color='orange', alpha=0.5)
         for i in red_list:
             subfnet.axhspan(i, i + 1, color='magenta', alpha=0.5)
 
-        plt.ylim(0, quant.ninterface - 1)
+        plt.ylim(-1, quant.ninterface - 1)
 
-        plt.vlines(quant.F_intern, 0, quant.ninterface, colors='blue', linestyles='--', linewidth=2.0, alpha=0.5)
+        plt.vlines(quant.F_intern, -1, quant.ninterface, colors='blue', linestyles='--', linewidth=2, alpha=0.5)
 
         if quant.F_intern > 0:
             plt.xlim(-quant.F_intern/2, quant.F_intern*2)
@@ -153,7 +165,7 @@ class Plot(object):
             plt.xlim(0, 40000)
 
         plt.xlabel('rad. net flux (erg s$^{-1}$ cm$^{-2}$)')
-        plt.ylabel('number of interface')
+        plt.ylabel('interface index')
 
         majorloc_y = tkr.MultipleLocator(10)
         subfnet.yaxis.set_major_locator(majorloc_y)

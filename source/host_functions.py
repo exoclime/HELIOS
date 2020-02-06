@@ -22,13 +22,16 @@
 import numpy as np
 import sys
 from numpy.polynomial.legendre import leggauss as G
+import pycuda.driver as cuda
+import pycuda.autoinit
+import pycuda.gpuarray as gpuarray
+from pycuda.compiler import SourceModule
 from source import phys_const as pc
 from source import realtime_plotting as rtp
 
 
-
 def planet_param(quant, read):
-    """ takes the correct planetary parameters from dictionary if desired """
+    """ sets the planetary, stellar and orbital parameters and converts them to the correct units """
 
     if quant.planet == "manual":
         print("\nUsing manual input for the planetary and orbital parameters.")
@@ -46,8 +49,8 @@ def planet_param(quant, read):
     quant.T_star = quant.fl_prec(max(quant.T_star, 2.3))
 
 
-def approx_f_from_formula(quant):
-    " calculates the f redistribution factor from the approximative formula from Koll et al. in prep."
+def approx_f_from_formula(quant, read):
+    """ calculates the f redistribution factor from the approximative formula from Koll et al. (2019) """
 
     # read in tau_lw from output file if it exists
     if "_post" in quant.name:
@@ -55,7 +58,7 @@ def approx_f_from_formula(quant):
     else:
         name = quant.name
     try:
-        with open("./output/" + name + "/" + name + "_tau_lw_sw.dat", "r") as entr_file:
+        with open(read.output_path + name + "/" + name + "_tau_lw_sw.dat", "r") as entr_file:
             next(entr_file)
             next(entr_file)
             for line in entr_file:
@@ -75,6 +78,7 @@ def approx_f_from_formula(quant):
 
 
 def calc_planck(lamda, temp):
+    """ calculates the Planckian blackbody function at a given wavelength and temperature """
 
     term1 = 2 * pc.H * pc.C**2 / lamda**5
 
@@ -85,7 +89,8 @@ def calc_planck(lamda, temp):
     return result
 
 
-def calc_tau_lw_sw(quant):
+def calc_tau_lw_sw(quant, read):
+    """ estimates the shortwave and longwave optical depths from the TOA to BOA. This is required when using the f approximation formula of Koll et al. (2019) """
 
     num_lw = 0
     denom_lw = 0
@@ -100,7 +105,7 @@ def calc_tau_lw_sw(quant):
 
             tau_from_top += quant.delta_tau_band[x + i * quant.nbin]
 
-        B_surface = calc_planck(quant.opac_wave[x], quant.T_surf)
+        B_surface = calc_planck(quant.opac_wave[x], quant.T_lay[quant.nlayer])
 
         num_lw += B_surface * np.exp(-tau_from_top) * quant.opac_deltawave[x]
         denom_lw += B_surface * quant.opac_deltawave[x]
@@ -118,7 +123,7 @@ def calc_tau_lw_sw(quant):
     else:
         tau_sw_tot = 0
 
-    with open("./output/" + quant.name + "/" + quant.name + "_tau_lw_sw.dat", "w") as file:
+    with open(read.output_path + quant.name + "/" + quant.name + "_tau_lw_sw.dat", "w") as file:
         file.writelines("This file contains the total longwave and shortwave optical depths at BOA (or surface if there), tau_lw and tau_sw")
         file.writelines("\n{:<10}{:<10}".format("tau_lw", "tau_sw"))
         file.writelines("\n{:<10g}{:<10g}".format(tau_lw_tot, tau_sw_tot))
@@ -133,19 +138,16 @@ def initial_temp(quant, read, Vmod):
         T_eff = (1.0-quant.dir_beam) * quant.f_factor ** 0.25 * (quant.R_star / quant.a) ** 0.5 * quant.T_star \
                 + quant.dir_beam * abs(quant.mu_star) ** 0.25 * (quant.R_star / quant.a) ** 0.5 * quant.T_star
 
-        # for efficiency reasons initial temperature has a lower limit of 100 K
-        T_start = max(T_eff, 500)
+        # for efficiency reasons initial temperature has a lower limit of 500 K
+        quant.T_lay = np.ones(quant.nlayer+1) * max(T_eff, 500)
 
-        for n in range(quant.nlayer):
-            quant.T_lay.append(T_start)
-
-        print("\nStarting with an isothermal TP-profile at {:g}".format(T_start)+" K.")
+        print("\nStarting with an isothermal TP-profile at {:g}".format(max(T_eff, 500))+" K.")
 
     elif quant.singlewalk == 1:
 
         read.read_temperature_file(quant)
 
-        quant.T_lay = quant.T_restart
+        quant.T_lay = np.append(quant.T_restart[1:], quant.T_restart[0])
 
         print("\nStarting with chosen temperature profile.")
 
@@ -167,7 +169,7 @@ def temp_calcs(quant):
 
 
 def calc_F_intern(quant):
-    """ calculates the internal flux """
+    """ calculates the internal heat flux """
 
     quant.F_intern = pc.SIGMA_SB * quant.T_intern ** 4.0
 
@@ -175,22 +177,22 @@ def calc_F_intern(quant):
 def set_up_numerical_parameters(quant):
     """ sets up additional parameters used in the calculation """
 
-    # limit for w_0 where to start to apply the pure scattering solutions
-    quant.w_0_limit = quant.fl_prec(1.0 - 1e-6)
+    # limit for w_0
+    quant.w_0_limit = quant.fl_prec(1.0 - 1e-10)
 
-    # limit where to switch from noniso to iso equations to make them more stable
+    # limit where to switch from noniso to iso equations to keep model stable
     quant.delta_tau_limit = quant.fl_prec(1e-4)
 
-    # limit where global energy equilibrium is assumed
+    # relative criterion for global energy equilibrium
     quant.global_limit = quant.fl_prec(1e-3)
 
-    # limit where radiative convergence is assumed
+    # relative criterion for local energy equilibrium
     if quant.prec == "double":
         quant.local_limit_rad_iter = quant.fl_prec(1e-7)
     elif quant.prec == "single":
         quant.local_limit_rad_iter = quant.fl_prec(1e-5)
 
-    # limit where local rad.-conv. convergence is assumed
+    # relative criterion for local energy equilibrium in the convective adjustment part
     quant.local_limit_conv_iter = quant.fl_prec(1e-7)
 
     # sets the appropriate gaussian weights
@@ -253,35 +255,11 @@ def check_for_global_eq(quant):
     return criterion
 
 
-def calc_surf_temperature_and_flux(quant):
-    """ calculates the surface temperature from the downward incoming (and absorbed) flux and the interior heat flux """
-
-    # limit F_sens for numerical stability
-    F_sens_limited = min(0.99 * (1.0 - quant.surf_albedo) * quant.F_down_tot[0], abs(quant.F_sens)) * np.sign(quant.F_sens)
-
-    # emissivity = 1 - albedo
-    quant.T_surf = (((1.0 - quant.surf_albedo) * quant.F_down_tot[0] - F_sens_limited) / ((1.0 - quant.surf_albedo) * pc.SIGMA_SB) + quant.T_intern**4.0/(1.0 - quant.surf_albedo))**0.25
-    # print("T_surf:", quant.T_surf)
-    # change the upward BOA flux to match the Stefan-Boltzmann law and to include the surface albedo
-    F_up_BOA_radiative = quant.surf_albedo * quant.F_down_tot[0] + (1.0 - quant.surf_albedo) * pc.SIGMA_SB * quant.T_surf**4.0
-
-    # the total flux is the radiative flux plus the sensible heat flux
-    quant.F_up_tot[0] = F_up_BOA_radiative + F_sens_limited
-
-    # the corresponding net flux needs to be tweaked as well in order for the temperature iteration to work properly
-    quant.F_net[0] = quant.F_up_tot[0] - quant.F_down_tot[0]
-    # print("Fup_tot: {:.2e}, Fup_rad: {:.2e}, F_sens: {:.2e}, Fdown_tot: {:.2e}, Fnet: {:.2e}".format(quant.F_up_tot[0], F_up_BOA_radiative, F_sens_limited, quant.F_down_tot[0], quant.F_net[0]))
-
-    if quant.planet_type == 'rocky':
-        # calculate the sensible heat flux for next iteration -- commented out for the moment
-        # calc_sensible_heat_flux(quant)
-        pass
-
-
 def relax_global_limit(quant):
     """ makes the global convergence limit less strict for difficult cases """
 
     quant.global_limit = quant.fl_prec(1e-2)
+
 
 def check_for_local_eq(quant):
     """ checks for local equilibrium """
@@ -289,22 +267,30 @@ def check_for_local_eq(quant):
     criterion = 0
 
     converged_list = []
-    quant.marked_red = np.zeros(quant.nlayer)
+    quant.marked_red = np.zeros(quant.nlayer+1)
 
-    for i in range(quant.nlayer):
+    for i in range(quant.nlayer+1):  # including surface/BOA "ghost layer"
 
         if quant.conv_layer[i] == 0:
 
-            # temperature smoothing (analogous to rad_temp_iter kernel)
-            t_mid = quant.T_lay[i]
+            if i < quant.nlayer:
 
-            if quant.smooth == 1:
-                if quant.p_lay[i] < 1e6 and i < quant.nlayer - 1:
-                    t_mid = (quant.T_lay[i - 1] + quant.T_lay[i + 1]) / 2
+                # temperature smoothing (analogous to rad_temp_iter kernel)
+                t_mid = quant.T_lay[i]
 
-            F_temp = (t_mid - quant.T_lay[i])**7
-            combined_F_net = quant.F_net_diff[i] + F_temp
+                if quant.smooth == 1:
+                    if quant.p_lay[i] < 1e6 and i < quant.nlayer - 1:
+                        t_mid = (quant.T_lay[i - 1] + quant.T_lay[i + 1]) / 2
 
+                F_temp = (t_mid - quant.T_lay[i])**7
+
+                combined_F_net = quant.F_net_diff[i] + F_temp
+
+            elif i == quant.nlayer:
+
+                combined_F_net = quant.F_intern - quant.F_net[0]
+            if quant.T_lay[i] == 0:
+                print(i ,quant.T_lay[i])
             div_lim_quant = abs(combined_F_net) / (pc.SIGMA_SB * quant.T_lay[i] ** 4.0)
 
             # check for criterion satisfaction
@@ -316,7 +302,7 @@ def check_for_local_eq(quant):
                 # if quant.iter_value % 10 == 9:
                 #     print("layer: {:<5g}, delta_flux/BB_layer: {:<12.3e}".format(i, div_lim_quant))
 
-    if len(converged_list) == quant.nlayer - sum(quant.conv_layer):
+    if len(converged_list) == (quant.nlayer + 1) - sum(quant.conv_layer):
         criterion = 1
 
     return criterion
@@ -357,11 +343,11 @@ def conv_check(quant):
     """ checks whether the lapse rate exceeds the allowed dry adiabat, if yes mark it for convective correction """
 
     # erase all previous information and start to check from zero
-    quant.conv_unstable = np.zeros(quant.nlayer, np.int32)
+    quant.conv_unstable = np.zeros(quant.nlayer + 1, np.int32)  # including the surface/BOA "ghost layer"
 
     for i in range(quant.nlayer-1):
 
-        if quant.p_lay[i] <= 1e2:  # do not do very top, since it is artificial
+        if quant.p_lay[i] <= 1e2:  # ignore top atmosphere, since artificial/numerical temperature peaks might occur there
             break
 
         T_in_between_lim = quant.T_lay[i] * (quant.p_int[i+1] / quant.p_lay[i]) ** (quant.kappa_lay[i] * (1+1e-6))
@@ -373,8 +359,15 @@ def conv_check(quant):
             quant.conv_unstable[i] = 1
             quant.conv_unstable[i+1] = 1
 
-            # for debugging purposes uncomment next line
-            # print("unstable layers:", i, i+1, quant.T_lay[i], quant.T_lay[i+1])
+    # do the surface/BOA condition
+    T_ad_lim = quant.T_lay[quant.nlayer] * (quant.p_lay[0] / quant.p_int[0]) ** (quant.kappa_int[0] * (1 + 1e-6))
+
+    if quant.T_lay[0] < T_ad_lim:
+        quant.conv_unstable[quant.nlayer] = 1
+        quant.conv_unstable[0] = 1
+
+    # for debugging purposes uncomment next line
+    # print("unstable layers:", i, i+1, quant.T_lay[i], quant.T_lay[i+1])
 
 
 def conv_correct(quant, fudging):
@@ -384,9 +377,12 @@ def conv_correct(quant, fudging):
     start_layers = []
     end_layers = []
 
-    for i in range(quant.nlayer):
+    for i in range(quant.nlayer+1):  # including surface/BOA "ghost layer"
         if quant.conv_unstable[i] == 1 or quant.conv_layer[i] == 1:
             to_be_corrected_list.append(i)
+
+    if quant.nlayer in to_be_corrected_list:
+        to_be_corrected_list = np.insert(to_be_corrected_list[:-1], 0, -1)
 
     for i in range(len(to_be_corrected_list)):
         if to_be_corrected_list[i]-1 not in to_be_corrected_list:
@@ -411,7 +407,14 @@ def conv_correct(quant, fudging):
             for m in range(n, len(start_layers)):
 
                 if m != len(start_layers) - 1:
-                    if quant.p_lay[start_layers[m+1]]/quant.p_lay[end_layers[m]] < 0.36787944117144:  # (=1/e=H) avoiding small RT zones of width < H
+
+                    p_top = quant.p_lay[start_layers[m+1]]
+                    if end_layers[m] != -1:
+                        p_bot = quant.p_lay[end_layers[m]]
+                    elif end_layers[m] == -1:
+                        p_bot = quant.p_int[0]
+
+                    if (p_top / p_bot) < (1 / np.e):  # (=H) avoiding small RT zones of width < H
                         interface_to_be_tested = int((end_layers[m] + start_layers[m+1]) / 2)
                         break
 
@@ -420,12 +423,9 @@ def conv_correct(quant, fudging):
 
                 # dampara as in damping parameter. It is a sad attempt at playing with words.
                 if quant.input_dampara == "auto":
-                    quant.dampara = 128
-                    if quant.iter_value > 5000:
-                        quant.dampara = quant.iter_value / 5.0
-
+                    quant.dampara = 16  # 16 is found to lead to the fastest convergence hence taking as nominal value
                 else:
-                    quant.dampara=int(quant.input_dampara)
+                    quant.dampara = int(quant.input_dampara)
 
                 # allows to correct for global equilibrium. With fudge_factor == 1, you satisfy local equilibrium, but never reach a global one
                 if quant.F_intern != 0:
@@ -440,13 +440,13 @@ def conv_correct(quant, fudging):
             else:
 
                 if quant.input_dampara == "auto":
-                    quant.dampara = 1024
+                    quant.dampara = 1024  # 1024 is found to lead to the fastest convergence hence taking as nominal value
                 else:
                     quant.dampara=int(quant.input_dampara)
 
                 fudge_factor[n] = (quant.F_intern / quant.F_net[interface_to_be_tested]) ** (1.0 / quant.dampara)
 
-        # uncomment next few lines for debugging
+        ### uncomment next few lines for debugging
         # for n in range(len(start_layers)):
         #     if n < len(start_layers) - 1:
         #         print("\tIntermediate RT layers found from layer", end_layers[n],"to", start_layers[n+1], "with fudge_factor = ",
@@ -459,15 +459,19 @@ def conv_correct(quant, fudging):
         num = 0
         denom = 0
 
-        for i in range(start_layers[n], end_layers[n]+1):
+        # next two lines to prevent having index -1, which could happen if surface/BOA is in the to_be_corrected_list
+        start_index = max(0, start_layers[n])
+        stop_index = max(0, end_layers[n])
+
+        for i in range(start_index, stop_index + 1):
 
             num += quant.c_p_lay[i] * quant.T_lay[i] * (quant.p_int[i] - quant.p_int[i+1])
 
             denom_element = 1
 
-            if i != start_layers[n]:
+            if i != start_index:
 
-                for j in range(start_layers[n], i):
+                for j in range(start_index, i):
 
                     denom_element *= (quant.p_lay[j]/quant.p_int[j])**quant.kappa_int[j] * (quant.p_int[j+1]/quant.p_lay[j])**quant.kappa_lay[j]
 
@@ -479,19 +483,24 @@ def conv_correct(quant, fudging):
 
         mean_pot_temp *= fudge_factor[n]
 
-        for i in range(start_layers[n], end_layers[n] + 1):
+        for i in range(start_index, stop_index + 1):
 
             factor = 1
 
-            if i != start_layers[n]:
+            if i != start_index:
 
-                for j in range(start_layers[n], i):
+                for j in range(start_index, i):
 
                     factor *= (quant.p_lay[j]/quant.p_int[j])**quant.kappa_int[j] * (quant.p_int[j+1]/quant.p_lay[j])**quant.kappa_lay[j]
 
             factor *= (quant.p_lay[i]/quant.p_int[i])**quant.kappa_int[i]
 
             quant.T_lay[i] = mean_pot_temp * factor
+
+        # correct surface/BOA temperature to the convective zones mean potential temperature to satisfy stability
+        if start_layers[n] == -1:
+
+            quant.T_lay[quant.nlayer] = mean_pot_temp
 
 
 def convective_adjustment(quant):
@@ -504,7 +513,7 @@ def convective_adjustment(quant):
 
     while unstable_found:
 
-        # uncomment for debugging
+        ### uncomment for debugging
         # sys.stdout.write("Adjusting temperatures: {:6d} \r".format(iter))
         # sys.stdout.flush()
 
@@ -515,11 +524,10 @@ def convective_adjustment(quant):
         conv_check(quant)
         unstable_found = sum(quant.conv_unstable) > 0
 
-        # uncomment next four lines for debugging
-        # if quant.iter_value > 1000:
-        #     check_for_local_eq(quant)
-        #     mark_convective_layers(quant)
-        #     rtp.Plot().plot_convective_feedback(quant)
+        ### uncomment next three lines for debugging
+        # check_for_local_eq(quant)
+        # mark_convective_layers(quant, stitching=0)
+        # rtp.Plot().plot_convective_feedback(quant)
 
         iter += 1
 
@@ -527,7 +535,7 @@ def convective_adjustment(quant):
 
     conv_correct(quant, fudging=1)
 
-    # uncomment for debugging
+    ### uncomment for debugging
     # sys.stdout.write("Adjusting temperatures: {:6s}\r".format("DONE"))
     # sys.stdout.flush()
 
@@ -535,9 +543,13 @@ def convective_adjustment(quant):
 def mark_convective_layers(quant, stitching):
     """ marks the layers where convection dominates over radiative transfer """
 
+    # reset bottom boundary
+    quant.conv_layer[quant.nlayer] = 0
+    quant.conv_layer[0] = 0
+
     for i in range(quant.nlayer - 1):
 
-        if quant.p_lay[i] <= 1e2:  # do not do very top, since it is artificial
+        if quant.p_lay[i] <= 1e2:  # ignore top atmosphere, since artificial/numerical temperature peaks might occur there
             break
 
         T_in_between_lim = quant.T_lay[i] * (quant.p_int[i + 1] / quant.p_lay[i]) ** (quant.kappa_lay[i] * (1 - 1e-6))
@@ -550,13 +562,20 @@ def mark_convective_layers(quant, stitching):
         else:
             quant.conv_layer[i + 1] = 0
 
-        if quant.T_lay[i+1] > quant.T_lay[i]:
+        if quant.T_lay[i+1] > quant.T_lay[i]:  # temperature inversion directly next to adiabat is unphysical. this fix helps with potential kinks.
 
             quant.conv_layer[i] = 0
 
+    # do the surface/BOA condition
+    T_ad_lim = quant.T_lay[quant.nlayer] * (quant.p_lay[0] / quant.p_int[0]) ** (quant.kappa_int[0] * (1 - 1e-6))
+
+    if quant.T_lay[0] < T_ad_lim:
+        quant.conv_layer[quant.nlayer] = 1
+        quant.conv_layer[0] = 1
+
     # stitch holes if taking too long to converge
     if stitching == 1:
-        if quant.iter_value > 5e3:
+        if quant.iter_value > 5e3:  # warning: hardcoded number
             stitching_convective_zone_holes(quant)
 
 
@@ -566,23 +585,32 @@ def stitching_convective_zone_holes(quant):
     start_layers = []
     end_layers = []
 
-    for i in range(0, quant.nlayer):
+    for i in range(quant.nlayer):
 
         if quant.conv_layer[i] == 1:
 
             if i > 0:
                 if quant.conv_layer[i-1] == 0:
                     start_layers.append(i)
-            else:
-                if quant.conv_layer[i] == 1:
+            elif i == 0:
+                if quant.conv_layer[quant.nlayer] == 0:
                     start_layers.append(i)
 
             if i < quant.nlayer - 1:
                 if quant.conv_layer[i+1] == 0:
                     end_layers.append(i)
-            else:
-                if quant.conv_layer[i] == 1:
-                    end_layers.append(i)
+            elif i == quant.nlayer - 1:
+                end_layers.append(i)
+
+    # do surface/BC "ghost layer"
+    if quant.conv_layer[quant.nlayer] == 1:
+
+        start_layers.append(quant.nlayer)
+        start_layers = np.insert(start_layers[:-1], 0, -1)
+
+        if quant.conv_layer[0] == 0:
+            end_layers.append(quant.nlayer)
+            end_layers = np.insert(end_layers[:-1], 0, -1)
 
     # quick self-check
     if len(start_layers) != len(end_layers):
@@ -591,7 +619,13 @@ def stitching_convective_zone_holes(quant):
 
     for n in range(len(start_layers)-1):
 
-        if quant.p_lay[start_layers[n+1]]/quant.p_lay[end_layers[n]] > 0.36787944117144:  # (=1/e) stitching small RT zones of width < H
+        p_top = quant.p_lay[start_layers[n+1]]
+        if end_layers[n] != - 1:
+            p_bot = quant.p_lay[end_layers[n]]
+        elif end_layers[n] == - 1:
+            p_bot = quant.p_int[0]
+
+        if (p_top / p_bot) > (1 / np.e):  # (=H) stitching small RT zones of width < H
 
             for m in range(end_layers[n]+1, start_layers[n+1]):
 
@@ -636,7 +670,7 @@ def calc_F_ratio(quant):
 
 
 def calculate_height_z(quant):
-    """ prints the message that you have been desperately waiting for """
+    """ calculates the altitude of the layer centers, either above ground or 10 bar pressure level """
 
     if quant.planet_type == 'gas':
 
@@ -663,43 +697,22 @@ def calculate_height_z(quant):
             quant.z_lay[i] = quant.z_lay[i-1] + 0.5 * quant.delta_z_lay[i-1] + 0.5 * quant.delta_z_lay[i]
 
 
-def calc_sensible_heat_flux(quant):
-    """ calculates the sensible heat flux for the surface layers """
+def construct_grid(quant):
 
-    # get arrays from GPU
-    quant.meanmolmass_lay = quant.dev_meanmolmass_lay.get()
-    quant.c_p_lay = quant.dev_c_p_lay.get()
+    press_levels = [quant.p_boa * (quant.p_toa/quant.p_boa)**(i/(2 * quant.nlayer - 1)) for i in range(2 * quant.nlayer)]
 
-    # horizontal wind speed in cgs
-    U = 1e4
+    quant.p_lay = [press_levels[i] for i in range(1, 2 * quant.nlayer, 2)]
 
-    # simplified drag coefficient for simple tests
-    C_D = 1
+    quant.p_int = [press_levels[i] for i in range(0, 2 * quant.nlayer, 2)]
 
-    # drag coefficient after similarity theory -- commented out for the moment
-    # K_vk = 0.4 # von Karman constant
-    # C_D = (K_vk / np.log(z_surf_lay_top/z_surf))**2
+    quant.p_int.append(quant.p_toa * (quant.p_toa/quant.p_boa)**(1/(2 * quant.nlayer - 1)))
 
-    rho_surface = quant.p_int[0] * quant.meanmolmass_lay[0] / (pc.K_B * quant.T_surf)
+    for i in range(quant.nlayer):
 
-    # calculating the top temperature of the surface layer
-    # top altitude in cgs
-    z_surf_lay_top = 1e4
-    z_surf_lay_bot = 1
+        quant.delta_colmass.append((quant.p_int[i] - quant.p_int[i + 1]) / quant.g)
+        quant.delta_col_upper.append((quant.p_lay[i] - quant.p_int[i + 1]) / quant.g)
+        quant.delta_col_lower.append((quant.p_int[i] - quant.p_lay[i]) / quant.g)
 
-    delta_z_surf_lay = z_surf_lay_top - z_surf_lay_bot
-    p_surf_lay_top = quant.p_int[0] - rho_surface * quant.g * delta_z_surf_lay
-
-    T_surf_lay_top = (np.log10(quant.p_int[0]/p_surf_lay_top) * quant.T_lay[0] + np.log10(p_surf_lay_top/quant.p_lay[0]) * quant.T_surf) \
-                     / np.log10(quant.p_int[0]/quant.p_lay[0])
-
-    # screen feedback for debugging purposes
-    # print("P_surf, P_surf_layer_top, P_middle_layer", quant.p_int[0], p_surf_lay_top, quant.p_lay[0])
-    # print("T_surf, T_surf_layer_top, T_middle_layer", quant.T_surf, T_surf_lay_top, quant.T_lay[0])
-    #print("cp:", quant.c_p_lay[0], "rho:", rho_surface)
-
-    quant.F_sens = quant.c_p_lay[0] * rho_surface * C_D * U * (quant.T_surf - T_surf_lay_top)
-    # side note: c_p_lay because c_p_int is not calculated and the difference will be negligible
 
 def success_message(quant):
     """ prints the message that you have been desperately waiting for """

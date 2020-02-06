@@ -181,6 +181,7 @@ Command Line Options
 In addition to the parameter file, the most important parameters can also be set as command line options or console arguments. These options are ::
 
 	-name: 			name of output
+	-outputdir:		root output directory
         -isothermal: 		isothermal layers?
         -postprocess: 		pure post-processing?
         -nlayers: 		number of layers in the grid

@@ -1,7 +1,6 @@
 Tutorial
 ========
 
-**Dear ESP school participants, you may skip until section "ESP Summer School 2019".**
 
 Welcome! I assume this is the first time you are looking at HELIOS. Thus, I will guide you here in the most straightforward way towards the first run of the code on your machine. In order to keep the tutorial short and clear, in-depths explanations are omitted. Please refer to the appropriate sections in the in-depth documentation for more info.
 
@@ -54,26 +53,6 @@ Step-by-step Installation
 
   Congratulations, you have successfully installed HELIOS!
 
-
-ESP Summer School 2019
-----------------------
-
-** UPDATE**: It appears that two dependencies are not installed for everyone. You will have to install first the astropy and pycuda packages before being able to run HELIOS. You do that via typing ::
-
-	pip3 install astropy
-
-and ::
-
-	pip3 install pycuda
-
-This should be it. To run HELIOS, simply go now to the main directory of ``helios_summer_school`` and type ::
-
-	srun --gres=gpu:1 --x11 python3 helios.py
-
-Voilà! Please continue with reading section "First Run" (ignore first instruction). 
-
-
-
 First Run
 ---------
 
@@ -84,23 +63,6 @@ Go to the HELIOS main directory and type::
 HELIOS is pre-configured to conduct a generic run of the hot Jupiter HD 189733b. If HELIOS ran successfully, you should be now in possession of the dayside temperature profile in radiative-convective equilibrium and the corresponding emission and secondary eclipse spectra of this planet. Feel free to explore the ``output`` directory. 
 
 For a first quick analysis of your output, the installation includes two plotting scripts ``plot_tp.py`` and ``plot_spectrum.py``, located in the ``tools`` subdirectory. Those scripts allow you to inspect your very first generated temperature-profile profile and emission spectrum. Well done! You can now go on and modify the parameters in the ``param.dat`` file or simulate another planet. Please refer to the rest of the documentation for more info.
-
-ESP Summer School 2019
-^^^^^^^^^^^^^^^^^^^^^^
-
-To run the plotting scripts on Hulk, type ::
-
-	srun --x11 python3 plot_tp.py
-
-or ``plot_spectrum.py``, respectively.
-
-**Further Tasks**: Please see the ``tasks.txt`` document in the HELIOS main directory for further tasks to do. Please see :doc:`parameters` for a extensive description of the HELIOS parameters, or see below for the most important parameters for HELIOS beginners.
-
-.. figure:: ../figures/parameters.png
-   :scale: 40 %
-   :alt: map to buried treasure
-
-   *Figure: Most important parameters for HELIOS beginners*
 
 Sample Files
 ------------

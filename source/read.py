@@ -32,6 +32,7 @@ class Read(object):
     """ class that reads in parameters, which are to be used in the HELIOS code"""
 
     def __init__(self):
+        self.output_path = None
         self.ktable_path = None
         self.ind_mol_opac_path = None
         self.temp_path = None
@@ -78,7 +79,7 @@ class Read(object):
             n_plot = npy.int32(10)
         else:
             try:
-                if float(var) > 1:
+                if float(var) >= 1:
                     real_plot = npy.int32(1)
                     n_plot = npy.int32(var)
                 else:
@@ -157,6 +158,8 @@ class Read(object):
                         # GENERAL
                         if column[0] == "name":
                             quant.name = column[2]
+                        elif column[0] == "output" and column[1] == "directory":
+                            self.output_path = column[3]
                         elif column[0] == "precision":
                             quant.prec = column[2]
                             self.set_precision(quant)
@@ -191,15 +194,15 @@ class Read(object):
                             quant.tstep = quant.fl_prec(column[3])
                         elif column[0] == "adaptive" and column[1] == "interval":
                             quant.adapt_interval = npy.int32(column[3])
-                        elif column[0] == "TP-profile" and column[1] == "smoothing":
-                            quant.smooth = self.__read_yes_no__(column[3])
+                        elif column[0] == "TP" and column[2] == "smoothing":
+                            quant.smooth = self.__read_yes_no__(column[4])
 
                         # RADIATION
                         elif column[0] == "direct" and column[2] == "beam":
                             quant.dir_beam = self.__read_yes_no__(column[4])
                         elif column[0] == "scattering":
                             quant.scat = self.__read_yes_no__(column[2])
-                        elif column[0] == "imp." and column[1] == "scattering":
+                        elif column[0] == "improved" and column[1] == "two-stream":
                             quant.scat_corr = self.__read_yes_no__(column[4])
                         elif column[0] == "path" and column[2] == "opacity" and column[3] == "file":
                             self.ktable_path = column[5]
@@ -215,17 +218,17 @@ class Read(object):
                         elif column[0] == "stellar" and column[1] == "zenith":
                             quant.dir_angle = quant.fl_prec((180 - float(column[5])) * npy.pi / 180.0)
                             quant.mu_star = quant.fl_prec(npy.cos(quant.dir_angle))
-                        elif column[0] == "geom." and column[1] == "zenith":
+                        elif column[0] == "geometric" and column[1] == "zenith":
                             quant.geom_zenith_corr = self.__read_yes_no__(column[5])
                         elif column[0] == "internal" and column[1] == "temperature":
                             quant.T_intern = quant.fl_prec(column[4])
-                        elif column[0] == "surface" and column[1] == "temperature":
-                            quant.T_surf = quant.fl_prec(column[4])
+                        elif column[0] == "surface/BOA" and column[1] == "temperature":
+                            quant.T_below = quant.fl_prec(column[4])
                         elif column[0] == "asymmetry":
                             quant.g_0 = quant.fl_prec(column[4])
                         elif column[0] == "energy" and column[2] == "correction":
                             quant.energy_correction = self.__read_yes_no__(column[4])
-                        elif column[0] == "surface" and column[1] == "albedo":
+                        elif column[0] == "surface/BOA" and column[1] == "albedo":
                             quant.surf_albedo = quant.fl_prec(column[3])
                             quant.surf_albedo = min(0.999, quant.surf_albedo)  # everything above 0.999 albedo is not physical. fullstop.
                             quant.surf_albedo = quant.fl_prec(quant.surf_albedo)
@@ -261,6 +264,10 @@ class Read(object):
                             quant.T_star = quant.fl_prec(column[4])
 
                         # EXPERIMENTAL
+                        elif column[0] == "debugging":
+                            quant.debug = self.__read_yes_no__(column[3])
+                        elif column[0] == "I2S" and column[1] == "transition":
+                            quant.i2s_transition = quant.fl_prec(column[4])
                         elif column[0] == "clouds":
                             quant.clouds = self.__read_yes_no__(column[2])
                         elif column[0] == "path" and column[2] == "cloud":
@@ -299,6 +306,7 @@ class Read(object):
         parser = argparse.ArgumentParser(description=
                                          "The following are the possible command-line parameters for HELIOS")
 
+        parser.add_argument('-outputdir', help='output directory', required=False)
         parser.add_argument('-g', help='surface gravity [cm s^-2]', required=False)
         parser.add_argument('-a', help='orbital distance [AU]', required=False)
         parser.add_argument('-rstar', help='stellar radius [R_sun]', required=False)
@@ -323,8 +331,10 @@ class Read(object):
         parser.add_argument('-Vfile', help='path to the file with VULCAN mixing ratios', required=False)
         parser.add_argument('-kappa', help='adiabatic coefficient, kappa = (ln T / ln P)_S', required=False)
 
-
         args = parser.parse_args()
+
+        if args.outputdir:
+            self.output_path = args.outputdir
 
         if args.g:
             quant.g = quant.fl_prec(args.g)
@@ -473,19 +483,22 @@ class Read(object):
             # nx = len(quant.opac_wave)
             # ny = len(quant.opac_y)
             # for t in range(nt):
+            #     print(quant.opac_k[0 + ny * 180 + ny * nx * 9 + ny * nx * nump * t])
+            # for t in range(nt):
             #     for p in range(nump):
             #         for x in range(nx):
             #             for y in range(ny):
             #                 #if temp 14 fixed at 800K, 22 1200K
-            #                 # quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t] = quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * 14]
+            #                 quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t] = quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * 14]
             #
             #                 #if press fixed at 1bar
             #                 #quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t] = quant.opac_k[y + ny * x + ny * nx * 18 + ny * nx * nump * t]
             #
             #                 #max value at 1e0
-            #                 #if x < 275:
-            #                 #    quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t] = min(1e-1, quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t])
-
+            #                 if x < 200:
+            #                     quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t] = 1e-1
+            #                 else:
+            #                     quant.opac_k[y + ny * x + ny * nx * p + ny * nx * nump * t] = 1e0
 
     @staticmethod
     def __read_correct_dataset__(path, dataset, flux_list):
@@ -614,8 +627,8 @@ class Read(object):
     @staticmethod
     def interpolate_to_own_press(old_press, old_array, new_press):
 
-        new_array = interpolate.interp1d(old_press, old_array, bounds_error=False,
-                                         fill_value=(old_array[-1], old_array[0]))(new_press)
+        new_array = interpolate.interp1d(npy.log10(old_press), old_array, bounds_error=False,
+                                         fill_value=(old_array[-1], old_array[0]))(npy.log10(new_press))
 
         return new_array
 
@@ -634,10 +647,6 @@ class Read(object):
                         column = line.split()
                         file_temp.append(quant.fl_prec(column[1]))
                         file_press.append(quant.fl_prec(column[2]))
-                        try:
-                            quant.T_surf = quant.fl_prec(column[8])  # will override the value in the param.dat file
-                        except IndexError:
-                            pass
 
             except IOError:
                 print("ABORT - TP file not found!")
@@ -669,9 +678,9 @@ class Read(object):
             print("Wrong format for TP-file. Aborting...")
             raise SystemExit()
 
-        own_press = [quant.p_boa * npy.exp(npy.log(quant.p_toa / quant.p_boa) * p / (quant.nlayer - 1.0)) for p in range(quant.nlayer)]
+        new_press = [quant.p_int[0]] + quant.p_lay
 
-        quant.T_restart = self.interpolate_to_own_press(file_press, file_temp, own_press)
+        quant.T_restart = self.interpolate_to_own_press(file_press, file_temp, new_press)
 
 if __name__ == "__main__":
     print("This module is for reading stuff. "
