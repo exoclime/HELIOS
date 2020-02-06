@@ -32,7 +32,7 @@ TP profile smoothing =                  no                                     (
 
 direct irradiation beam =               no                                    ('yes': star is a point-source. 'no': isotropic irradiation assumed.)
 scattering =                            yes
-improved two-stream correction =        yes                                     ('yes', 'no')
+improved two-stream correction =        no                                     ('yes', 'no')
 asymmetry factor g_0 =                  0                                      (values: [-1, 1]. 0: isotropic scattering. 1: pure forward, -1: pure backward.)
 path to opacity file =                  ./input/opac_sample.h5 
 diffusivity factor =                    2                                     (usually set to 2)
