@@ -12,7 +12,7 @@ HELIOS is part of the Exoclimes Simulation Platform ([ESP](http://www.exoclime.o
 
 If you use HELIOS for your own work, please cite its two method papers: [Malik et al. 2017](http://ui.adsabs.harvard.edu/abs/2017AJ....153...56M) and [Malik et al. 2019](https://ui.adsabs.harvard.edu/abs/2019AJ....157..170M).
 
-Any questions, issues or bug reports are appreciated and can be sent to *matej.malik@umd.edu*. 
+Any questions, issues or bug reports are appreciated and can be sent to *malik@umd.edu*. 
 
 Thank you for considering HELIOS!
 
