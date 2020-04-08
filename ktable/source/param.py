@@ -34,25 +34,10 @@ class Param(object):
         self.resolution = None
         self.special_limits = None
         self.fastchem_path = None
-        self.ele_abund = None
+        self.cond_path = None
         self.species_path = None
         self.final_path = None
-        self.special_abundance = None
 
-    @staticmethod
-    def __read_yes_no__(var):
-        """ transforms yes to 1 and no to zero """
-        if var == "yes":
-            value = npy.int32(1)
-        elif var == "no":
-            value = npy.int32(0)
-        else:
-            print("\nWARNING: Weird value found in input file. "
-                  "\nCheck that all (yes/no) parameters do have \"yes\" or \"no\" as value. "
-                  "\nThis input has the form", var,
-                  "\nAborting...")
-            raise SystemExit()
-        return value
 
     def read_param_file(self):
         """ reads the param file """
@@ -63,16 +48,14 @@ class Param(object):
                     column = line.split()
                     if column:
 
-                        # OPACITY FORMAT
+                        # 1st stage
                         if column[0] == "format":
                             self.format = column[2]
-                        elif column[0] == "individual":
-                            self.building = self.__read_yes_no__(column[4])
+                        elif column[0] == "individual" and column[2] == "calculation":
+                            self.building = column[4]
                         elif column[0] == "path" and column[2] == "HELIOS-K":
                             self.heliosk_path = column[5]
-                        elif column[0] == "path" and column[2] == "sampling" and column[3] == "output":
-                            self.resampling_path = column[5]
-                        elif column[0] == "path" and column[2] == "sampling" and column[3] == "param":
+                        elif column[0] == "path" and column[2] == "sampling" and column[3] == "species":
                             self.sampling_param_path = column[6]
                         elif column[0] == "sampling" and column[1] == "wavelength":
                             self.resolution = float(column[4])
@@ -81,20 +64,22 @@ class Param(object):
                             except ValueError:
                                 pass
 
-
-                        # COMBINING / WEIGHTING
+                        # 2nd stage
+                        elif column[0] == "directory" and column[2] == "individual":
+                            self.resampling_path = column[5]
+                        elif column[0] == "path" and column[2] == "final" and column[3] == "species":
+                            self.species_path = column[6]
                         elif column[0] == "path" and column[2] == "FastChem":
                             self.fastchem_path = column[5]
-                        elif column[0] == "path" and column[2] == "condensation":
-                            self.ele_abund = column[5]
-                        elif column[0] == "path" and column[2] == "species":
-                            self.species_path = column[5]
-                        elif column[0] == "path" and column[2] == "final":
-                            self.final_path = column[7]
+                        elif column[0] == "final" and column[1] == "output":
+                            self.final_path = column[6]
 
-                        # EXPERIMENTAL
-                        elif column[0] == "special" and column[1] == "abundance":
-                            self.special_abundance = column[3]
+                        # experimental
+                        elif column[0] == "include" and column[1] == "condensation":
+                            self.condensation = column[3]
+                        elif column[0] == "path" and column[2] == "condensation":
+                            self.cond_path = column[5]
+
 
 
         except IOError:

@@ -28,80 +28,43 @@ from source import tools as tls
 from source import phys_const as pc
 
 
+class Species(object):
+
+    def __init__(self):
+
+        self.name = None
+        self.absorbing = None
+        self.scattering = None
+        self.mixing_ratio = None
+        self.fc_name = None
+        self.mass = None
+
+
 class Comb(object):
     """ class responsible for combining and mixing the individual k-tables """
     
     def __init__(self):
-        self.k_temp = []
-        self.k_press = []
         self.chem_press = None
         self.chem_temp = None
-        self.mu = []
-        self.kpoints = []
-        self.k_y = []
-        self.k_w = []
-        self.k_i = []
-        self.k_x = []
-
-        self.na_k = []
-        self.k_k = []
-
+        self.chem_np = None
+        self.chem_nt = None
+        self.mu = None
+        self.n_e = None
+        self.k_y = None
+        self.k_w = None
+        self.k_i = None
+        self.k_x = None
         self.molname_list = []
         self.fastchem_data_low = None
         self.fastchem_data_high = None
         self.nx = None
         self.ny = None
-        self.np = None
-        self.nt = None
-        self.n_e = None
-
-        self.mixed_opacities = []
-
-        # scattering cross - sections
-        self.weighted_cross_ray_table = []
-        self.pure_cross_ray_h2_table = []
-        self.pure_cross_ray_he_table = []
-        self.pure_cross_ray_h_table = []
-        self.pure_cross_ray_h2o_table = []
-        self.pure_cross_ray_co2_table = []
-
-        # continuous opacities
-        self.opac_h_minus_bf = []
-        self.opac_h_minus_ff = []
-        self.weighted_opac_h_minus = []
-
-        # entropy, kappa, etc.
-        self.c_p = []
-        self.kappa = []
-        self.entropy = []
-        self.entr_temp = None
-        self.entr_nt = None
-        self.entr_press = None
-        self.entr_np = None
-
-        # masses of atoms in AMU (useful for later)
-        self.m_c = 12.0096
-        self.m_n = 14.007
-        self.m_o = 15.999
-        self.m_f = 18.9984
-        self.m_ne = 20.1797
-        self.m_mg = 24.305
-        self.m_al = 26.9815385
-        self.m_si = 28.085
-        self.m_p = 30.973761998
-        self.m_s = 32.06
-        self.m_cl = 35.45
-        self.m_ar = 39.948
-        self.m_ca = 40.078
-        self.m_ti = 47.867
-        self.m_v = 50.9415
-        self.m_cr = 51.9961
-        self.m_mn = 54.938044
-        self.m_fe = 55.845
-        self.m_cob = 58.933194
-        self.m_ni = 58.6934
-        self.m_cu = 63.546
-        self.m_zn = 65.38
+        self.final_press = None
+        self.final_temp = None
+        self.final_np = None
+        self.final_nt = None
+        self.combined_opacities = None
+        self.combined_cross_sections = None
 
     # -------- generic methods -------- #
 
@@ -114,16 +77,130 @@ class Comb(object):
                 short_list.append(item)
         return short_list
 
-    def interpolate_to_new_grid(self, temp_old, temp_new, press_old, press_new, k_old):
+    @staticmethod
+    def is_number(s):
+        try:
+            float(s)
+            return True
+        except ValueError:
+            pass
+
+        try:
+            import unicodedata
+            unicodedata.numeric(s)
+            return True
+        except (TypeError, ValueError):
+            pass
+
+        return False
+
+    def interpolate_vmr_to_final_grid(self, vmr):
+
+        temp_old = self.chem_temp
+        press_old = self.chem_press
+        temp_new = self.final_temp
+        press_new = self.final_press
+
+        vmr_old = vmr
+
+        vmr_new = npy.zeros(self.final_np * self.final_nt)
+
+        old_nt = len(temp_old)
+        old_np = len(press_old)
+
+        print("\nInterpolating VMR...")
+        print("chemistry temperature grid:\n", temp_old[:3], "...", temp_old[-3:])
+        print("final table temperature grid:\n", temp_new[:3], "...", temp_new[-3:])
+        print("chemistry pressure grid:\n", press_old[:3], "...", press_old[-3:])
+        print("final table pressure grid:\n", press_new[:3], "...", press_new[-3:])
+
+        print("final np:", self.final_np, "final nt:", self.final_nt)
+        print("old np:", old_np, "old nt:", old_nt)
+
+        for i in range(self.final_nt):
+
+            for j in range(self.final_np):
+
+                reduced_t = 0
+                reduced_p = 0
+
+                try:
+                    t_left = max([t for t in range(len(temp_old)) if temp_old[t] <= temp_new[i]])
+                except ValueError:
+                    t_left = 0
+                    reduced_t = 1
+
+                try:
+                    p_left = max([p for p in range(len(press_old)) if press_old[p] <= press_new[j]])
+                except ValueError:
+                    p_left = 0
+                    reduced_p = 1
+
+                if t_left == len(temp_old) - 1:
+                    reduced_t = 1
+
+                if p_left == len(press_old) - 1:
+                    reduced_p = 1
+
+                if reduced_p == 1 and reduced_t == 1:
+
+                    vmr_new[j + self.final_np * i] = vmr_old[p_left + old_np * t_left]
+
+                elif reduced_p != 1 and reduced_t == 1:
+
+                    p_right = p_left + 1
+
+                    vmr_new[j + self.final_np * i] = \
+                            (vmr_old[p_right + old_np * t_left] * (npy.log10(press_new[j]) - npy.log10(press_old[p_left])) \
+                             + vmr_old[p_left + old_np * t_left] * (npy.log10(press_old[p_right]) - npy.log10(press_new[j])) \
+                             ) / (npy.log10(press_old[p_right]) - npy.log10(press_old[p_left]))
+
+                elif reduced_p == 1 and reduced_t != 1:
+
+                    t_right = t_left + 1
+
+                    vmr_new[j + self.final_np * i] = \
+                        (vmr_old[p_left + old_np * t_right] * (temp_new[i] - temp_old[t_left]) \
+                         + vmr_old[p_left + old_np * t_left] * (temp_old[t_right] - temp_new[i]) \
+                         ) / (temp_old[t_right] - temp_old[t_left])
+
+                elif reduced_p != 1 and reduced_t != 1:
+
+                    p_right = p_left + 1
+                    t_right = t_left + 1
+
+                    vmr_new[j + self.final_np * i] = \
+                        (
+                            vmr_old[p_right + old_np * t_right] * (temp_new[i] - temp_old[t_left]) * (npy.log10(press_new[j]) - npy.log10(press_old[p_left])) \
+                            + vmr_old[p_left + old_np * t_right] * (temp_new[i] - temp_old[t_left]) * (npy.log10(press_old[p_right]) - npy.log10(press_new[j])) \
+                            + vmr_old[p_right + old_np * t_left] * (temp_old[t_right] - temp_new[i]) * (npy.log10(press_new[j]) - npy.log10(press_old[p_left])) \
+                            + vmr_old[p_left + old_np * t_left] * (temp_old[t_right] - temp_new[i]) * (npy.log10(press_old[p_right]) - npy.log10(press_new[j])) \
+                            ) / ((temp_old[t_right] - temp_old[t_left]) * (npy.log10(press_old[p_right]) - npy.log10(press_old[p_left])))
+
+                if npy.isnan(vmr_new[j + self.final_np * i]):
+                    print("NaN-Error at entry with indices:", "pressure:", j, "temperature:", i)
+                    raise SystemExit()
+
+        return vmr_new
+
+
+    def interpolate_opacity_to_final_grid(self, k_press, k_temp, kpoints):
+
+        temp_old = k_temp
+        press_old = k_press
+        temp_new = self.final_temp
+        press_new = self.final_press
+
+        k_old = kpoints
 
         print("opacity temperature grid:\n", temp_old[:3], "...", temp_old[-3:])
         print("final table temperature grid:\n", temp_new[:3], "...", temp_new[-3:])
         print("opacity pressure grid:\n", press_old[:3], "...", press_old[-3:])
         print("final table pressure grid:\n", press_new[:3], "...", press_new[-3:])
 
-        print("ny:",self.ny, "nx:",self.nx, "np:",self.np, "nt:",self.nt)
+        print("ny:",self.ny, "nx:",self.nx, "np:",self.final_np, "nt:",self.final_nt)
 
-        k_new = npy.zeros(self.ny * self.nx * self.np * self.nt)
+        k_new = npy.zeros(self.ny * self.nx * self.final_np * self.final_nt)
 
         old_nt = len(temp_old)
         old_np = len(press_old)
@@ -131,11 +208,11 @@ class Comb(object):
         print("old np:", old_np)
         print("old nt:", old_nt)
 
-        for i in range(self.nt):
+        for i in range(self.final_nt):
 
-            for j in range(self.np):
+            for j in range(self.final_np):
 
-                tls.percent_counter(i, self.nt, j, self.np)
+                tls.percent_counter(i, self.final_nt, j, self.final_np)
 
                 reduced_t = 0
                 reduced_p = 0
@@ -163,7 +240,7 @@ class Comb(object):
                     for y in range(self.ny):
                         for x in range(self.nx):
 
-                            k_new[y + self.ny * x + self.ny * self.nx * j + self.ny * self.nx * self.np * i] = \
+                            k_new[y + self.ny * x + self.ny * self.nx * j + self.ny * self.nx * self.final_np * i] = \
                                 k_old[y + self.ny*x + self.ny*self.nx*p_left + self.ny*self.nx*old_np*t_left]
 
                 elif reduced_p != 1 and reduced_t == 1:
@@ -173,7 +250,7 @@ class Comb(object):
                     for y in range(self.ny):
                         for x in range(self.nx):
 
-                            k_new[y + self.ny*x + self.ny*self.nx*j + self.ny*self.nx*self.np*i] = \
+                            k_new[y + self.ny*x + self.ny*self.nx*j + self.ny*self.nx*self.final_np*i] = \
                                 (k_old[y + self.ny*x + self.ny*self.nx*p_right + self.ny*self.nx*old_np*t_left] * (npy.log10(press_new[j]) - npy.log10(press_old[p_left])) \
                                 + k_old[y + self.ny*x + self.ny*self.nx*p_left + self.ny*self.nx*old_np*t_left] * (npy.log10(press_old[p_right]) - npy.log10(press_new[j])) \
                                  ) / (npy.log10(press_old[p_right]) - npy.log10(press_old[p_left]))
@@ -185,7 +262,7 @@ class Comb(object):
                     for y in range(self.ny):
                         for x in range(self.nx):
 
-                            k_new[y + self.ny * x + self.ny * self.nx * j + self.ny * self.nx * self.np * i] = \
+                            k_new[y + self.ny * x + self.ny * self.nx * j + self.ny * self.nx * self.final_np * i] = \
                                 (k_old[y + self.ny * x + self.ny * self.nx * p_left + self.ny * self.nx * old_np * t_right] * (temp_new[i] - temp_old[t_left]) \
                                  + k_old[y + self.ny * x + self.ny * self.nx * p_left + self.ny * self.nx * old_np * t_left] * (temp_old[t_right] - temp_new[i]) \
                                  ) / (temp_old[t_right] - temp_old[t_left])
@@ -197,16 +274,18 @@ class Comb(object):
 
                     for y in range(self.ny):
                         for x in range(self.nx):
-                            try:
-                                k_new[y + self.ny * x + self.ny * self.nx * j + self.ny * self.nx * self.np * i] = \
-                                    (
-                                     k_old[y + self.ny * x + self.ny * self.nx * p_right + self.ny * self.nx * old_np * t_right] * (temp_new[i] - temp_old[t_left]) * (npy.log10(press_new[j]) - npy.log10(press_old[p_left])) \
-                                     + k_old[y + self.ny * x + self.ny * self.nx * p_left + self.ny * self.nx * old_np * t_right] * (temp_new[i] - temp_old[t_left]) * (npy.log10(press_old[p_right]) - npy.log10(press_new[j]))\
-                                     + k_old[y + self.ny * x + self.ny * self.nx * p_right + self.ny * self.nx * old_np * t_left] * (temp_old[t_right] - temp_new[i]) * (npy.log10(press_new[j]) - npy.log10(press_old[p_left])) \
-                                     + k_old[y + self.ny * x + self.ny * self.nx * p_left + self.ny * self.nx * old_np * t_left] * (temp_old[t_right] - temp_new[i]) * (npy.log10(press_old[p_right]) - npy.log10(press_new[j])) \
-                                     ) / ((temp_old[t_right] - temp_old[t_left]) * (npy.log10(press_old[p_right]) - npy.log10(press_old[p_left])))
-                            except IndexError:
-                                print("IndexError at:", y, x, j, i, p_left, p_right, t_left, t_right, len(k_old), len(temp_new), len(press_new))
+
+                            k_new[y + self.ny * x + self.ny * self.nx * j + self.ny * self.nx * self.final_np * i] = \
+                                (
+                                 k_old[y + self.ny * x + self.ny * self.nx * p_right + self.ny * self.nx * old_np * t_right] * (temp_new[i] - temp_old[t_left]) * (npy.log10(press_new[j]) - npy.log10(press_old[p_left])) \
+                                 + k_old[y + self.ny * x + self.ny * self.nx * p_left + self.ny * self.nx * old_np * t_right] * (temp_new[i] - temp_old[t_left]) * (npy.log10(press_old[p_right]) - npy.log10(press_new[j]))\
+                                 + k_old[y + self.ny * x + self.ny * self.nx * p_right + self.ny * self.nx * old_np * t_left] * (temp_old[t_right] - temp_new[i]) * (npy.log10(press_new[j]) - npy.log10(press_old[p_left])) \
+                                 + k_old[y + self.ny * x + self.ny * self.nx * p_left + self.ny * self.nx * old_np * t_left] * (temp_old[t_right] - temp_new[i]) * (npy.log10(press_old[p_right]) - npy.log10(press_new[j])) \
+                                 ) / ((temp_old[t_right] - temp_old[t_left]) * (npy.log10(press_old[p_right]) - npy.log10(press_old[p_left])))
+
+                if npy.isnan(k_new[y + self.ny * x + self.ny * self.nx * j + self.ny * self.nx * self.final_np * i]):
+                    print("NaN-Error at entry with indices:", y, x, j, i)
+                    raise SystemExit()
 
         return k_new
 
@@ -221,8 +300,8 @@ class Comb(object):
 
         if param.format == "ktable":
             with h5py.File(param.resampling_path + name, "w") as mixed_file:
-                mixed_file.create_dataset("pressures", data=self.chem_press)
-                mixed_file.create_dataset("temperatures", data=self.chem_temp)
+                mixed_file.create_dataset("pressures", data=self.final_press)
+                mixed_file.create_dataset("temperatures", data=self.final_temp)
                 mixed_file.create_dataset("interface wavelengths", data=self.k_i)
                 mixed_file.create_dataset("center wavelengths", data=self.k_x)
                 mixed_file.create_dataset("wavelength width of bins", data=self.k_w)
@@ -230,35 +309,37 @@ class Comb(object):
                 mixed_file.create_dataset("kpoints", data=ktable)
         elif param.format == "sampling":
             with h5py.File(param.resampling_path + name, "w") as mixed_file:
-                mixed_file.create_dataset("pressures", data=self.chem_press)
-                mixed_file.create_dataset("temperatures", data=self.chem_temp)
+                mixed_file.create_dataset("pressures", data=self.final_press)
+                mixed_file.create_dataset("temperatures", data=self.final_temp)
                 mixed_file.create_dataset("wavelengths", data=self.k_x)
                 mixed_file.create_dataset("opacities", data=ktable)
 
     def read_individual_ktable(self, param, name):
         """ read in individual ktables """
 
-        try:
-            with h5py.File(param.resampling_path + name + "_opacities.h5", "r") as ind_file:
+        with h5py.File(param.resampling_path + name + "_opacities.h5", "r") as ind_file:
 
-                self.kpoints = [k for k in ind_file["kpoints"][:]]
-                self.k_y = [y for y in ind_file["ypoints"][:]]
-                self.k_x = [x for x in ind_file["center wavelengths"][:]]
+            # is or should be universal
+            self.k_y = [y for y in ind_file["ypoints"][:]]
+            self.k_x = [x for x in ind_file["center wavelengths"][:]]
+            try:
                 self.k_w = [w for w in ind_file["wavelength width of bins"][:]]
                 self.k_i = [i for i in ind_file["interface wavelengths"][:]]
-                self.k_temp = [t for t in ind_file["temperatures"][:]]
-                self.k_press = [p for p in ind_file["pressures"][:]]
+            except KeyError:
+                pass
 
-                self.nx = len(self.k_x)
-                self.ny = len(self.k_y)
-                self.np_mol = len(self.k_press)
-                self.nt_mol = len(self.k_temp)
+            # species specific
+            k_temp = [t for t in ind_file["temperatures"][:]]
+            k_press = [p for p in ind_file["pressures"][:]]
+            kpoints = [k for k in ind_file["kpoints"][:]]
 
-            print("\nIncluding " + name + "_opacities.h5 !")
-            self.molname_list.append(name.encode('utf8'))
-        except(OSError):
-            print("\nABORT - " + name + "_opacities.h5 not found!")
-            raise SystemExit()
+            self.nx = len(self.k_x)
+            self.ny = len(self.k_y)
+
+        print("\nIncluding " + name + "_opacities.h5 !")
+        self.molname_list.append(name.encode('utf8'))
+
+        return k_press, k_temp, kpoints
 
     def read_individual_opacity_for_sampling(self, param, name):
         """ read in individual sampled opacities """
@@ -266,45 +347,54 @@ class Comb(object):
         try:
             with h5py.File(param.resampling_path + name + "_opac_sampling.h5", "r") as ind_file:
 
-                self.kpoints = [k for k in ind_file["opacities"][:]]
+                # is or should be universal
                 self.k_x = [x for x in ind_file["wavelengths"][:]]
-                self.k_temp = [t for t in ind_file["temperatures"][:]]
-                self.k_press = [p for p in ind_file["pressures"][:]]
-
                 self.nx = len(self.k_x)
                 self.ny = 1
-                self.ny = 1
+
+                # species specific
+                kpoints = [k for k in ind_file["opacities"][:]]
+                k_temp = [t for t in ind_file["temperatures"][:]]
+                k_press = [p for p in ind_file["pressures"][:]]
 
             print("\nIncluding " + name + "_opac_sampling.h5 !")
             self.molname_list.append(name.encode('utf8'))
         except(OSError):
-            print("\nABORT - " + name + "_opacities.h5 not found!")
+            print("\nABORT - " + name + "_opac_sampling.h5 not found!")
             raise SystemExit()
+
+        return k_press, k_temp, kpoints
 
     def load_fastchem_data(self, param):
         """ read in the fastchem mixing ratios"""
 
         self.fastchem_data_low = npy.genfromtxt(param.fastchem_path + 'chem_low.dat',
-                                  names=True, dtype=None, skip_header=0)
+                                  names=True, dtype=None, skip_header=0, deletechars=" !#$%&'()*,./:;<=>?@[\]^{|}~")
 
         self.fastchem_data_high = npy.genfromtxt(param.fastchem_path + 'chem_high.dat',
-                                   names=True, dtype=None, skip_header=0)
+                                   names=True, dtype=None, skip_header=0, deletechars=" !#$%&'()*,./:;<=>?@[\]^{|}~")
 
-        # parameters
-        press = npy.concatenate((self.fastchem_data_low['Pbar'], self.fastchem_data_high['Pbar']))
-        temp = npy.concatenate((self.fastchem_data_low['Tk'], self.fastchem_data_high['Tk']))
-        self.mu = npy.concatenate((self.fastchem_data_low['mu'], self.fastchem_data_high['mu']))
+        # temperature and pressure from the chemical grid
+        read_press = npy.concatenate((self.fastchem_data_low['Pbar'], self.fastchem_data_high['Pbar']))
+        read_temp = npy.concatenate((self.fastchem_data_low['Tk'], self.fastchem_data_high['Tk']))
+
+        read_press = self.delete_duplicates(read_press)
+        self.chem_temp = self.delete_duplicates(read_temp)
+        self.chem_press = [p * 1e6 for p in read_press]
+
+        self.chem_nt = len(self.chem_temp)
+        self.chem_np = len(self.chem_press)
+
+        # mean molecular weight
+        chem_mu = npy.concatenate((self.fastchem_data_low['mu'], self.fastchem_data_high['mu']))
+        self.mu = self.interpolate_vmr_to_final_grid(chem_mu)
 
         # electrons
-        self.n_e = npy.concatenate((self.fastchem_data_low['e_minus'], self.fastchem_data_high['e_minus']))
-
-        # overwrite pressure and temperature grid with the one from FastChem
-        press = self.delete_duplicates(press)
-        self.chem_press = [p * 1e6 for p in press]
-        self.chem_temp = self.delete_duplicates(temp)
-
-        self.nt = len(self.chem_temp)
-        self.np = len(self.chem_press)
+        try:
+            chem_n_e = npy.concatenate((self.fastchem_data_low['e-'], self.fastchem_data_high['e-']))
+        except ValueError:
+            chem_n_e = npy.concatenate((self.fastchem_data_low['e_minus'], self.fastchem_data_high['e_minus']))
+        self.n_e = self.interpolate_vmr_to_final_grid(chem_n_e)
 
     @staticmethod
     def check_if_already_interpolated(param, name, ending):
@@ -318,7 +408,7 @@ class Comb(object):
         except OSError:
             return False
 
-    def interpolate_molecule(self, param, name, opac_list):
+    def interpolate_opacity(self, param, name, k_press, k_temp, kpoints):
 
         print("\nInterpolating...")
 
@@ -329,19 +419,18 @@ class Comb(object):
             ending = "_opac_ip_sampling.h5"
             database = "opacities"
 
-
         if self.check_if_already_interpolated(param, name, ending):
 
-            opac_list = []
+            interpolated_opacities = []
             with h5py.File(param.resampling_path + name + ending, "r") as ip_file:
                 for k in ip_file[database][:]:
-                    opac_list.append(k)
+                    interpolated_opacities.append(k)
 
         else:
-            opac_list = self.interpolate_to_new_grid(self.k_temp, self.chem_temp, self.k_press, self.chem_press, opac_list)
-            self.write_h5(param, name + ending, opac_list)
+            interpolated_opacities = self.interpolate_opacity_to_final_grid(k_press, k_temp, kpoints)
+            self.write_h5(param, name + ending, interpolated_opacities)
 
-        return opac_list
+        return interpolated_opacities
 
     def create_mixed_file(self, param):
         """ write to hdf5 file """
@@ -359,16 +448,11 @@ class Comb(object):
             filename = "mixed_opac_sampling.h5"
 
         with h5py.File(param.final_path + filename, "w") as mixed_file:
-            mixed_file.create_dataset("pressures", data=self.chem_press)
-            mixed_file.create_dataset("temperatures", data=self.chem_temp)
+            mixed_file.create_dataset("pressures", data=self.final_press)
+            mixed_file.create_dataset("temperatures", data=self.final_temp)
             mixed_file.create_dataset("meanmolmass", data=self.mu)
-            mixed_file.create_dataset("kpoints", data=self.mixed_opacities)
-            mixed_file.create_dataset("weighted Rayleigh cross-sections", data=self.weighted_cross_ray_table)
-            mixed_file.create_dataset("pure H2 Rayleigh cross-sections", data=self.pure_cross_ray_h2_table)
-            mixed_file.create_dataset("pure He Rayleigh cross-sections", data=self.pure_cross_ray_he_table)
-            mixed_file.create_dataset("pure H2O Rayleigh cross-sections", data=self.pure_cross_ray_h2o_table)
-            mixed_file.create_dataset("pure CO2 Rayleigh cross-sections", data=self.pure_cross_ray_co2_table)
-            mixed_file.create_dataset("pure H Rayleigh cross-sections", data=self.pure_cross_ray_h_table)
+            mixed_file.create_dataset("kpoints", data=self.combined_opacities)
+            mixed_file.create_dataset("weighted Rayleigh cross-sections", data=self.combined_cross_sections)
             mixed_file.create_dataset("included molecules", data=self.molname_list)
             mixed_file.create_dataset("wavelengths", data=self.k_x)
             mixed_file.create_dataset("FastChem path", data=param.fastchem_path)
@@ -379,245 +463,155 @@ class Comb(object):
                 mixed_file.create_dataset("wavelength width of bins",data=self.k_w)
                 mixed_file.create_dataset("ypoints",data=self.k_y)
 
-    def tabulate_rayleigh_cross_section(self, ray, param, f_h2o):
+    def include_rayleigh_cross_section(self, ray, species, vol_mix_ratio):
         """ tabulates the rayleigh cross sections for various species """
 
-        print("Tabulating Rayleigh cross-sections...")
+        print("\nCalculating scattering cross sections ...")
 
-        try:
-            with h5py.File(param.final_path + "Rayleigh.h5", "r") as ray_file:
-                self.weighted_cross_ray_table = [o for o in ray_file["weighted Rayleigh cross-sections"][:]]
-                self.pure_cross_ray_h2_table = [o for o in ray_file["pure H2 Rayleigh cross-sections"][:]]
-                self.pure_cross_ray_he_table = [o for o in ray_file["pure He Rayleigh cross-sections"][:]]
-                self.pure_cross_ray_h_table = [o for o in ray_file["pure H Rayleigh cross-sections"][:]]
-                self.pure_cross_ray_co2_table = [o for o in ray_file["pure CO2 Rayleigh cross-sections"][:]]
-                self.pure_cross_ray_h2o_table = [o for o in ray_file["pure H2O Rayleigh cross-sections"][:]]
+        # this is kind of hidden -- TODO move to a better location at some point
+        # references for the scattering data:
+        # H2: Cox 2000
+        # He: Sneep & Ubachs 2005, Thalman et al. 2014
+        # H: Lee & Kim 2004
+        # H2O: Murphy 1977, Wagner & Kretzschmar 2008
+        # CO: Sneep & Ubachs 2005
+        # CO2: Sneep & Ubachs 2005, Thalman et al. 2014
+        # O2: Sneep & Ubachs 2005, Thalman et al. 2014
+        # N2: Sneep & Ubachs 2005, Thalman et al. 2014
 
+        list_of_implemented_scattering_species = ['H', 'H2', 'He', 'H2O', 'CO2', 'CO', 'O2', 'N2']
 
-            print("File " + param.final_path + "Rayleigh.h5 already exists. Reading of Rayleigh cross-sections successful.")
+        if species.name in list_of_implemented_scattering_species:
 
-        except OSError or KeyError:
+            for t in range(self.final_nt):
+                for p in range(self.final_np):
 
-            # obtain relevant volume mixing ratios
-            f_h2 = npy.concatenate((self.fastchem_data_low['H2'], self.fastchem_data_high['H2']))
-            f_he = npy.concatenate((self.fastchem_data_low['He'], self.fastchem_data_high['He']))
-            f_co2 = npy.concatenate((self.fastchem_data_low['C1O2'], self.fastchem_data_high['C1O2']))
-            f_h = npy.concatenate((self.fastchem_data_low['H'], self.fastchem_data_high['H']))
-
-            if param.special_abundance == 'pure_H2O':
-                f_h2o = [1 for i in range(len(f_h2o))]
-                f_co2 = [0 for i in range(len(f_co2))]
-                f_h2 = [0 for i in range(len(f_h2))]
-                f_h = [0 for i in range(len(f_h))]
-                f_he = [0 for i in range(len(f_he))]
-
-            elif param.special_abundance == 'pure_CO2':
-                f_h2o = [0 for i in range(len(f_h2o))]
-                f_co2 = [1 for i in range(len(f_co2))]
-                f_h2 = [0 for i in range(len(f_h2))]
-                f_h = [0 for i in range(len(f_h))]
-                f_he = [0 for i in range(len(f_he))]
-
-            elif param.special_abundance == 'venus':
-                f_h2o = [3e-5 for i in range(len(f_h2o))]
-                f_co2 = [1 for i in range(len(f_co2))]
-                f_h2 = [0 for i in range(len(f_h2))]
-                f_h = [0 for i in range(len(f_h))]
-                f_he = [0 for i in range(len(f_he))]
-
-            for t in range(self.nt):
-                for p in range(self.np):
-
-                    tls.percent_counter(t, self.nt, p, self.np)
+                    tls.percent_counter(t, self.final_nt, p, self.final_np)
 
                     for x in range(self.nx):
 
-                        cross_ray_h2o = ray.cross_sect(self.k_x[x], ray.index_h2o(self.k_x[x], self.chem_press[p], self.chem_temp[t], self.mu[p + self.np * t]), ray.n_ref_h2o(self.chem_press[p], self.chem_temp[t]), ray.King_h2o, lamda_limit=2.5e-4)
-                        cross_ray_h2 = ray.cross_sect(self.k_x[x], ray.index_h2(self.k_x[x]), ray.n_ref_h2, ray.King_h2)
-                        cross_ray_he = ray.cross_sect(self.k_x[x], ray.index_he(self.k_x[x]), ray.n_ref_he, ray.King_he)
-                        cross_ray_co2 = ray.cross_sect(self.k_x[x], ray.index_co2(self.k_x[x]), ray.n_ref_co2, ray.King_co2(self.k_x[x]))
-                        cross_ray_h = ray.cross_sect_h(self.k_x[x])
+                        cross_section = 0
 
-                        self.pure_cross_ray_h2o_table.append(cross_ray_h2o)
+                        if species.name != 'H':
 
-                        # the following cross-sections depend only on the wavelength
-                        if t == 0 and p == 0:
-                            self.pure_cross_ray_h2_table.append(cross_ray_h2)
-                            self.pure_cross_ray_he_table.append(cross_ray_he)
-                            self.pure_cross_ray_co2_table.append(cross_ray_co2)
-                            self.pure_cross_ray_h_table.append(cross_ray_h)
+                            if species.name == "H2O":
 
-                        # mix everything according to their volume (number) mixing ratios
-                        mix =     f_h2[p + self.np * t] * cross_ray_h2 \
-                                + f_he[p + self.np * t] * cross_ray_he \
-                                + f_h2o[p + self.np * t] * cross_ray_h2o \
-                                + f_co2[p + self.np * t] * cross_ray_co2 \
-                                + f_h[p + self.np * t] * cross_ray_h
+                                index = ray.index_h2o(self.k_x[x], self.final_press[p], self.final_temp[t], self.mu[p + self.final_np * t])
+                                n_ref = ray.n_ref_h2o(self.final_press[p], self.final_temp[t])
+                                King = ray.King_h2o
+                                lamda_limit = 2.5e-4
 
-                        self.weighted_cross_ray_table.append(mix)
+                            elif species.name == "CO2":
 
-            try:
-                os.makedirs(param.final_path)
-            except OSError:
-                if not os.path.isdir(param.final_path):
-                    raise
+                                index = ray.index_co2(self.k_x[x])
+                                n_ref = ray.n_ref_co2
+                                King = ray.King_co2(self.k_x[x])
+                                lamda_limit = self.k_x[-1]
 
-            with h5py.File(param.final_path + "Rayleigh.h5", "w") as ray_file:
-                ray_file.create_dataset("pressures", data=self.chem_press)
-                ray_file.create_dataset("temperatures", data=self.chem_temp)
-                ray_file.create_dataset("wavelengths", data=self.k_x)
-                ray_file.create_dataset("weighted Rayleigh cross-sections", data=self.weighted_cross_ray_table)
-                ray_file.create_dataset("pure H2 Rayleigh cross-sections", data=self.pure_cross_ray_h2_table)
-                ray_file.create_dataset("pure He Rayleigh cross-sections", data=self.pure_cross_ray_he_table)
-                ray_file.create_dataset("pure H2O Rayleigh cross-sections", data=self.pure_cross_ray_h2o_table)
-                ray_file.create_dataset("pure CO2 Rayleigh cross-sections", data=self.pure_cross_ray_co2_table)
-                ray_file.create_dataset("pure H Rayleigh cross-sections", data=self.pure_cross_ray_h_table)
-                ray_file.create_dataset("FastChem path", data=param.fastchem_path)
+                            elif species.name == "H2":
 
-        ray.success()
+                                index = ray.index_h2(self.k_x[x])
+                                n_ref = ray.n_ref_h2
+                                King = ray.King_h2
+                                lamda_limit = self.k_x[-1]
 
-    def weight_opacities(self, param, species, vol_mix_ratio, mass, kpoints, cia='no'):
+                            elif species.name == "He":
+
+                                index = ray.index_he(self.k_x[x])
+                                n_ref = ray.n_ref_he
+                                King = ray.King_he
+                                lamda_limit = self.k_x[-1]
+
+                            elif species.name == "N2":
+
+                                index = ray.index_n2(self.k_x[x])
+                                n_ref = ray.n_ref_n2
+                                King = ray.King_n2(self.k_x[x])
+                                lamda_limit = self.k_x[-1]
+
+                            elif species.name == "O2":
+
+                                index = ray.index_o2(self.k_x[x])
+                                n_ref = ray.n_ref_o2
+                                King = ray.King_o2(self.k_x[x])
+                                lamda_limit = self.k_x[-1]
+
+                            elif species.name == "CO":
+
+                                index = ray.index_co(self.k_x[x])
+                                n_ref = ray.n_ref_co
+                                King = ray.King_co
+                                lamda_limit = self.k_x[-1]
+
+                            cross_section = ray.cross_sect(self.k_x[x], index, n_ref, King, lamda_limit)
+
+                        elif species.name == "H":
+
+                            cross_section = ray.cross_sect_h(self.k_x[x])
+
+                        self.combined_cross_sections[x + self.nx * p + self.nx * self.final_np * t] += vol_mix_ratio[p + self.final_np * t] * cross_section
+
+        else:
+            print("WARNING: Rayleigh scattering cross sections for species", species.name, "not found. Please double-check! Continuing with them... ")
+
+    def weight_opacities(self, vol_mix_ratio, vol_mix_ratio2, mass, opac):
         """ weights opacities """
 
-        try:
-            with h5py.File(param.resampling_path + species + ".h5", "r") as weightfile:
+        print("\nWeighting by mass mixing ratio...")
 
-                self.mixed_opacities = [k for k in weightfile["weighted kpoints"][:]]
+        for t in range(self.final_nt):
 
-            print("\nWeighted file " + param.resampling_path + species + ".h5 already exists. Reading in weighted opacities for this molecule...")
+            for p in range(self.final_np):
 
-            if len(self.mixed_opacities) == self.nt * self.np * self.nx * self.ny:
+                mass_mix_ratio = vol_mix_ratio[p + self.final_np * t] * vol_mix_ratio2[p + self.final_np * t] * mass / self.mu[p + self.final_np * t]
 
-                print("Dimensions test passed\n")
+                for x in range(self.nx):
 
-            else:
-                print("Dimensions test failed. Aborting...")
-                raise SystemExit()
+                    tls.percent_counter(t, self.final_nt, p, self.final_np, x, self.nx)
 
-        except OSError:
+                    for y in range(self.ny):
 
-            if cia == 'yes':
-                vol_mix_ratio2 = npy.concatenate((self.fastchem_data_low['H2'], self.fastchem_data_high['H2']))
+                        weighted_opac = mass_mix_ratio * opac[y + self.ny*x + self.ny*self.nx*p + self.ny*self.nx*self.final_np*t]
 
-            print("\nWeighting by mass mixing ratio...")
+                        self.combined_opacities[y + self.ny*x + self.ny*self.nx*p + self.ny*self.nx*self.final_np*t] += weighted_opac
 
-            for t in range(self.nt):
-
-                for p in range(self.np):
-
-                    mass_mix_ratio = vol_mix_ratio[p + self.np * t] * mass / self.mu[p + self.np * t]
-
-                    if param.special_abundance == 'pure_H2O':
-                        mass_mix_ratio = 1
-                        self.mu[p + self.np * t] = 18.0153
-
-                    elif param.special_abundance == 'pure_CO2':
-                        mass_mix_ratio = 1
-                        self.mu[p + self.np * t] = 44.01
-
-                    if param.special_abundance == 'venus' and species == 'H2O_weighted':
-                        mass_mix_ratio = 1.227e-5
-                        self.mu[p + self.np * t] = 44.01
-
-                    if param.special_abundance == 'venus' and species == 'CO2_weighted':
-                        mass_mix_ratio = 1
-                        self.mu[p + self.np * t] = 44.01
-
-                    if cia =='yes':
-
-                        mass_mix_ratio *= vol_mix_ratio2[p + self.np * t]
-
-                    for x in range(self.nx):
-
-                        tls.percent_counter(t, self.nt, p, self.np, x, self.nx)
-
-                        for y in range(self.ny):
-
-                            mixed = mass_mix_ratio * kpoints[y + self.ny * x + self.ny * self.nx * p + self.ny * self.nx * self.np * t]
-
-                            self.mixed_opacities.append(mixed)
-
-            with h5py.File(param.resampling_path + species + ".h5", "w") as weightfile:
-
-                weightfile.create_dataset("weighted kpoints", data=self.mixed_opacities)
-
-    def add_to_mixed_file(self, param):
-        """ add molecular opacities to the mixed opacity file """
-
-        if param.format == 'ktable':
-            filename = "mixed_opac_ktable.h5"
-        elif param.format == 'sampling':
-            filename = "mixed_opac_sampling.h5"
-
-        old_kpoints = []
-        new_kpoints = []
-
-        try:
-            with h5py.File(param.final_path + filename, "r") as mixed_file:
-
-                for k in mixed_file["kpoints"][:]:
-                    old_kpoints.append(k)
-
-        except:
-            print("ABORT - something wrong with reading the mixed_opac_*.h5 file!")
-            raise SystemExit()
-
-        for k in range(len(old_kpoints)):
-
-            new_kpoints.append(old_kpoints[k] + self.mixed_opacities[k])
-
-        with h5py.File(param.final_path + filename, "a") as mixed_file:
-
-            del mixed_file["kpoints"]
-            del mixed_file["included molecules"]
-
-            mixed_file.create_dataset("kpoints",data=new_kpoints)
-
-            mixed_file.create_dataset("included molecules", data=self.molname_list)
-
-    def clear_memory(self):
-        """ clears the opacity arrays so they can be filled again with new data """
-
-        self.kpoints = []
-        self.mixed_opacities = []
-
-    def condense_out_species(self, cond, mix, ele_abund, species):
+    def condense_out_species(self, cond, mix, cond_path, species):
         """
             completely remove a particular species below its condensation (stability) temperature
         """
 
-        stab = cond.calc_stability_curve(ele_abund, species)
+        stab = cond.calc_stability_curve(cond_path, species)
 
-        for t in range(self.nt):
+        for t in range(self.final_nt):
 
-            for p in range(self.np):
+            for p in range(self.final_np):
 
-                if self.chem_temp[t] < stab(npy.log10(self.chem_press[p])):
-                    mix[p + self.np * t] = min(1e-30, mix[p + self.np * t])
+                if self.final_temp[t] < stab(npy.log10(self.final_press[p])):
+                    mix[p + self.final_np * t] = min(1e-30, mix[p + self.final_np * t])
 
-    def exp_decay_species(self, cond, mix, ele_abund, condensate):
+    def exp_decay_species(self, cond, mix, cond_path, condensate):
         """
             exponentially decay a  species which is being removed due to condensation
         """
 
         grad = 2e-2  # increase in volume mixing ratio with temperature (roughly estimated from Sharp & Burrows 2007)
 
-        stab = cond.calc_stability_curve(ele_abund, condensate)
+        stab = cond.calc_stability_curve(cond_path, condensate)
 
-        for p in range(self.np):
+        for p in range(self.final_np):
 
-            for t in range(self.nt):
+            for t in range(self.final_nt):
 
-                if self.chem_temp[t] < stab(npy.log10(self.chem_press[p])):
+                if self.final_temp[t] < stab(npy.log10(self.final_press[p])):
 
-                    mix[p + self.np * t] = mix[p + self.np * t] * 10 ** (-grad * (stab(npy.log10(self.chem_press[p])) - self.chem_temp[t]))
+                    mix[p + self.final_np * t] = mix[p + self.final_np * t] * 10 ** (-grad * (stab(npy.log10(self.final_press[p])) - self.final_temp[t]))
 
                 else:
                     break
 
-    # by default condensation is switched off (to activate set override to False) as the implementation is quite hand-wavy
+    # Warning: the implementation of condensation is quite hand-wavy
     # --> better to wait until it is implemented self-consistently in FastChem
-    def apply_condensation(self, cond, param, fc_name, species, override=False):
+    def apply_condensation(self, cond, param, vol_mix_ratio, species):
         """ removes/attenuates the condensate species below their condensation temperature or if affected by mineral formation """
 
         condensates = {
@@ -629,295 +623,234 @@ class Comb(object):
             "Fe": "Fe"
         }
 
-        # read in the eq. chem. gas mixing ratios
-        vol_mix_ratio = npy.concatenate((self.fastchem_data_low[fc_name], self.fastchem_data_high[fc_name]))
+        # manually enriching a certain species
+        # if species == 'CO2':
+        #     vol_mix_ratio = [v * 1e2 for v in vol_mix_ratio]
 
-        if override is False:
+        if species in ["TiO", "VO", "H2O"]:
 
-            if species in ["TiO", "VO", "H2O"]:
+            print("\nApplying condensation for " + species + ".")
 
-                print("\nApplying condensation for " + species + ".")
+            self.condense_out_species(cond, vol_mix_ratio, param.cond_path, species)
 
-                self.condense_out_species(cond, vol_mix_ratio, param.ele_abund, species)
+        elif species in ["SiO", "Mn", "Cr", "Na", "K", "Fe"]:
 
-            elif species in ["SiO", "Mn", "Cr", "Na", "K", "Fe"]:
+            print("\nApplying condensation for "+species+". It is removed from the gas phase by " + condensates[species] + " condensates.")
 
-                print("\nApplying condensation for "+species+". It is removed from the gas phase by " + condensates[species] + " condensates.")
+            self.exp_decay_species(cond, vol_mix_ratio, param.cond_path, condensates[species])
 
-                self.exp_decay_species(cond, vol_mix_ratio, param.ele_abund, condensates[species])
-
-            else:
-                print("\nNo condensation data found for "+species+". Skipping condensational effects.")
-
-        elif override is True:
-
-            print("\nCondensation for " + species + " overridden.")
+        else:
+            print("\nNo condensation data found for "+species+". Skipping condensational effects.")
 
         return vol_mix_ratio
 
-    # -------- procedural methods -------- #
-
-    def do_water(self, param, ray, cond):
-
-        print("\n\n----------\nStarting opacity table by including water...")
-
-        if param.format == 'ktable':
-            self.read_individual_ktable(param, "H2O")
-        elif param.format == 'sampling':
-            self.read_individual_opacity_for_sampling(param, "H2O")
-
-        self.load_fastchem_data(param)
-
-        self.kpoints = self.interpolate_molecule(param, "H2O", self.kpoints)
-
-        # read in data from species file
-        species_data = npy.genfromtxt(param.species_path, names=True, dtype=None)
-        species = npy.array(species_data['your_species_name'], dtype='U')
-        fastchem_name = npy.array(species_data['name_in_FastChem'], dtype='U')
-        mass = species_data['mass_in_AMU']
-
-        try:
-            for n in range(len(species)):
-
-                if species[n] == 'H2O':
-
-                    vol_mix_ratio_h2o = self.apply_condensation(cond, param, fastchem_name[n], species[n], override=True)
-
-                    self.weight_opacities(param, "H2O_weighted", vol_mix_ratio_h2o, mass[n], self.kpoints)
-
-                    if param.special_abundance == 'no_H2O': # use this option for a model with no water content
-                        self.weight_opacities(param, "H2O_zero", vol_mix_ratio_h2o, mass[n], npy.zeros(len(self.kpoints)))
-        except TypeError:
-
-                    vol_mix_ratio_h2o = self.apply_condensation(cond, param, 'H2O1', 'H2O', override=True)
-
-                    self.weight_opacities(param, "H2O_weighted", vol_mix_ratio_h2o, mass, self.kpoints)
-
-        # Rayleigh scattering inclusion
-        self.tabulate_rayleigh_cross_section(ray, param, vol_mix_ratio_h2o)
-
-        self.create_mixed_file(param)
-
-        self.clear_memory()
-
-    def add_other_species(self, param, cond, species, fastchem_name, mass, cia='no'):
-
-        if param.format == 'ktable':
-            self.read_individual_ktable(param, species)
-        elif param.format == 'sampling':
-            self.read_individual_opacity_for_sampling(param, species)
-
-        self.kpoints = self.interpolate_molecule(param, species, self.kpoints)
-
-        vol_mix_ratio = self.apply_condensation(cond, param, fastchem_name, species)
-
-        # ### plotting check ###
-        # import matplotlib.pyplot as plt
-        #
-        # p = 18
-        # print(self.chem_press[p])
-        # vmr_plot = [vol_mix_ratio[p + self.np * t] for t in range(self.nt)]
-        # color_list = ['blue', 'green', 'red', 'magenta', 'cyan', 'orange']
-        # plt.plot(self.chem_temp, vmr_plot, c=color_list[npy.random.randint(len(color_list))], label=species)
-        # plt.yscale('log')
-        # plt.show()
-        # ###
-
-        self.weight_opacities(param, species+"_weighted", vol_mix_ratio, mass, self.kpoints, cia)
-
-        self.add_to_mixed_file(param)
-
-        self.clear_memory()
-
-    def calc_h_minus(self, conti, mass):
+    def calc_h_minus(self, conti, param):
         """ calculates the H- continuum opacity """
 
         print("\nCalculating H- ...")
 
+        total_opac = []
+
         # pressure and temperature dependent bound-free and free-free opacities
-        for t in range(self.nt):
+        for t in range(self.final_nt):
 
-            for p in range(self.np):
+            for p in range(self.final_np):
 
-                for x in range(self.nx):
-
-                    cross_bf_h_min = conti.bf_cross_sect_h_min(self.k_x[x], self.chem_temp[t], self.chem_press[p], self.n_e[p + self.np * t])
-
-                    cross_ff_h_min = conti.ff_cross_sect_h_min(self.k_x[x], self.chem_temp[t], self.chem_press[p], self.n_e[p + self.np * t])
-
-                    self.opac_h_minus_bf.append(cross_bf_h_min / (mass * pc.AMU))
-
-                    self.opac_h_minus_ff.append(cross_ff_h_min / (mass * pc.AMU))
-
-        vol_mix_ratio = npy.concatenate((self.fastchem_data_low['H'], self.fastchem_data_high['H']))
-
-        for t in range(self.nt):
-
-            for p in range(self.np):
-
-                mass_mix_ratio = vol_mix_ratio[p + self.np * t] * mass / self.mu[p + self.np * t]
+                tls.percent_counter(t, self.final_nt, p, self.final_np)
 
                 for x in range(self.nx):
 
-                    whole_weighted_thingy = mass_mix_ratio * (self.opac_h_minus_bf[x + self.nx * p + self.nx * self.np * t] + self.opac_h_minus_ff[x + self.nx * p + self.nx * self.np * t])
+                    cross_bf_h_min = conti.bf_cross_sect_h_min(self.k_x[x], self.final_temp[t], self.final_press[p], self.n_e[p + self.final_np * t]) / (pc.M_H * pc.AMU)
 
-                    self.weighted_opac_h_minus.append(whole_weighted_thingy)
-
-        print("\nH- calculation complete!")
-
-    @staticmethod
-    def h5_read(param, name):
-        """
-            checks if h5 container exists
-        """
-
-        with h5py.File(param.final_path + name + "_opacities.h5", "r") as file:
-            weighted_opac = [o for o in file["weighted opacities"][:]]
-            print("File " + param.final_path + name + "_opacities.h5 already exists. Reading of opacities successful.")
-
-        return weighted_opac
-
-    def add_continuous_to_mixed(self, param, weighted_continuous, name):
-        """
-            adds weighted continuous opacity to the mixed file
-        """
-
-        if param.format == 'ktable':
-            filename = "mixed_opac_ktable.h5"
-        elif param.format == 'sampling':
-            filename = "mixed_opac_sampling.h5"
-
-        old_kpoints = []
-        new_kpoints = []
-
-        try:
-            with h5py.File(param.final_path + filename, "r") as mixed_file:
-
-                for k in mixed_file["kpoints"][:]:
-                    old_kpoints.append(k)
-
-        except:
-            print("ABORT - something wrong with reading the mixed_opac_*.h5 file!")
-            raise SystemExit()
-
-        for t in range(self.nt):
-
-            for p in range(self.np):
-
-                for x in range(self.nx):
+                    cross_ff_h_min = conti.ff_cross_sect_h_min(self.k_x[x], self.final_temp[t], self.final_press[p], self.n_e[p + self.final_np * t]) / (pc.M_H * pc.AMU)
 
                     for y in range(self.ny):
 
-                        new_kpoints.append(old_kpoints[y + self.ny * x + self.ny * self.nx * p + self.ny * self.nx * self.np * t] + weighted_continuous[x + self.nx * p + self.nx * self.np * t])
+                        total_opac.append(cross_bf_h_min + cross_ff_h_min)
 
-        self.molname_list.append(name.encode('utf8'))
+        # write to h5 file to allow for quick visualization later
+        if param.format == 'ktable':
+            ending = "_opac_ip.h5"
 
-        with h5py.File(param.final_path + filename, "a") as mixed_file:
+        elif param.format == 'sampling':
+            ending = "_opac_ip_sampling.h5"
 
-            del mixed_file["kpoints"]
-            del mixed_file["included molecules"]
+        self.write_h5(param, "H-" + ending, total_opac)
 
-            mixed_file.create_dataset("kpoints",data=new_kpoints)
+        # add to mol list
+        self.molname_list.append("H-".encode('utf8'))
 
-            mixed_file.create_dataset("included molecules", data=self.molname_list)
+        print("\nH- calculation complete!")
 
-    def add_h_minus(self, param, conti, name, mass):
-        """
-            calculates and adds H- opacities if not calculated yet
-        """
+        return total_opac
 
-        try:
-            self.weighted_opac_h_minus = self.h5_read(param, name)
+    @staticmethod
+    def read_species_data(path):
 
-        except OSError or KeyError:
+        species_list = []
 
-            self.calc_h_minus(conti, mass)
+        with open(path) as sfile:
 
-            with h5py.File(param.final_path + name + "_opacities.h5", "w") as f:
+            next(sfile)
+            next(sfile)
 
-                f.create_dataset("pressures", data=self.chem_press)
-                f.create_dataset("temperatures", data=self.chem_temp)
-                f.create_dataset("wavelengths", data=self.k_x)
-                f.create_dataset("bf opacities", data=self.opac_h_minus_bf)
-                f.create_dataset("ff opacities", data=self.opac_h_minus_ff)
-                f.create_dataset("weighted opacities", data=self.weighted_opac_h_minus)
+            for line in sfile:
 
-        self.add_continuous_to_mixed(param, self.weighted_opac_h_minus, name)
+                column = line.split()
 
-    def add_cia_cross_sections(self, param, cond, species, fc_name):
+                if len(column) > 0:
 
-        # reads in cross-sections
-        with h5py.File(param.resampling_path + species + ".h5", "r") as file:
-            sigma_pre = [s for s in file["cross-sections"][:]]
+                    species = Species()
 
-        # reads in mixing ratios (only works for twin-CIA at the moment --> improve in future!)
-        vol_mix_ratio = self.apply_condensation(cond, param, fc_name, species)
+                    species.name = column[0]
+                    species.absorbing = column[1]
+                    species.scattering = column[2]
+                    species.mixing_ratio = column[3]
+                    species.fc_name = column[4]
+                    species.mass = float(column[5])
 
-        weighted_cia_opac = []
+                    species_list.append(species)
 
-        for t in range(self.nt):
-            for p in range(self.np):
-                for x in range(self.nx):
+        # we need an absorbing species as first entry so let's shuffle
+        for s in range(len(species_list)):
 
-                    mix = sigma_pre[x + self.nx*p + self.nx*self.np*t] * vol_mix_ratio[p + self.np * t]**2 / (self.mu[p + self.np * t] * pc.AMU)
+            if species_list[s].absorbing == 'yes':
 
-                    if param.special_abundance == 'pure_CO2':
-                        mix = sigma_pre[x + self.nx * p + self.nx * self.np * t] / (44.01 * pc.AMU)
+                species_list.insert(0, species_list[s])
+                species_list.pop(s+1)
 
-                    if param.special_abundance == 'venus':
-                        mix = sigma_pre[x + self.nx * p + self.nx * self.np * t] / (44.01 * pc.AMU)
+                break
 
-                    weighted_cia_opac.append(mix)
+            if s == len(species_list)-1:
 
-        self.add_continuous_to_mixed(param, weighted_cia_opac, species)
+                print("Oops! At least one species needs to be absorbing. Please check your 'final species' file. Aborting ... ")
+                raise SystemExit()
 
+        return species_list
 
-    def include_the_other_species(self, param, cond, conti):
+    def use_hard_coded_PT_grid(self, species_list):
 
-        # read in data from species file
-        species_data = npy.genfromtxt(param.species_path, names=True, dtype=None)
-        species = npy.array(species_data['your_species_name'], dtype='U')
-        fastchem_name = npy.array(species_data['name_in_FastChem'], dtype='U')
-        mass = species_data['mass_in_AMU']
+        self.final_temp = npy.arange(50, 6050, 50)
 
-        try:
-            for n in range(len(species)):
+        press_list_p1 = [10 ** p for p in npy.arange(0, 10, 1)]
+        press_list_p2 = [10 ** p for p in npy.arange(0.33333333, 9.33333333, 1)]
+        press_list_p3 = [10 ** p for p in npy.arange(0.66666666, 9.66666666, 1)]
+        press_list = npy.append(press_list_p1, npy.append(press_list_p2, press_list_p3))
+        press_list.sort()
+        self.final_press = press_list
 
-                if species[n] == 'H2O':
-                    continue  # water is already included
+        self.final_nt = len(self.final_temp)
+        self.final_np = len(self.final_press)
 
-                elif species[n] == "H-":
-                    self.add_h_minus(param, conti, species[n], mass[n])
-                    print("\n--------\nAdding species: H-")
+        mu = 0
 
-                elif ("CIA" in species[n]) and ("cross" in species[n]):
-                    print("\n--------\nAdding species:", species[n])
-                    self.add_cia_cross_sections(param, cond, species[n], fastchem_name[n])
+        for n in range(len(species_list)):
 
-                elif "CIA" in species[n] and ("cross" not in species[n]):
-                    print("\n--------\nAdding species:", species[n])
-                    self.add_other_species(param, cond, species[n], fastchem_name[n], mass[n], cia='yes')
-                else:
-                    print("\n--------\nAdding species:", species[n], ", FastChem name:", fastchem_name[n])
-                    self.add_other_species(param, cond, species[n], fastchem_name[n], mass[n])
+            if self.is_number(species_list[n].mixing_ratio):  # checks if all characters are numeric. this excludes FastChem entries and CIA species
 
-        except TypeError:
-            if species == 'H2O':
-                pass  # water is already included
+                mu += float(species_list[n].mixing_ratio) * species_list[n].mass
+
+        self.mu = npy.ones(self.final_np * self.final_nt) * mu
+
+    def add_one_species(self, param, ray, cond, conti, species, iter):
+
+        print("\n\n----------\nGenerating mixed opacity table. Including --> " + species.name + " <--")
+
+        # needs to be assigned beforehand to make python happy
+        interpol_opac = None
+
+        if species.name != "H-":
+
+            # read in ktable for absorbing species
+            if species.absorbing == 'yes':
+
+                if param.format == 'ktable':
+                    k_press, k_temp, kpoints = self.read_individual_ktable(param, species.name)
+                elif param.format == 'sampling':
+                    k_press, k_temp, kpoints = self.read_individual_opacity_for_sampling(param, species.name)
+
+                # interpolate
+                interpol_opac = self.interpolate_opacity(param, species.name, k_press, k_temp, kpoints)
+
+        elif species.name == "H-":
+
+            h_min_opac = self.calc_h_minus(conti, param)
+
+            # no interpolation required. values already generated with new grid
+            interpol_opac = h_min_opac
+
+        # generate final arrays on first walkthrough (cannot do that earlier because need to know ny and nx first)
+        if iter == 0:
+            self.combined_opacities = npy.zeros(self.ny * self.nx * self.final_np * self.final_nt)
+            self.combined_cross_sections = npy.zeros(self.nx * self.final_np * self.final_nt)
+
+        # get abundances
+        if "CIA" not in species.name:
+
+            if species.mixing_ratio == "FastChem":
+
+                    chem_vmr = npy.concatenate((self.fastchem_data_low[species.fc_name], self.fastchem_data_high[species.fc_name]))
+
+                    final_vmr = self.interpolate_vmr_to_final_grid(chem_vmr)
 
             else:
-                print("\nERROR: Water must be included first into final table. Aborting process...")
+                final_vmr = npy.ones(self.final_np * self.final_nt) * float(species.mixing_ratio)
 
-            # elif species == "H-":
-            #     self.add_h_minus(param, conti, species, mass)
-            #     print("\n--------\nAdding species: H-")
-            #
-            # elif "CIA" in species:
-            #     print("\n--------\nAdding species:", species)
-            #     self.add_other_species(param, cond, species, fastchem_name, mass, cia='yes')
-            # else:
-            #     print("\n--------\nAdding species:", species, ", FastChem name:", fastchem_name)
-            #     self.add_other_species(param, cond, species, fastchem_name, mass)
+            final_vmr_2 = npy.ones(self.final_np * self.final_nt)
+
+        elif "CIA" in species.name:
+
+            if species.mixing_ratio == "FastChem":
+
+                two_fc_names = species.fc_name.split('&')
+
+                chem_vmr = npy.concatenate((self.fastchem_data_low[two_fc_names[0]], self.fastchem_data_high[two_fc_names[0]]))
+                chem_vmr_2 = npy.concatenate((self.fastchem_data_low[two_fc_names[1]], self.fastchem_data_high[two_fc_names[1]]))
+
+                final_vmr = self.interpolate_vmr_to_final_grid(chem_vmr)
+                final_vmr_2 = self.interpolate_vmr_to_final_grid(chem_vmr_2)
+
+            else:
+                two_vmrs = species.mixing_ratio.split('&')
+
+                final_vmr = npy.ones(self.final_np * self.final_nt) * float(two_vmrs[0])
+                final_vmr_2 = npy.ones(self.final_np * self.final_nt) * float(two_vmrs[1])
+
+        if param.condensation == "yes":
+            self.apply_condensation(cond, param, final_vmr, species.name)
+
+        if species.absorbing == 'yes':
+
+            # weight with mixing ratio
+            self.weight_opacities(final_vmr, final_vmr_2, species.mass, interpol_opac)
+
+        # calculate Rayleigh scattering component
+        if species.scattering == 'yes':
+
+            self.include_rayleigh_cross_section(ray, species, final_vmr)
+
+    def combine_all_species(self, param, ray, cond, conti):
+
+        # read in data from species file
+        species_list = self.read_species_data(param.species_path)
+
+        # generate P, T grid for final table
+        # yes, this is hard-coded -- so what? it works the best so far!
+        self.use_hard_coded_PT_grid(species_list)
+
+        # get chemical abundances from the FastChem output if existing
+        for n in range(len(species_list)):
+            if species_list[n].mixing_ratio == 'FastChem':
+
+                self.load_fastchem_data(param)
+                break
+
+        # add one species after another
+        for n in range(len(species_list)):
+
+            self.add_one_species(param, ray, cond, conti, species_list[n], n)
+
+        self.create_mixed_file(param)
 
     @staticmethod
     def success():

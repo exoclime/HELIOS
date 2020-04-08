@@ -46,6 +46,7 @@ class ContiClass(object):
 
             sigma_lamda = 1e-18 * lamda**3 * (1/lamda - 1/lamda_0) ** 1.5 * f
 
+            # alpha value in the John 1988 paper is wrong. It should be alpha = c * h / k = 1.439e4 micron K
             alpha = 1.439e4
 
             k_bf = 0.75 * temp**(-5/2) * np.exp(alpha/(lamda_0*temp)) * (1 - np.exp(-alpha/(lamda_0*temp))) * sigma_lamda

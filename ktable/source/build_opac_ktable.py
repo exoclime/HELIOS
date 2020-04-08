@@ -64,18 +64,56 @@ class Production(object):
     mol_name_list = ["xxx"] * 100
     mol_name_list[1] = "H2O"
     mol_name_list[2] = "CO2"
+    mol_name_list[3] = "O3"
+    mol_name_list[4] = "N2O"
     mol_name_list[5] = "CO"
     mol_name_list[6] = "CH4"
     mol_name_list[7] = "O2"
     mol_name_list[8] = "NO"
     mol_name_list[9] = "SO2"
+    mol_name_list[10] = "NO2"
     mol_name_list[11] = "NH3"
+    mol_name_list[12] = "HNO3"
     mol_name_list[13] = "OH"
+    mol_name_list[14] = "HF"
+    mol_name_list[15] = "HCl"
+    mol_name_list[16] = "HBr"
+    mol_name_list[17] = "HI"
+    mol_name_list[18] = "ClO"
+    mol_name_list[19] = "OCS"
+    mol_name_list[20] = "H2CO"
+    mol_name_list[21] = "HOCl"
+    mol_name_list[22] = "N2"
     mol_name_list[23] = "HCN"
+    mol_name_list[24] = "CH3Cl"
+    mol_name_list[25] = "H2O2"
     mol_name_list[26] = "C2H2"
+    mol_name_list[27] = "C2H6"
     mol_name_list[28] = "PH3"
+    mol_name_list[29] = "COF2"
+    mol_name_list[30] = "SF6"
     mol_name_list[31] = "H2S"
+    mol_name_list[32] = "HCOOH"
+    mol_name_list[33] = "HO2"
+    mol_name_list[34] = "O"
+    mol_name_list[35] = "ClONO2"
+    mol_name_list[36] = "NO+"
+    mol_name_list[37] = "HOBr"
+    mol_name_list[38] = "C2H4"
+    mol_name_list[39] = "CH3OH"
+    mol_name_list[40] = "CH3Br"
+    mol_name_list[41] = "CH3CN"
+    mol_name_list[42] = "CF4"
+    mol_name_list[43] = "C4H2"
+    mol_name_list[44] = "HC3N"
+    mol_name_list[45] = "H2"
+    mol_name_list[46] = "CS"
     mol_name_list[47] = "SO3"
+    mol_name_list[48] = "C2N2"
+    mol_name_list[49] = "COCl2"
+    mol_name_list[70] = "SH"
+    mol_name_list[71] = "H3+"
+    mol_name_list[72] = "HeH+"
     mol_name_list[80] = "VO"
     mol_name_list[81] = "TiO"
     mol_name_list[83] = "AlO"
@@ -90,6 +128,18 @@ class Production(object):
     mol_name_list[93] = "CrH"
     mol_name_list[98] = "CIA_H2H2"
     mol_name_list[99] = "CIA_H2He"
+    mol_name_list[77] = "premix"
+    mol_name_list[60] = "H2H2O_1.000"
+    mol_name_list[61] = "H2H2O_1.150"
+    mol_name_list[62] = "H2H2O_1.238"
+    mol_name_list[63] = "H2H2O_1.378"
+    mol_name_list[64] = "H2H2O_1.600"
+    mol_name_list[65] = "H2H2O_1.950"
+    mol_name_list[66] = "H2H2O_2.507"
+    mol_name_list[67] = "H2H2O_3.388"
+    mol_name_list[68] = "H2H2O_4.786"
+    mol_name_list[69] = "H2H2O_7.000"
+
 
     g20 = G(20)
     yg20 = g20[0]
@@ -113,31 +163,40 @@ class Production(object):
         return short_list
 
     # changing filenames in hindsight -- good to keep in case this becomes necessary in future
-    # @staticmethod
-    # def fix_exomol_name(path):
-    #     """ change the exomol file name to a manageable one """
-    #
-    #     root_list = []
-    #     file_list = []
-    #
-    #     for roots, dirs, files in os.walk(path):
-    #
-    #         if not roots.endswith("/"):
-    #             roots += "/"
-    #         root_list.append(roots)
-    #
-    #         for file in files:
-    #             file_list.append(file)
-    #
-    #     for root in root_list:
-    #         for file in file_list:
-    #             try:
-    #                 if file.startswith("Out_h2he"):
-    #                     os.rename(root+file, root + "Out_99" + file[8:])
-    #                 elif file.startswith("Info_h2he"):
-    #                     os.rename(root+file, root + "Info_99" + file[9:])
-    #             except FileNotFoundError:
-    #                 continue
+    @staticmethod
+    def fix_exomol_name(param):
+        """ change the exomol file name to a manageable one """
+
+        root_list = []
+        file_list = []
+
+        for roots, dirs, files in os.walk(param.heliosk_path):
+
+            if not roots.endswith("/"):
+                roots += "/"
+            root_list.append(roots)
+
+            for file in files:
+                if file.endswith("_cbin.dat"):
+                    file_list.append(file)
+
+        for root in root_list:
+            for file in file_list:
+                if file.startswith("Out_H2H2O_4.786"):
+                    os.rename(root+file, root + "Out_68" + file[15:])
+
+        # for root in root_list:
+        #     for file in file_list:
+        #         try:
+        #             if file.startswith("Out_60"):
+        #                 os.rename(root+file, root + "Out_68" + file[6:])
+        #             elif file.startswith("Info_60"):
+        #                 os.rename(root+file, root + "Info_68" + file[7:])
+        #         except FileNotFoundError:
+        #             continue
+
+        print("Filenames changed. Please restart script.")
+        raise SystemExit()
 
     def search_dir(self,param):
         """ search directories for output files (without cia)"""
@@ -202,7 +261,7 @@ class Production(object):
         numin_mol = min(self.numin_mol_list)
         numax_mol = max(self.numax_mol_list)
 
-        print("\nmolecule: ",self.mol_name_list[self.mol_list[m]], self.mol_list[m])
+        print("\nmolecule: ",self.mol_name_list[self.mol_list[m]], "Hitran (or some arbitrary made-up) ID:",self.mol_list[m])
         self.mol_info.append(self.mol_name_list[self.mol_list[m]])
         print("spectral range goes from",numin_mol,"until",numax_mol,".")
         print("number of temperature points:", len(self.temp_mol_list))
@@ -418,8 +477,6 @@ class Production(object):
             for t in range(len(self.temp_list)):
 
                 for p in range(len(self.press_exp_list)):
-
-                    print('t:', t, 'p:', p)
 
                     tls.percent_counter(t, len(self.temp_list), p, len(self.press_exp_list))
 

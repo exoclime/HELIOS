@@ -29,9 +29,13 @@ class Rayleigh_scat(object):
         self.King_h2 = 1
         self.n_ref_h2 = 2.65163e19
         self.King_he = 1
+        self.King_co = 1
         self.n_ref_he = 2.546899e19
-        self.King_h2o = (6 + 3 * 3e-4) / (6 - 7 * 3e-4)
+        self.King_h2o = (6 + 3 * 3e-4) / (6 - 7 * 3e-4)  # converted from depolarisation factor
         self.n_ref_co2 = 2.546899e19
+        self.n_ref_n2 = 2.546899e19
+        self.n_ref_o2 = 2.68678e19
+        self.n_ref_co = 2.546899e19
 
     @staticmethod
     def index_h2(lam):
@@ -46,6 +50,36 @@ class Rayleigh_scat(object):
         """ calculates the refractive index of helium """
 
         result = 1e-8 * (2283 + 1.8102e13/(1.5342e10 - lam**-2)) + 1
+
+        return result
+
+    @staticmethod
+    def index_n2(lam):
+        """ calculates the refractive index of N2 """
+
+        if lam**-1 <= 21360:
+
+            result = 1e-8 * (6498.2 + 307.4335e12/(14.4e9 - lam**-2)) + 1
+
+        elif lam**-1 > 21360:
+
+            result = 1e-8 * (5677.465 + 318.81874e12/(14.4e9 - lam**-2)) + 1
+
+        return result
+
+    @staticmethod
+    def index_o2(lam):
+        """ calculates the refractive index of O2 """
+
+        result = 1e-8 * (20564.8 + 2.480899e13/(4.09e9 - lam**-2)) + 1
+
+        return result
+
+    @staticmethod
+    def index_co(lam):
+        """ calculates the refractive index of CO """
+
+        result = 1e-8 * (22851 + 0.456e14 / (71427**2 - lam ** -2)) + 1
 
         return result
 
@@ -78,6 +112,17 @@ class Rayleigh_scat(object):
         return result
 
     @staticmethod
+    def index_co2(lam):
+        """ calculates the refractive index of CO2 """
+
+        bracket = 5799.25 / (128908.9**2 - lam**-2) + 120.05 / (89223.8**2 - lam**-2) + 5.3334 / (75037.5**2 - lam**-2) + 4.3244 / (67837.7**2 - lam**-2) + 0.1218145e-6 / (2418.136**2 - lam**-2)
+
+        result = bracket * 1.1427e3 + 1
+
+        return result
+
+    ### reference densities (unless constant) ###
+    @staticmethod
     def n_ref_h2o(press, temp):
         """ calculates the reference number density of water (it is the actual number density) """
 
@@ -87,16 +132,7 @@ class Rayleigh_scat(object):
 
         return result
 
-    @staticmethod
-    def index_co2(lam):
-        """ calculates the refractive index of CO2 """
-
-        bracket = 5799.25 / (128908.9**2 - lam**-2) + 120.05 / (89223.8**2 - lam**-2) + 5.3334 / (75037.5**2 - lam**-2) + 4.3244 / (67837.7**2 - lam**-2) + 0.1218145e-6/ (2418.136**2 - lam**-2)
-
-        result = bracket * 1.1427e3 + 1
-
-        return result
-
+    ### King factors (unless constant) ###
     @staticmethod
     def King_co2(lam):
         """ calculates the King factor of CO2 """
@@ -106,19 +142,31 @@ class Rayleigh_scat(object):
         return result
 
     @staticmethod
-    def cross_sect(lamda, index, n_ref, King, lamda_limit=None):
+    def King_n2(lam):
+        """ calculates the King factor of N2 """
+
+        result = 1.034 + 3.17e-12 * lam**-1
+
+        return result
+
+    @staticmethod
+    def King_o2(lam):
+        """ calculates the King factor of O2 """
+
+        result = 1.09 + 1.385e-11 * lam**-2 + 1.448e-20 * lam**-4
+
+        return result
+
+    ### cross-sections ###
+    @staticmethod
+    def cross_sect(lamda, index, n_ref, King, lamda_limit):
         """ calculates the scattering cross sections """
 
-        if lamda_limit is None:
+        if lamda <= lamda_limit:
 
-            result = 24.0*np.pi**3/(n_ref**2*lamda**4)*((index**2-1.0)/(index**2+2.0))**2*King
-
-        if lamda_limit is not None:
-            if lamda <= lamda_limit:
-
-                result = 24.0 * np.pi ** 3 / (n_ref ** 2 * lamda ** 4) * ((index ** 2 - 1.0) / (index ** 2 + 2.0)) ** 2 * King
-            else:
-                result = 0
+            result = 24.0 * np.pi ** 3 / (n_ref ** 2 * lamda ** 4) * ((index ** 2 - 1.0) / (index ** 2 + 2.0)) ** 2 * King
+        else:
+            result = 0
 
         return result
 

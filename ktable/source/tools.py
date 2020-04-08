@@ -28,7 +28,7 @@ def percent_counter(z, nz, y=0, ny=1, x=0, nx=1):
     """ displays percent done of long operation for two for entwined loops """
 
     percentage = float((x + nx * y + nx * ny * z) / (nx * ny * nz) * 100.0)
-    sys.stdout.write("calculating: {:.1f}%\r".format(percentage))
+    sys.stdout.write("calculating: {:.2f}%\r".format(percentage))
     sys.stdout.flush()
 
 if __name__ == "__main__":

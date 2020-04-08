@@ -47,10 +47,10 @@ def main():
     param.read_param_file()
 
     # generate ktables / downsample HELIOS-K output
-    if param.building == 1:
+    if param.building == "yes":
 
-        if param.format == 'ktable':
-
+        if param.format == "ktable":
+            # ktable_builder.fix_exomol_name(param)  # in case the files have the wrong name one can use this script to fix that
             ktable_builder.gen_ypoints()
             ktable_builder.search_dir(param)
             ktable_builder.get_parameters()
@@ -59,17 +59,16 @@ def main():
             ktable_builder.write_names()
             ktable_builder.success()
 
-        elif param.format == 'sampling':
+        elif param.format == "sampling":
 
             sampling_builder.read_param_sampling(param)
             sampling_builder.initialize_wavelength_grid(param)
             sampling_builder.big_loop(param)
+            sampling_builder.success()
 
     # combine individual opacities and weight with their equilibrium abundances obtained from FastChem
     # it starts with water (water is always necessary) and then adds more species
-    comber.do_water(param, scatter, cond)
-
-    comber.include_the_other_species(param, cond, conti)
+    comber.combine_all_species(param, scatter, cond, conti)
 
     comber.success()
 

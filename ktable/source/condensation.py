@@ -41,12 +41,12 @@ class Condense(object):
 
         return temp, press
 
-    def calc_stability_curve(self, ele_abund, species):
+    def calc_stability_curve(self, cond_path, species):
         """
         returns the function in P,T for the stability curve
         """
 
-        temp, press = self.read_stability_curve(ele_abund + species + ".dat")
+        temp, press = self.read_stability_curve(cond_path + species + ".dat")
 
         log_p = [npy.log10(p) for p in press]
 
