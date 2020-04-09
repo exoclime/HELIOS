@@ -310,6 +310,7 @@ class Read(object):
         parser.add_argument('-g', help='surface gravity [cm s^-2]', required=False)
         parser.add_argument('-a', help='orbital distance [AU]', required=False)
         parser.add_argument('-rstar', help='stellar radius [R_sun]', required=False)
+        parser.add_argument('-rplanet', help='planetary radius [R_jup]', required=False)
         parser.add_argument('-tstar', help='stellar temperature [K]', required=False)
         parser.add_argument('-tintern', help='internal flux temperature [K]', required=False)
         parser.add_argument('-name', help='name of output', required=False)
@@ -346,6 +347,9 @@ class Read(object):
 
         if args.rstar:
             quant.R_star = quant.fl_prec(args.rstar)
+            
+        if args.rplanet:
+            quant.R_planet = quant.fl_prec(args.rplanet)
 
         if args.tstar:
             quant.T_star = quant.fl_prec(args.tstar)
