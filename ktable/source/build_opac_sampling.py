@@ -36,6 +36,7 @@ class Production(object):
         self.species_path = []
         self.rt_lamda = []
         self.rt_nu = []
+        self.press_dict = {}
 
     def read_param_sampling(self, param):
 
@@ -46,6 +47,58 @@ class Production(object):
                 if column:
                     self.species_name.append(column[0])
                     self.species_path.append(column[1])
+
+    def set_up_press_dict(self):
+
+        self.press_dict['n800'] = 1e-2
+        self.press_dict['n766'] = 10 ** -1.66666666
+        self.press_dict['n750'] = 10 ** -1.5
+        self.press_dict['n733'] = 10 ** -1.33333333
+        self.press_dict['n700'] = 1e-1
+        self.press_dict['n666'] = 10 ** -0.66666666
+        self.press_dict['n650'] = 10 ** -0.5
+        self.press_dict['n633'] = 10 ** -0.33333333
+        self.press_dict['n600'] = 1e0
+        self.press_dict['n566'] = 10 ** 0.33333333
+        self.press_dict['n550'] = 10 ** 0.5
+        self.press_dict['n533'] = 10 ** 0.66666666
+        self.press_dict['n500'] = 1e1
+        self.press_dict['n466'] = 10 ** 1.33333333
+        self.press_dict['n450'] = 10 ** 1.5
+        self.press_dict['n433'] = 10 ** 1.66666666
+        self.press_dict['n400'] = 1e2
+        self.press_dict['n366'] = 10 ** 2.33333333
+        self.press_dict['n350'] = 10 ** 2.5
+        self.press_dict['n333'] = 10 ** 2.66666666
+        self.press_dict['n300'] = 1e3
+        self.press_dict['n266'] = 10 ** 3.33333333
+        self.press_dict['n250'] = 10 ** 3.5
+        self.press_dict['n233'] = 10 ** 3.66666666
+        self.press_dict['n200'] = 1e4
+        self.press_dict['n166'] = 10 ** 4.33333333
+        self.press_dict['n150'] = 10 ** 4.5
+        self.press_dict['n133'] = 10 ** 4.66666666
+        self.press_dict['n100'] = 1e5
+        self.press_dict['n066'] = 10 ** 5.33333333
+        self.press_dict['n050'] = 10 ** 5.5
+        self.press_dict['n033'] = 10 ** 5.66666666
+        self.press_dict['p000'] = 1e6
+        self.press_dict['p033'] = 10 ** 6.33333333
+        self.press_dict['p050'] = 10 ** 6.5
+        self.press_dict['p066'] = 10 ** 6.66666666
+        self.press_dict['p100'] = 1e7
+        self.press_dict['p133'] = 10 ** 7.33333333
+        self.press_dict['p150'] = 10 ** 7.5
+        self.press_dict['p166'] = 10 ** 7.66666666
+        self.press_dict['p200'] = 1e8
+        self.press_dict['p233'] = 10 ** 8.33333333
+        self.press_dict['p250'] = 10 ** 8.5
+        self.press_dict['p266'] = 10 ** 8.66666666
+        self.press_dict['p300'] = 1e9
+        self.press_dict['p333'] = 10 ** 9.33333333
+        self.press_dict['p350'] = 10 ** 9.5
+        self.press_dict['p366'] = 10 ** 9.66666666
+        self.press_dict['p400'] = 1e10
 
     @staticmethod
     def read_dat_file(path):
@@ -86,8 +139,6 @@ class Production(object):
         self.rt_nu = [1 / l for l in self.rt_lamda]
         self.rt_nu.reverse()
         self.rt_nu = [round(n, 2) for n in self.rt_nu]
-        print(self.rt_nu[:5], self.rt_nu[-5:])
-        raise SystemExit()
 
     def big_loop(self, param):
 
@@ -98,101 +149,97 @@ class Production(object):
 
             # get molecular parameter ranges
             files = os.listdir(self.species_path[m])
-            file_list = [f for f in files if "Out_" in f]
+            file_list = [f for f in files if ("Out_" in f) and ("_cbin" not in f)]
+            file_name = None
+
+
+            # determine filename structure with one example file in the directory
+            example_file = file_list[0]
+
+            nr_underscore = example_file.count("_")
+
+            indices = []
+
+            for i in range(len(example_file)):
+
+                if not example_file.find("_", i) in indices:
+                    indices.append(example_file.find("_", i))
+
+            indices.pop(-1)  # remove "-1" entry
+
+            if nr_underscore > 4:
+
+                # Aha! This is the case with species number
+                start_file_name = indices[0] + 1
+                end_file_name = indices[-4]
+
+                file_name = example_file[start_file_name:end_file_name]
+
+            start_numin = indices[-4] + 1
+            end_numin = indices[-3]
+
+            start_numax = indices[-3] + 1
+            end_numax = indices[-2]
+
+            start_temp = indices[-2] + 1
+            end_temp = indices[-1]
+
+            start_press = indices[-1] + 1
+            end_press = indices[-1] + 5
+
             temp_list = []
-            press_list = []
             numin_list = []
             numax_list = []
             press_exp_list = []
-            species_nr = 'not provided'
 
             for f in file_list:
 
-                if 'Opacity_Atoms' in self.species_path[m]:
-                    # numin_list.append(int(f[9:14]))  # taking hardcoded wavenumber limits (see below), because some molecules have lower boundaries
-                    # numax_list.append(int(f[15:20]))
-                    temp_list.append(int(f[21:26]))
-                    if species_nr == 'not provided':
-                        species_nr = int(f[4:8])
-                elif 'Opacity3' in self.species_path[m]:
-                    # numin_list.append(int(f[4:9]))
-                    # numax_list.append(int(f[10:15]))
-                    temp_list.append(int(f[16:21]))
-                elif 'h2h2o_' in self.species_path[m]:
-                    temp_list.append(int(f[28:33]))
-                else:
-                    # numin_list.append(int(f[7:12]))
-                    # numax_list.append(int(f[13:18]))
-                    temp_list.append(int(f[19:24]))
-                    if species_nr == 'not provided':
-                        species_nr = int(f[4:6])
-
-            # hardcoded wavenumber limits -- improve this at some point in future
-            numin_list = npy.arange(0, 30000, 1000)
-            numax_list = npy.arange(1000, 31000, 1000)
-
-            if 'h2h2o_' in self.species_path[m]:
-                numin_list = npy.arange(0, 41000, 1000)
-                numax_list = npy.arange(1000, 42000, 1000)
+                numin_list.append(int(f[start_numin:end_numin]))
+                numax_list.append(int(f[start_numax:end_numax]))
+                temp_list.append(int(f[start_temp:end_temp]))
+                press_exp_list.append(f[start_press:end_press])
 
             # delete duplicate entries in the lists and sort in ascending order
             temp_list = list(set(temp_list))
             temp_list.sort()
 
+            numin_list = list(set(numin_list))
+            numin_list.sort()
+
+            numax_list = list(set(numax_list))
+            numax_list.sort()
+
+            press_list = [self.press_dict[press_exp_list[p]] for p in range(len(press_exp_list))]
+            press_list = list(set(press_list))
+            press_list.sort()
+
+            # getting back the press_exp list in ascending order
+            press_exp_list_ordered = []
+
+            for p in press_list:
+                for k in self.press_dict.keys():
+
+                    if self.press_dict[k] == p:
+                        press_exp_list_ordered.append(k)
+                        break
+
             temp_min = min(temp_list)
             temp_max = max(temp_list)
             numin = min(numin_list)
             numax = max(numax_list)
-
-            if 'h2h2o_' in self.species_path[m]:
-
-                press_list_p1 = [10 ** p for p in npy.arange(0, 10, 1)]
-                press_list_p2 = [10 ** p for p in npy.arange(0.5, 9.5, 1)]
-                press_list = npy.append(press_list_p1, press_list_p2)
-                press_list.sort()
-
-                press_exp_list = ['n600', 'n550',
-                                  'n500', 'n450',
-                                  'n400', 'n350',
-                                  'n300', 'n250',
-                                  'n200', 'n150',
-                                  'n100', 'n050',
-                                  'p000', 'p050',
-                                  'p100', 'p150',
-                                  'p200', 'p250',
-                                  'p300']
-
-            elif 'Opacity_Atoms' in self.species_path[m]:
-
-                press_list = [1e-2]
-
-                press_exp_list = ['n800']
-
-            # hardcoded pressures -- improve this at some point in future
-            else:
-                press_list_p1 = [10 ** p for p in npy.arange(0, 10, 1)]
-                press_list_p2 = [10**p for p in npy.arange(0.33333333, 9.33333333, 1)]
-                press_list_p3 = [10**p for p in npy.arange(0.66666666, 9.66666666, 1)]
-                press_list = npy.append(press_list_p1,npy.append(press_list_p2,press_list_p3))
-                press_list.sort()
-
-                press_exp_list = ['n600','n566','n533',
-                                  'n500','n466','n433',
-                                  'n400','n366','n333',
-                                  'n300','n266','n233',
-                                  'n200','n166','n133',
-                                  'n100','n066','n033',
-                                  'p000','p033','p066',
-                                  'p100','p133','p166',
-                                  'p200','p233','p266',
-                                  'p300']
+            press_min = min(press_list)
+            press_max = max(press_list)
 
             # some user feedback to check whether all is fine
             print("\n--- working on ---")
             print("molecule or atom: ", self.species_name[m])
-            print("Hitran ID: ", species_nr)
+            if not file_name is None:
+                print("Files named as:", file_name)
+            else:
+                print("Files not specifically named.")
             print("wavenumber range: ", numin, numax)
             print("temperature range: ", temp_min, temp_max)
+            print("pressure range: {:g} {:g}".format(press_min, press_max))
             print("number of wavelength bins:", len(self.rt_nu),"\n")
 
             opac_array = []
@@ -200,7 +247,7 @@ class Production(object):
             # read files
             for t in range(len(temp_list)):
 
-                for p in range(len(press_exp_list)):
+                for p in range(len(press_exp_list_ordered)):
 
                     opac_array_temp = []
 
@@ -208,14 +255,19 @@ class Production(object):
 
                         exist = 1
 
-                        tls.percent_counter(t, len(temp_list), p, len(press_exp_list), n, len(numin_list))
+                        tls.percent_counter(t, len(temp_list), p, len(press_exp_list_ordered))
 
-                        if 'Opacity_Atoms' in self.species_path[m]:
+                        if param.heliosk_format == "binary":
 
-                            file = self.species_path[m] + "Out_{:04d}_{:05d}_{:05d}_{:05d}_".format(species_nr, numin_list[n], numax_list[n], temp_list[t]) + press_exp_list[p] + ".bin"
+                            if file_name is None:
+
+                                file=self.species_path[m]+"Out_{:05d}_{:05d}_{:05d}_".format(numin_list[n],numax_list[n],temp_list[t])+press_exp_list_ordered[p]+".bin"
+
+                            else:
+
+                                file=self.species_path[m]+"Out_{}_{:05d}_{:05d}_{:05d}_".format(file_name, numin_list[n],numax_list[n],temp_list[t])+press_exp_list_ordered[p]+".bin"
 
                             try:
-
                                 content = npy.fromfile(file, npy.float32, -1, "")
 
                             except IOError:
@@ -223,53 +275,19 @@ class Production(object):
                                 print("WARNING: File '" + file + "' not found. Using value 1e-15 for opacity in this regime.")
                                 exist = 0
 
-                        elif 'Opacity2' in self.species_path[m]:
+                        elif param.heliosk_format == "text":
 
-                            file = self.species_path[m] + "Out_{:02d}_{:05d}_{:05d}_{:05d}_".format(species_nr, numin_list[n], numax_list[n], temp_list[t]) + press_exp_list[p] + ".bin"
+                            if file_name is None:
 
-                            try:
+                                file=self.species_path[m]+"Out_{:05d}_{:05d}_{:05d}_".format(numin_list[n],numax_list[n],temp_list[t])+press_exp_list_ordered[p]+".dat"
 
-                                content = npy.fromfile(file,npy.float32, -1, "")
+                            else:
 
-                            except IOError:
-
-                                print("WARNING: File '" + file + "' not found. Using value 1e-15 for opacity in this regime.")
-                                exist = 0
-
-                        elif 'Opacity3' in self.species_path[m]:
-
-                            file = self.species_path[m] + "Out_{:05d}_{:05d}_{:05d}_".format(numin_list[n], numax_list[n], temp_list[t]) + press_exp_list[p] + ".bin"
-
-                            try:
-
-                                content = npy.fromfile(file,npy.float32, -1, "")
-
-                            except IOError:
-
-                                print("WARNING: File '" + file + "' not found. Using value 1e-15 for opacity in this regime.")
-                                exist = 0
-
-                        elif 'h2h2o_' in self.species_path[m]:
-
-                            file = self.species_path[m] + "Out_{}_{:05d}_{:05d}_{:05d}_".format(self.species_name[m], numin_list[n], numax_list[n], temp_list[t]) + press_exp_list[p] + ".dat"
+                                file=self.species_path[m]+"Out_{}_{:05d}_{:05d}_{:05d}_".format(file_name, numin_list[n],numax_list[n],temp_list[t])+press_exp_list_ordered[p]+".dat"
 
                             try:
 
                                 content = self.read_dat_file(file)
-
-                            except IOError:
-
-                                print("WARNING: File '" + file + "' not found. Using value 1e-15 for opacity in this regime.")
-                                exist = 0
-
-                        else:
-
-                            file = self.species_path[m] + "Out_{:02d}_{:05d}_{:05d}_{:05d}_".format(species_nr, numin_list[n], numax_list[n], temp_list[t]) + press_exp_list[p] + ".dat"
-
-                            try:
-
-                                content = self.read_dat_file(file)
-
 
                             except IOError:
 
@@ -285,7 +303,7 @@ class Production(object):
 
                                 if exist == 1:
 
-                                    index = round(self.rt_nu[i] * 100) - int(numin_list[n] * 100)
+                                    index = round(self.rt_nu[i] * 100) - int(numin_list[n] * 100)  # WARNING: Assumes a HELIOS-K resolution of 0.01 cm^-1
                                     opac_array_temp.append(float(content[index]))
 
                                 elif exist == 0:
@@ -305,25 +323,13 @@ class Production(object):
                 if not os.path.isdir(param.resampling_path):
                     raise
 
-            if 'h2h2o_' in self.species_path[m]:
+            # save to hdf5
+            with h5py.File(param.resampling_path + self.species_name[m] + "_opac_sampling.h5", "w") as f:
 
-                # save to hdf5
-                with h5py.File(param.resampling_path + "H2O_opac_sampling.h5", "w") as f:
-
-                    f.create_dataset("pressures", data=press_list)
-                    f.create_dataset("temperatures", data=temp_list)
-                    f.create_dataset("wavelengths", data=self.rt_lamda)
-                    f.create_dataset("opacities", data=opac_array)
-
-            else:
-
-                # save to hdf5
-                with h5py.File(param.resampling_path + self.species_name[m] + "_opac_sampling.h5", "w") as f:
-
-                    f.create_dataset("pressures", data=press_list)
-                    f.create_dataset("temperatures", data=temp_list)
-                    f.create_dataset("wavelengths", data=self.rt_lamda)
-                    f.create_dataset("opacities", data=opac_array)
+                f.create_dataset("pressures", data=press_list)
+                f.create_dataset("temperatures", data=temp_list)
+                f.create_dataset("wavelengths", data=self.rt_lamda)
+                f.create_dataset("opacities", data=opac_array)
 
             print("\nSuccessfully completed -->", self.species_name[m], "<-- !\n---------------------")
 

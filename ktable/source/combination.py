@@ -552,7 +552,7 @@ class Comb(object):
                         self.combined_cross_sections[x + self.nx * p + self.nx * self.final_np * t] += vol_mix_ratio[p + self.final_np * t] * cross_section
 
         else:
-            print("WARNING: Rayleigh scattering cross sections for species", species.name, "not found. Please double-check! Continuing with them... ")
+            print("WARNING WARNING WARNING: Rayleigh scattering cross sections for species", species.name, "not found. Please double-check! Continuing without those... ")
 
     def weight_opacities(self, vol_mix_ratio, vol_mix_ratio2, mass, opac):
         """ weights opacities """

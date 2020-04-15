@@ -31,6 +31,7 @@ class Param(object):
         self.heliosk_path = None
         self.resampling_path = None
         self.sampling_param_path = None
+        self.heliosk_format = None
         self.resolution = None
         self.special_limits = None
         self.fastchem_path = None
@@ -57,6 +58,8 @@ class Param(object):
                             self.heliosk_path = column[5]
                         elif column[0] == "path" and column[2] == "sampling" and column[3] == "species":
                             self.sampling_param_path = column[6]
+                        elif column[0] == "HELIOS-K" and column[2] == "format":
+                            self.heliosk_format = column[4]
                         elif column[0] == "sampling" and column[1] == "wavelength":
                             self.resolution = float(column[4])
                             try:

@@ -63,6 +63,7 @@ def main():
 
             sampling_builder.read_param_sampling(param)
             sampling_builder.initialize_wavelength_grid(param)
+            sampling_builder.set_up_press_dict()
             sampling_builder.big_loop(param)
             sampling_builder.success()
 

@@ -13,7 +13,8 @@ individual species calculation =              yes                               
 path to HELIOS-K output =                     /helios-k/
 
 --> only relevant if above is set to 'sampling' and 'yes' <--
-path to sampling species file =               ./input/sampling_species/135k.dat
+path to sampling species file =               ./input/sampling_species/sample.dat
+HELIOS-K output format =                      binary                                            (binary, text)
 sampling wavelength grid =                    50    0.34  200                               (resolution, limits in micron [lower, upper])
 --------
 
