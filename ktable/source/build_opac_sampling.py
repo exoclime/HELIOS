@@ -150,10 +150,20 @@ class Production(object):
             # get molecular parameter ranges
             files = os.listdir(self.species_path[m])
             file_list = [f for f in files if ("Out_" in f) and ("_cbin" not in f)]
-            file_name = None
 
+            if param.heliosk_format == 'binary':
+                file_list = [f for f in file_list if ".bin" in f]
+            elif param.heliosk_format == 'text':
+                file_list = [f for f in file_list if ".dat" in f]
+
+            # check that format correct
+            if file_list == []:
+                print("No files with the correct format found in the chosen directory. Please double-check that the Helios-K format is correct.")
+                print("Aborting...")
+                raise SystemExit()
 
             # determine filename structure with one example file in the directory
+            file_name = None
             example_file = file_list[0]
 
             nr_underscore = example_file.count("_")
@@ -257,6 +267,7 @@ class Production(object):
 
                         tls.percent_counter(t, len(temp_list), p, len(press_exp_list_ordered))
 
+                        # opening correct file
                         if param.heliosk_format == "binary":
 
                             if file_name is None:
@@ -294,6 +305,7 @@ class Production(object):
                                 print("WARNING: File '" + file + "' not found. Using value 1e-15 for opacity in this regime.")
                                 exist = 0
 
+                        # read out the entries that match with the chosen wavenumber grid values
                         for i in range(len(self.rt_nu)):
 
                             if self.rt_nu[i] < numin_list[n]:
@@ -312,6 +324,13 @@ class Production(object):
 
                             elif self.rt_nu[i] >= numax_list[n]:
                                 break
+
+
+                    # filling up opacity array to match the length of the wavenumber array
+                    # this is necessary if opacity data wavenumber grid ends earlier than the input wavenumber grid
+                    while len(opac_array_temp) < len(self.rt_nu):
+
+                        opac_array_temp.append(1e-15)
 
                     # reverse array
                     opac_array_temp.reverse()
