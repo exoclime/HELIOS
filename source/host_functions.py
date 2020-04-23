@@ -562,10 +562,6 @@ def mark_convective_layers(quant, stitching):
         else:
             quant.conv_layer[i + 1] = 0
 
-        if quant.T_lay[i+1] > quant.T_lay[i]:  # temperature inversion directly next to adiabat is unphysical. this fix helps with potential kinks.
-
-            quant.conv_layer[i] = 0
-
     # do the surface/BOA condition
     T_ad_lim = quant.T_lay[quant.nlayer] * (quant.p_lay[0] / quant.p_int[0]) ** (quant.kappa_int[0] * (1 - 1e-6))
 
