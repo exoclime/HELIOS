@@ -402,7 +402,7 @@ def conv_correct(quant, fudging):
         for n in range(len(start_layers)):
 
             # interface to adjust the radiative net flux to
-            interface_to_be_tested = quant.ninterface - 1
+            # interface_to_be_tested = quant.ninterface - 1
 
             for m in range(n, len(start_layers)):
 
@@ -418,41 +418,63 @@ def conv_correct(quant, fudging):
                         interface_to_be_tested = int((end_layers[m] + start_layers[m+1]) / 2)
                         break
 
-            # with external stellar radiation
-            if quant.T_star >= 10:
+                else: # toplayers
 
-                # dampara as in damping parameter. It is a sad attempt at playing with words.
-                if quant.input_dampara == "auto":
-                    quant.dampara = 16  # 16 is found to lead to the fastest convergence hence taking as nominal value
-                else:
-                    quant.dampara = int(quant.input_dampara)
+                    interface_to_be_tested = int(0.8 * end_layers[m] + 0.2 * quant.ninterface - 1)
 
-                # allows to correct for global equilibrium. With fudge_factor == 1, you satisfy local equilibrium, but never reach a global one
-                if quant.F_intern != 0:
-                    fudge_factor[n] = (100 * quant.F_intern / (max(0,quant.F_net[interface_to_be_tested]) + 99 * quant.F_intern)) ** (1.0 / quant.dampara)
-                elif quant.F_intern == 0:
-                    fudge_factor[n] = (quant.F_down_tot[interface_to_be_tested] / quant.F_up_tot[interface_to_be_tested]) ** (1.0 / quant.dampara)
+            ####### OLD CHUNK (keep for the moment in case new version fails somehow) ############################
+            # # with external stellar radiation
+            # if quant.T_star >= 10:
+            #
+            #     # dampara as in damping parameter. It is a sad attempt at playing with words.
+            #     if quant.input_dampara == "auto":
+            #         quant.dampara = 16  # 16 is found to lead to the fastest convergence hence taking as nominal value
+            #     else:
+            #         quant.dampara = int(quant.input_dampara)
+            #
+            #     # allows to correct for global equilibrium. With fudge_factor == 1, you satisfy local equilibrium, but never reach a global one
+            #     if quant.T_intern > 0:
+            #         fudge_factor[n] = (100 * quant.F_intern / (max(0,quant.F_net[interface_to_be_tested]) + 99 * quant.F_intern)) ** (1.0 / quant.dampara)
+            #     else:
+            #         fudge_factor[n] = (quant.F_down_tot[interface_to_be_tested] / quant.F_up_tot[interface_to_be_tested]) ** (1.0 / quant.dampara)
+            #
+            #     # uncomment for debugging
+            #     # print("F_intern: {:.2e}, F_net_TOA: {:.2e}".format(quant.F_intern, quant.F_net[interface_to_be_tested]))
+            #
+            # # same procedure without a stellar energy source
+            # else:
+            #
+            #     if quant.input_dampara == "auto":
+            #         quant.dampara = 1024  # 1024 is found to lead to the fastest convergence hence taking as nominal value
+            #     else:
+            #         quant.dampara = int(quant.input_dampara)
+            #
+            #     fudge_factor[n] = (quant.F_intern / quant.F_net[interface_to_be_tested]) ** (1.0 / quant.dampara)
+            ###############################################
 
-                # uncomment for debugging
-                # print("F_intern: {:.2e}, F_net_TOA: {:.2e}".format(quant.F_intern, quant.F_net[interface_to_be_tested]))
+            if quant.input_dampara == "auto":
 
-            # same procedure without a stellar energy source
+                quant.dampara = 4
+
+                # boost for very bottom
+                # at iter step 0 it is 2 ** 5 = 32 and at step 10'000 it is 2 ** -5 = 1 / 32
+                if n == 0:
+                    quant.dampara = 2 ** max(-2, (- 1 / 1000 * max(0, quant.iter_value - 3000) + 2))
+
             else:
+                quant.dampara = float(quant.input_dampara)
 
-                if quant.input_dampara == "auto":
-                    quant.dampara = 1024  # 1024 is found to lead to the fastest convergence hence taking as nominal value
-                else:
-                    quant.dampara=int(quant.input_dampara)
-
-                fudge_factor[n] = (quant.F_intern / quant.F_net[interface_to_be_tested]) ** (1.0 / quant.dampara)
+            fudge_factor[n] = ((quant.F_intern + quant.F_down_tot[interface_to_be_tested]) / quant.F_up_tot[interface_to_be_tested]) ** (1.0 / quant.dampara)
+            fudge_factor[n] = min(1.01, max(0.99, fudge_factor[n]))  # to prevent instabilities
 
         ### uncomment next few lines for debugging
-        # for n in range(len(start_layers)):
-        #     if n < len(start_layers) - 1:
-        #         print("\tIntermediate RT layers found from layer", end_layers[n],"to", start_layers[n+1], "with fudge_factor = ",
-        #               fudge_factor[n], ". pressure ratio.:", quant.p_lay[start_layers[n+1]]/quant.p_lay[end_layers[n]])
-        #     else:
-        #         print("\tTop RT layer fudge_factor = ", fudge_factor[n], ".")
+        # if quant.iter_value % 100 == 0:
+        #     for n in range(len(start_layers)):
+        #         if n < len(start_layers) - 1:
+        #             print("\tIntermediate RT layers:", end_layers[n],"-", start_layers[n+1], "fudge_factor=",
+        #                   fudge_factor[n], ". pressure ratio.:", quant.p_lay[start_layers[n+1]]/quant.p_lay[end_layers[n]])
+        #         else:
+        #             print("\tTop RT layer fudge_factor= ", fudge_factor[n], ".")
 
     for n in range(len(start_layers)):
 
