@@ -58,14 +58,8 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="read.Read.read_command_line">
-<code class="descname">read_command_line</code><span class="sig-paren">(</span><em>quant</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.read_command_line" title="Permalink to this definition">¶</a></dt>
-<dd><p>reads any eventual command-line arguments</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="read.Read.read_entropy_table">
-<code class="descname">read_entropy_table</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.read_entropy_table" title="Permalink to this definition">¶</a></dt>
+<dt id="read.Read.read_kappa_table">
+<code class="descname">read_kappa_table</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.read_kappa_table" title="Permalink to this definition">¶</a></dt>
 <dd><p>reads in entropy and kappa (for the stellar community: delad) values from ASCII table</p>
 </dd></dl>
 
@@ -76,8 +70,8 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="read.Read.read_param_file">
-<code class="descname">read_param_file</code><span class="sig-paren">(</span><em>quant</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.read_param_file" title="Permalink to this definition">¶</a></dt>
+<dt id="read.Read.read_param_file_and_command_line">
+<code class="descname">read_param_file_and_command_line</code><span class="sig-paren">(</span><em>quant</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.read_param_file_and_command_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>reads the input file</p>
 </dd></dl>
 
@@ -268,12 +262,6 @@
 <em class="property">class </em><code class="descclassname">computation.</code><code class="descname">Compute</code><a class="headerlink" href="#computation.Compute" title="Permalink to this definition">¶</a></dt>
 <dd><p>class incorporating the computational core of HELIOS</p>
 <dl class="method">
-<dt id="computation.Compute.calculate_c_p">
-<code class="descname">calculate_c_p</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.calculate_c_p" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculates the layer heat capacity from kappa and the mean molecular mass</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="computation.Compute.calculate_contribution_function">
 <code class="descname">calculate_contribution_function</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.calculate_contribution_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate the transmission weighting function and the contribution function for each layer and waveband</p>
@@ -323,7 +311,7 @@
 
 <dl class="method">
 <dt id="computation.Compute.convection_loop">
-<code class="descname">convection_loop</code><span class="sig-paren">(</span><em>quant</em>, <em>write</em>, <em>rt_plot</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.convection_loop" title="Permalink to this definition">¶</a></dt>
+<code class="descname">convection_loop</code><span class="sig-paren">(</span><em>quant</em>, <em>write</em>, <em>read</em>, <em>rt_plot</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.convection_loop" title="Permalink to this definition">¶</a></dt>
 <dd><p>loops interchangeably through the radiative and convection schemes</p>
 </dd></dl>
 
@@ -396,7 +384,7 @@ plus stellar and internal blackbody</p>
 
 <dl class="method">
 <dt id="computation.Compute.radiation_loop">
-<code class="descname">radiation_loop</code><span class="sig-paren">(</span><em>quant</em>, <em>write</em>, <em>rt_plot</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.radiation_loop" title="Permalink to this definition">¶</a></dt>
+<code class="descname">radiation_loop</code><span class="sig-paren">(</span><em>quant</em>, <em>write</em>, <em>read</em>, <em>rt_plot</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.radiation_loop" title="Permalink to this definition">¶</a></dt>
 <dd><p>loops over the relevant kernels iteratively until the equilibrium TP - profile reached</p>
 </dd></dl>
 
@@ -452,7 +440,7 @@ plus stellar and internal blackbody</p>
 
 <dl class="function">
 <dt id="host_functions.check_for_global_eq">
-<code class="descclassname">host_functions.</code><code class="descname">check_for_global_eq</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.check_for_global_eq" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">host_functions.</code><code class="descname">check_for_global_eq</code><span class="sig-paren">(</span><em>quant</em>, <em>condition=True</em><span class="sig-paren">)</span><a class="headerlink" href="#host_functions.check_for_global_eq" title="Permalink to this definition">¶</a></dt>
 <dd><p>checks for global equilibrium</p>
 </dd></dl>
 
@@ -628,12 +616,6 @@ plus stellar and internal blackbody</p>
 <dd><p>interpolates the molecular opacity tables to layer and interface values</p>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="Vcoupling_modification.Vcoupling.read_ind_molecule_opac">
-<em class="property">static </em><code class="descname">read_ind_molecule_opac</code><span class="sig-paren">(</span><em>quant</em>, <em>name</em>, <em>read_grid_parameters=False</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.read_ind_molecule_opac" title="Permalink to this definition">¶</a></dt>
-<dd><p>reads the file with the opacity table</p>
-</dd></dl>
-
 <dl class="method">
 <dt id="Vcoupling_modification.Vcoupling.read_layer_molecular_abundance">
 <code class="descname">read_layer_molecular_abundance</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.read_layer_molecular_abundance" title="Permalink to this definition">¶</a></dt>
@@ -644,6 +626,12 @@ plus stellar and internal blackbody</p>
 <dt id="Vcoupling_modification.Vcoupling.read_molecular_opacities">
 <code class="descname">read_molecular_opacities</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.read_molecular_opacities" title="Permalink to this definition">¶</a></dt>
 <dd><p>reads the individual molecular opacities</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="Vcoupling_modification.Vcoupling.read_opac_from_file">
+<em class="property">static </em><code class="descname">read_opac_from_file</code><span class="sig-paren">(</span><em>quant</em>, <em>name</em>, <em>read_grid_parameters=False</em><span class="sig-paren">)</span><a class="headerlink" href="#Vcoupling_modification.Vcoupling.read_opac_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads the file with the opacity table</p>
 </dd></dl>
 
 <dl class="method">
