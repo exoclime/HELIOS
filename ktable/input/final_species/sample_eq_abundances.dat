@@ -12,7 +12,7 @@ TiO             yes         no           FastChem             O1Ti1       63.866
 
 VO               yes        no            FastChem            O1V1        66.9409
 
-H-               yes         no            FastChem           H          2.01588
+H-               yes         no            FastChem           H          1.00784
 
 H2               no         yes            FastChem           H2          2.01588
 
