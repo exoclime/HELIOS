@@ -149,7 +149,8 @@ __device__ utype trans_func(
 __device__ utype G_plus_func(
         utype w0, 
         utype g0, 
-        utype epsi, 
+        utype epsi,
+        utype epsi2,
         utype mu_star,
         int   scat_corr,
         utype i2s_transition
@@ -162,13 +163,13 @@ __device__ utype G_plus_func(
         E = E_parameter(w0, g0, i2s_transition);
     }
     
-    utype num = w0 * E * (w0 * g0 - g0 - 1);
+    utype num = w0 * (E * (1.0 - w0 * g0) + g0 * epsi / epsi2);
 
-    utype denom = pow(mu_star,-2.0) - E * pow(epsi,-2.0) * (E - w0) * (1.0 - w0 * g0);
+    utype denom = E * pow(epsi,-2.0) * (E - w0) * (1.0 - w0 * g0) - pow(mu_star,-2.0);
 
     utype second_term = 1.0/epsi + 1.0/(mu_star * E * (1.0 - w0 * g0));
     
-    utype third_term = w0 * g0 * mu_star / (1.0 - w0 * g0);
+    utype third_term = epsi * w0 * g0 * mu_star / (epsi2 * E * (1.0 - w0 * g0));
             
     utype bracket = num/denom * second_term + third_term;
 
@@ -182,7 +183,8 @@ __device__ utype G_plus_func(
 __device__ utype G_minus_func(
         utype w0, 
         utype g0, 
-        utype epsi, 
+        utype epsi,
+        utype epsi2,
         utype mu_star,
         int   scat_corr,
         utype i2s_transition
@@ -195,13 +197,13 @@ __device__ utype G_minus_func(
         E = E_parameter(w0, g0, i2s_transition);
     }
     
-    utype num = w0 * E * (w0 * g0 - g0 - 1);
+    utype num = w0 * (E * (1.0 - w0 * g0) + g0 * epsi / epsi2);
 
-    utype denom = pow(mu_star,-2.0) - E * pow(epsi,-2.0) * (E - w0) * (1.0 - w0 * g0);
+    utype denom = E * pow(epsi,-2.0) * (E - w0) * (1.0 - w0 * g0) - pow(mu_star,-2.0);
 
     utype second_term = 1.0/epsi - 1.0/(mu_star * E * (1.0 - w0 * g0));
     
-    utype third_term = w0 * g0 * mu_star / (1.0 - w0 * g0);
+    utype third_term = epsi * w0 * g0 * mu_star / (epsi2 * E * (1.0 - w0 * g0));
             
     utype bracket = num/denom * second_term - third_term;
 
@@ -994,6 +996,7 @@ __global__ void calc_trans_iso(
         utype* 	g_0_tot_lay,
         utype   g_0,
         utype 	epsi,
+        utype   epsi2,
         utype 	mu_star,
         utype   w_0_limit,
         int 	scat,
@@ -1044,8 +1047,8 @@ __global__ void calc_trans_iso(
         N_term[y+ny*x + ny*nbin*i] = zeta_pl * zeta_min * (1.0 - (trans*trans));
         P_term[y+ny*x + ny*nbin*i] = ((zeta_min*zeta_min) - (zeta_pl*zeta_pl)) * trans;
                 
-        G_plus[y+ny*x + ny*nbin*i] = G_limiter(G_plus_func(w0, g0, epsi, mu_star, scat_corr, i2s_transition), debug);
-        G_minus[y+ny*x + ny*nbin*i] = G_limiter(G_minus_func(w0, g0, epsi, mu_star, scat_corr, i2s_transition), debug);
+        G_plus[y+ny*x + ny*nbin*i] = G_limiter(G_plus_func(w0, g0, epsi, epsi2, mu_star, scat_corr, i2s_transition), debug);
+        G_minus[y+ny*x + ny*nbin*i] = G_limiter(G_minus_func(w0, g0, epsi, epsi2, mu_star, scat_corr, i2s_transition), debug);
     }
 }
 
@@ -1083,6 +1086,7 @@ __global__ void calc_trans_noniso(
         utype* 	g_0_tot_int,
         utype	g_0,
         utype 	epsi,
+        utype   epsi2,
         utype 	mu_star,
         utype   w_0_limit,
         int 	scat,
@@ -1161,10 +1165,10 @@ __global__ void calc_trans_noniso(
         P_upper[y+ny*x + ny*nbin*i] = ((zeta_min_up*zeta_min_up) - (zeta_pl_up*zeta_pl_up)) * trans_up;
         P_lower[y+ny*x + ny*nbin*i] = ((zeta_min_low*zeta_min_low) - (zeta_pl_low*zeta_pl_low)) * trans_low;
 
-        G_plus_upper[y+ny*x + ny*nbin*i] = G_limiter(G_plus_func(w_0_up, g0_up, epsi, mu_star, scat_corr, i2s_transition), debug);
-        G_plus_lower[y+ny*x + ny*nbin*i] = G_limiter(G_plus_func(w_0_low, g0_low, epsi, mu_star, scat_corr, i2s_transition), debug);
-        G_minus_upper[y+ny*x + ny*nbin*i] = G_limiter(G_minus_func(w_0_up, g0_up, epsi, mu_star, scat_corr, i2s_transition), debug);
-        G_minus_lower[y+ny*x + ny*nbin*i] = G_limiter(G_minus_func(w_0_low, g0_low, epsi, mu_star, scat_corr, i2s_transition), debug);
+        G_plus_upper[y+ny*x + ny*nbin*i] = G_limiter(G_plus_func(w_0_up, g0_up, epsi, epsi2, mu_star, scat_corr, i2s_transition), debug);
+        G_plus_lower[y+ny*x + ny*nbin*i] = G_limiter(G_plus_func(w_0_low, g0_low, epsi, epsi2, mu_star, scat_corr, i2s_transition), debug);
+        G_minus_upper[y+ny*x + ny*nbin*i] = G_limiter(G_minus_func(w_0_up, g0_up, epsi, epsi2, mu_star, scat_corr, i2s_transition), debug);
+        G_minus_lower[y+ny*x + ny*nbin*i] = G_limiter(G_minus_func(w_0_low, g0_low, epsi, epsi2, mu_star, scat_corr, i2s_transition), debug);
     }
 }
 

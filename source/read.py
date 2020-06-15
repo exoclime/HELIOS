@@ -213,6 +213,8 @@ class Read(object):
                         elif column[0] == "diffusivity":
                             quant.diffusivity = quant.fl_prec(column[3])
                             quant.epsi = quant.fl_prec(1.0/quant.diffusivity)
+                        elif column[0] == "second" and column[1] == "Eddington":
+                            quant.epsi2 = quant.fl_prec(column[4])
                         elif column[0] == "f" and column[1] == "factor":
                             quant.f_factor = quant.fl_prec(column[3])
                         elif column[0] == "stellar" and column[1] == "zenith":

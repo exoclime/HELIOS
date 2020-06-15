@@ -119,6 +119,7 @@ These are the parameters used in the production of this HELIOS output.
                 file.writelines("\nasymmetry factor g_0 = {:g}".format(quant.g_0))
                 file.writelines("\npath to opacity file = " + read.ktable_path)
                 file.writelines("\ndiffusivity factor = {:g}".format(quant.diffusivity))
+                file.writelines("\nsecond Eddington coefficient = {:g}".format(quant.epsi2))
                 file.writelines("\nf factor = {:g}".format(quant.f_factor))
                 file.writelines("\nstellar zenith angle [deg] = {:g}".format(180 - quant.dir_angle*180/npy.pi))
                 file.writelines("\ngeometric zenith angle correction = " + self.convert_1_0_to_yes_no(quant.geom_zenith_corr))

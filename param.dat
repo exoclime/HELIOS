@@ -36,6 +36,7 @@ improved two-stream correction =        no                                     (
 asymmetry factor g_0 =                  0                                      (values: [-1, 1]. 0: isotropic scattering. 1: pure forward, -1: pure backward.)
 path to opacity file =                  ./input/opac_sample.h5 
 diffusivity factor =                    2                                     (usually set to 2)
+second Eddington coefficient =          0.5                                    (modulates the scattering of the direct irradiation beam. per default set to 0.5)
 f factor =                              0.667                                   (0.667: dayside only, no redistribution, 0.25: global redistribution, 1: substellar point)
 stellar zenith angle [deg] =            60                                     (values: 0 - 89, with 0 being vertical irradiation. exclusive with setting the f factor.)
 geometric zenith angle correction =     no                                    (recommended: 'no' if zenith angle < 70. 'yes' if angle >= 70)

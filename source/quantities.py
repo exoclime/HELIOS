@@ -45,6 +45,7 @@ class Store(object):
         self.scat = None
         self.diffusivity = None
         self.epsi = None
+        self.epsi2 = None
         self.f_factor = None
         self.T_intern = None
         self.ntemp = None

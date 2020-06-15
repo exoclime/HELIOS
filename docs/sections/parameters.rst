@@ -77,7 +77,7 @@ Determines whether gas (Rayleigh) scattering is used.
 
    ``improved two-stream correction (yes, no)``
 
-Activates the two-stream correction of `Heng et al. 2018 <http://adsabs.harvard.edu/abs/2018ApJS..237...29H>`_. This correction makes the two-stream formalism more accurate and should be on in general circumstances.
+Activates the two-stream correction of `Heng et al. (2018) <http://adsabs.harvard.edu/abs/2018ApJS..237...29H>`_. This correction makes the two-stream formalism more accurate and should be on in general circumstances.
 
     ``asymmetry factor g_0 (in range [-1, 1])``
 
@@ -90,6 +90,10 @@ Sets the path to the opacity table file. For more info on the format of this fil
    ``diffusivity factor (typically 1.5 - 2)``
 
 Sets the value of the diffusivity factor. If you are not sure, pick 2. 
+
+   ``second Eddington coefficient (typically 0.5 - 1)``
+
+Sets the value of the second Eddington coefficient. This coefficient modulates the scattering of the direct irradiation beam. See `Heng et al. (2018) <http://adsabs.harvard.edu/abs/2018ApJS..237...29H>`_ for a discussion on this parameter.
 
    ``f factor (typically 0.25 - 1)``
 
