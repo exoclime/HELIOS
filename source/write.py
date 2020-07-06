@@ -252,20 +252,20 @@ These are the parameters used in the production of this HELIOS output.
         """ writes the layer column mass, mean molecular weight and specific heat capacity to a file """
 
         try:
-            with open(read.output_path + quant.name+"/" + quant.name + "_colmass_mu_cp_kappa_entropy.dat", "w") as file:
-                file.writelines("This file contains the total pressure and the column mass difference, "
-                                "mean molecular weight and specific heat capacity of each layer.")
+            with open(read.output_path + quant.name + "/" + quant.name + "_colmass_mu_cp_kappa_entropy.dat", "w") as file:
+                file.writelines(
+                    "This file contains the total pressure and the column mass difference, mean molecular weight and specific heat capacity of each layer.")
                 file.writelines(
                     "\n{:<8}{:<24}{:<26}{:<21}{:<32}{:<23}{:<30}".format(
                         "layer", "cent.press.[10^-6bar]", "delta_col.mass[g cm^-2]",
-                        "mean mol. weight", "spec.heat cap.[erg g^-1 K^-1]", "adiabat. index kappa", "entropy [Boltzmann const.]")
+                        "mean mol. weight", "spec.heat cap.[erg mol^-1 K^-1]", "adiabatic coefficient", "entropy [erg mol^-1 K^-1]")
                 )
                 for i in range(quant.nlayer):
                     file.writelines(
                         "\n{:<8g}".format(i)
                         + "{:<24g}".format(quant.p_lay[i])
                         + "{:<26g}".format(quant.delta_colmass[i])
-                        + "{:<21g}".format(quant.meanmolmass_lay[i]/pc.AMU)
+                        + "{:<21g}".format(quant.meanmolmass_lay[i] / pc.AMU)
                     )
                     if quant.c_p_lay[i] == 0:
                         file.writelines("{:<32s}".format("not_calculated"))
@@ -280,7 +280,35 @@ These are the parameters used in the production of this HELIOS output.
                     else:
                         file.writelines("{:<30g}".format(quant.entropy_lay[i]))
         except TypeError:
-            print("File '*_colmass_mu_cp_kappa_entropy.dat' generation corrupted. You might want to look into it!")
+            print("File '*_colmass_mu_cp_kappa_entropy.dat' generation corrupted. You might want to look  into it!")
+
+    @staticmethod
+    def write_phase_state(quant, read):
+
+        try:
+            with open(read.output_path + quant.name + "/" + quant.name + "_state.dat", "w") as file:
+
+                file.writelines(
+                    "Checks the phase state of the water atmosphere. If '1' the water in the atmosphere is vaporous or supercritical. "
+                    "If '<1' atmosphere might be unstable, i.e., water in liquid or solid form.")
+
+                file.writelines(
+                    "\n{:<8}{:<18}{:<24}{:<24}".format("layer", "temp.[K]", "press.[10^-6bar]",
+                                                       "state_of_water (0: liquid or solid, 1: vapor or supercritical)")
+                )
+
+                for i in range(quant.nlayer):
+                    if quant.p_lay[i] > 0.99:
+                        file.writelines(
+                            "\n{:<8g}".format(i)
+                            + "{:<18g}".format(quant.T_lay[i])
+                            + "{:<24g}".format(quant.p_lay[i]))
+                        if quant.phase_number_lay[i] == -1:
+                            file.writelines("{:<24}".format("not_calculated"))
+                        else:
+                            file.writelines("{:<24g}".format(quant.phase_number_lay[i]))
+        except TypeError:
+            print("File '*_state.dat generation' corrupted. You might want to look into it!")
 
     @staticmethod
     def write_integrated_flux(quant, read):

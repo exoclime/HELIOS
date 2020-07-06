@@ -25,6 +25,7 @@ import pycuda.autoinit
 import pycuda.gpuarray as gpuarray
 from pycuda.compiler import SourceModule
 from source import host_functions as hsfunc
+from source import phys_const as pc
 
 
 class Compute(object):
@@ -196,49 +197,70 @@ class Compute(object):
 
         cuda.Context.synchronize()
 
-    def interpolate_kappa(self, quant):
+    def interpolate_kappa_and_cp(self, quant):
 
-        # changes kappa to correct format
         if quant.kappa_manual_value == "file":
-            quant.kappa_kernel_value = quant.fl_prec(0)
-        else:
-            quant.kappa_kernel_value = quant.fl_prec(quant.kappa_manual_value)
-
-        kappa_interpol = self.mod.get_function("kappa_interpol")
-        kappa_interpol(quant.dev_T_lay,
-                       quant.dev_entr_temp,
-                       quant.dev_p_lay,
-                       quant.dev_entr_press,
-                       quant.dev_kappa_lay,
-                       quant.dev_opac_kappa,
-                       quant.entr_npress,
-                       quant.entr_ntemp,
-                       quant.nlayer,
-                       quant.kappa_kernel_value,
-                       block=(16, 1, 1),
-                       grid=((int(quant.nlayer) + 15) // 16, 1, 1)
-                       )
-
-        cuda.Context.synchronize()
-
-        if quant.iso == 0:
 
             kappa_interpol = self.mod.get_function("kappa_interpol")
-            kappa_interpol(quant.dev_T_int,
+            kappa_interpol(quant.dev_T_lay,
                            quant.dev_entr_temp,
-                           quant.dev_p_int,
+                           quant.dev_p_lay,
                            quant.dev_entr_press,
-                           quant.dev_kappa_int,
-                           quant.dev_opac_kappa,
+                           quant.dev_kappa_lay,
+                           quant.dev_entr_kappa,
                            quant.entr_npress,
                            quant.entr_ntemp,
-                           quant.ninterface,
-                           quant.kappa_kernel_value,
+                           quant.nlayer,
                            block=(16, 1, 1),
-                           grid=((int(quant.ninterface) + 15) // 16, 1, 1)
+                           grid=((int(quant.nlayer) + 15) // 16, 1, 1)
                            )
 
             cuda.Context.synchronize()
+
+            cp_interpol = self.mod.get_function("cp_interpol")
+            cp_interpol(quant.dev_T_lay,
+                           quant.dev_entr_temp,
+                           quant.dev_p_lay,
+                           quant.dev_entr_press,
+                           quant.dev_c_p_lay,
+                           quant.dev_entr_c_p,
+                           quant.entr_npress,
+                           quant.entr_ntemp,
+                           quant.nlayer,
+                           block=(16, 1, 1),
+                           grid=((int(quant.nlayer) + 15) // 16, 1, 1)
+                           )
+
+            if quant.iso == 0:
+
+                kappa_interpol = self.mod.get_function("kappa_interpol")
+                kappa_interpol(quant.dev_T_int,
+                               quant.dev_entr_temp,
+                               quant.dev_p_int,
+                               quant.dev_entr_press,
+                               quant.dev_kappa_int,
+                               quant.dev_entr_kappa,
+                               quant.entr_npress,
+                               quant.entr_ntemp,
+                               quant.ninterface,
+                               block=(16, 1, 1),
+                               grid=((int(quant.ninterface) + 15) // 16, 1, 1)
+                               )
+
+                cuda.Context.synchronize()
+
+        else:
+
+            quant.kappa_lay = np.ones(quant.nlayer, quant.fl_prec) * float(quant.kappa_manual_value)
+            quant.dev_kappa_lay = gpuarray.to_gpu(quant.kappa_lay)
+
+            c_p = pc.R_UNIV / float(quant.kappa_manual_value)
+            quant.c_p_lay = np.ones(quant.nlayer, quant.fl_prec) * c_p
+            quant.dev_c_p_lay = gpuarray.to_gpu(quant.c_p_lay)
+
+            if quant.iso == 0:
+                quant.kappa_int = np.ones(quant.ninterface, quant.fl_prec) * float(quant.kappa_manual_value)
+                quant.dev_kappa_int = gpuarray.to_gpu(quant.kappa_int)
 
     def interpolate_entropy(self, quant):
 
@@ -250,7 +272,7 @@ class Compute(object):
                           quant.dev_p_lay,
                           quant.dev_entr_press,
                           quant.dev_entropy_lay,
-                          quant.dev_opac_entropy,
+                          quant.dev_entr_entropy,
                           quant.entr_npress,
                           quant.entr_ntemp,
                           quant.nlayer,
@@ -260,19 +282,21 @@ class Compute(object):
 
             cuda.Context.synchronize()
 
-    def calculate_c_p(self, quant):
-        """ calculates the layer heat capacity from kappa and the mean molecular mass """
+    def interpolate_phase_state(self, quant):
 
-        if quant.convection == 1:
-
-            calc_c_p = self.mod.get_function("calculate_cp")
-            calc_c_p(quant.dev_kappa_lay,
-                     quant.dev_meanmolmass_lay,
-                     quant.dev_c_p_lay,
-                     quant.nlayer,
-                     block=(16, 1, 1),
-                     grid=((int(quant.nlayer) + 15) // 16, 1, 1)
-                     )
+            entr_interpol = self.mod.get_function("phase_number_interpol")
+            entr_interpol(quant.dev_T_lay,
+                          quant.dev_entr_temp,
+                          quant.dev_p_lay,
+                          quant.dev_entr_press,
+                          quant.dev_phase_number_lay,
+                          quant.dev_entr_phase_number,
+                          quant.entr_npress,
+                          quant.entr_ntemp,
+                          quant.nlayer,
+                          block=(16, 1, 1),
+                          grid=((int(quant.nlayer) + 15) // 16, 1, 1)
+                          )
 
             cuda.Context.synchronize()
 
@@ -762,8 +786,7 @@ class Compute(object):
                         self.interpolate_meanmolmass(quant)
                     Vmod.interpolate_molecular_and_mixed_opac(quant)
                     Vmod.combine_to_mixed_opacities(quant)
-                self.interpolate_kappa(quant)
-                self.calculate_c_p(quant)
+
                 self.normalize_cloud_scattering(quant)
                 self.calculate_transmission(quant)
 
@@ -840,7 +863,7 @@ class Compute(object):
         """ loops interchangeably through the radiative and convection schemes """
 
         # kappa is required for the conv. instability check
-        self.interpolate_kappa(quant)
+        self.interpolate_kappa_and_cp(quant)
         quant.T_lay = quant.dev_T_lay.get()
         quant.p_lay = quant.dev_p_lay.get()
         quant.p_int = quant.dev_p_int.get()
@@ -892,8 +915,7 @@ class Compute(object):
                     if Vmod.V_iter_nr == 0:
                         self.interpolate_meanmolmass(quant)
 
-                self.interpolate_kappa(quant)
-                self.calculate_c_p(quant)
+                self.interpolate_kappa_and_cp(quant)
                 quant.kappa_lay = quant.dev_kappa_lay.get()
                 quant.kappa_int = quant.dev_kappa_int.get()
                 quant.c_p_lay = quant.dev_c_p_lay.get()
@@ -932,8 +954,7 @@ class Compute(object):
                 quant.F_net_diff = quant.dev_F_net_diff.get()
 
                 # required to mark convective zones
-                self.interpolate_kappa(quant)
-                self.calculate_c_p(quant)
+                self.interpolate_kappa_and_cp(quant)
                 quant.kappa_lay = quant.dev_kappa_lay.get()
                 quant.kappa_int = quant.dev_kappa_int.get()
                 quant.T_lay = quant.dev_T_lay.get()

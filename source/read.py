@@ -337,9 +337,8 @@ class Read(object):
                         elif column[0] == "mixing" and column[2] == "file":
                             Vmod.mix_file = column[4]
 
-
         except IOError:
-            print("ABORT - Input file not found!")
+            print("ABORT - Parameter file not found!")
             raise SystemExit()
 
         # read remaining command line options
@@ -551,10 +550,40 @@ class Read(object):
 
             self.read_planet_file(quant)
 
-    def read_entropy_table(self, quant):
+    def read_kappa_table(self, quant):
         """ reads in entropy and kappa (for the stellar community: delad) values from ASCII table """
 
         if quant.kappa_manual_value == "file":
+
+            print("\nReading kappa values from file with NEW format.")
+
+            quant.kappa_file_format = npy.int32(1)
+
+            with open(self.entr_kappa_path, "r") as entr_file:
+
+                next(entr_file)
+                next(entr_file)
+                next(entr_file)
+                next(entr_file)
+
+                for line in entr_file:
+                    column = line.split()
+                    if column:
+                        quant.entr_temp.append(quant.fl_prec(column[0]))
+                        quant.entr_press.append(quant.fl_prec(column[1]))
+                        quant.entr_kappa.append(quant.fl_prec(column[2]))
+                        quant.entr_c_p.append(quant.fl_prec(column[3]))
+                        quant.entr_entropy.append(quant.fl_prec(column[4]))
+                        quant.entr_phase_number.append(column[10])
+
+            quant.entr_press = self.delete_duplicates(quant.entr_press)
+            quant.entr_temp = self.delete_duplicates(quant.entr_temp)
+            quant.entr_press.sort()
+            quant.entr_temp.sort()
+            quant.entr_npress = npy.int32(len(quant.entr_press))
+            quant.entr_ntemp = npy.int32(len(quant.entr_temp))
+
+        elif quant.kappa_manual_value == "oldfile":
 
             print("\nReading entropy/kappa values from file.")
 
@@ -568,8 +597,8 @@ class Read(object):
                     for line in entr_file:
                         column = line.split()
                         if column:
-                            quant.entr_press.append(10**quant.fl_prec(column[0]))
-                            quant.entr_temp.append(10**quant.fl_prec(column[1]))
+                            quant.entr_press.append(10 ** quant.fl_prec(column[0]))
+                            quant.entr_temp.append(10 ** quant.fl_prec(column[1]))
                             entropy.append(quant.fl_prec(column[4]))
                             kappa.append(quant.fl_prec(column[5]))
             except IndexError:
@@ -596,7 +625,6 @@ class Read(object):
             for t in range(quant.entr_ntemp):
 
                 for p in range(quant.entr_npress):
-
                     quant.opac_entropy.append(entropy[t + quant.entr_ntemp * p])
                     quant.opac_kappa.append(kappa[t + quant.entr_ntemp * p])
 
@@ -606,8 +634,10 @@ class Read(object):
             quant.entr_ntemp = npy.int32(1)
             quant.entr_press = [0]
             quant.entr_temp = [0]
-            quant.opac_kappa = [0]
-            quant.opac_entropy = [0]
+            quant.entr_kappa = [0]
+            quant.entr_c_p = [0]
+            quant.entr_entropy = [0]
+            quant.entr_phase_number = [-1]
 
     def read_star(self, quant):
         """ reads the correct stellar spectrum from the corresponding file """

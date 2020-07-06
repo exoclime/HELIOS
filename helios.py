@@ -52,7 +52,7 @@ def run_helios():
         Vmodder.read_molecular_opacities(keeper)
         Vmodder.read_layer_molecular_abundance(keeper)
     reader.read_opac_file(keeper, Vmodder)
-    reader.read_entropy_table(keeper)
+    reader.read_kappa_table(keeper)
     cloudy.main_cloud_method(keeper)
     keeper.dimensions()
     reader.read_star(keeper)
@@ -87,6 +87,7 @@ def run_helios():
     computer.integrate_optdepth_transmission(keeper)
     computer.calculate_contribution_function(keeper)
     computer.interpolate_entropy(keeper)
+    computer.interpolate_phase_state(keeper)
     computer.calculate_mean_opacities(keeper)
     computer.integrate_beamflux(keeper)
 
@@ -116,6 +117,8 @@ def run_helios():
     writer.write_contribution_function(keeper, reader)
     writer.write_mean_extinction(keeper, reader)
     writer.write_flux_ratio_only(keeper, reader)
+    writer.write_phase_state(keeper, reader)
+
     if Vmodder.V_coupling == 1:
         Vmodder.write_tp_VULCAN(keeper)
     if keeper.approx_f == 1:

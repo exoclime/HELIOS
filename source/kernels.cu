@@ -750,8 +750,6 @@ __global__ void meanmolmass_interpol(
 }
 
 
-
-
 // interpolate kappa for each layer
 __global__ void kappa_interpol(
     utype*  temp, 
@@ -759,69 +757,65 @@ __global__ void kappa_interpol(
     utype*  press, 
     utype*  entr_press,
     utype*  kappa, 
-    utype*  opac_kappa,
+    utype*  entr_kappa,
     int     entr_npress,
     int 	entr_ntemp,
-    int     nlay_or_nint,
-    utype   kappa_kernel_value
+    int     nlay_or_nint
 ){
     
     int i = threadIdx.x + blockIdx.x * blockDim.x;
     
     if(i < nlay_or_nint){
         
-        if(kappa_kernel_value < 0.001){
-            
-            utype delta_temp = (log10(entr_temp[entr_ntemp-1]) - log10(entr_temp[0])) / (entr_ntemp-1.0);
-            utype delta_press = (log10(entr_press[entr_npress-1]) - log10(entr_press[0])) / (entr_npress-1.0);
-            
-            utype t = (log10(temp[i]) - log10(entr_temp[0])) / delta_temp;
-            
-            t = min(entr_ntemp-1.001, max(0.001, t));
-            
-            int tdown = floor(t);
-            int tup = ceil(t);
-            
-            utype p = (log10(press[i]) - log10(entr_press[0])) / delta_press;
-            
-            p = min(entr_npress-1.001, max(0.001, p));
-            
-            int pdown = floor(p);
-            int pup = ceil(p);
-            
-            if(tdown != tup && pdown != pup){
-                kappa[i] = opac_kappa[pdown + entr_npress * tdown] * (pup - p) * (tup - t)
-                + opac_kappa[pup + entr_npress * tdown] * (p - pdown) * (tup - t)
-                + opac_kappa[pdown + entr_npress * tup] * (pup - p) * (t -  tdown)
-                + opac_kappa[pup + entr_npress * tup] * (p - pdown) * (t - tdown);
-            }
-            if(tdown != tup && pdown == pup){
-                kappa[i] = opac_kappa[pdown + entr_npress * tdown] * (tup - t)
-                + opac_kappa[pdown + entr_npress * tup] * (t -  tdown);
-            }
-            if(tdown == tup && pdown != pup){
-                kappa[i] = opac_kappa[pdown + entr_npress * tdown] * (pup - p)
-                + opac_kappa[pup + entr_npress * tdown] * (p - pdown);
-            }
-            if(tdown == tup && pdown == pup){
-                kappa[i] = opac_kappa[pdown + entr_npress * tdown];
-            }
+        utype delta_temp;
+        utype t;
+        
+        delta_temp = (entr_temp[entr_ntemp-1] - entr_temp[0]) / (entr_ntemp-1.0);
+        t = (temp[i] - entr_temp[0]) / delta_temp;
+
+        t = min(entr_ntemp-1.001, max(0.001, t));
+        
+        int tdown = floor(t);
+        int tup = ceil(t);
+        
+        utype delta_press = (log10(entr_press[entr_npress-1]) - log10(entr_press[0])) / (entr_npress-1.0);
+        
+        utype p = (log10(press[i]) - log10(entr_press[0])) / delta_press;
+        
+        p = min(entr_npress-1.001, max(0.001, p));
+        
+        int pdown = floor(p);
+        int pup = ceil(p);
+        
+        if(tdown != tup && pdown != pup){
+            kappa[i] = entr_kappa[pdown + entr_npress * tdown] * (pup - p) * (tup - t)
+            + entr_kappa[pup + entr_npress * tdown] * (p - pdown) * (tup - t)
+            + entr_kappa[pdown + entr_npress * tup] * (pup - p) * (t -  tdown)
+            + entr_kappa[pup + entr_npress * tup] * (p - pdown) * (t - tdown);
         }
-        else{
-            kappa[i] =  kappa_kernel_value;
+        if(tdown != tup && pdown == pup){
+            kappa[i] = entr_kappa[pdown + entr_npress * tdown] * (tup - t)
+            + entr_kappa[pdown + entr_npress * tup] * (t -  tdown);
+        }
+        if(tdown == tup && pdown != pup){
+            kappa[i] = entr_kappa[pdown + entr_npress * tdown] * (pup - p)
+            + entr_kappa[pup + entr_npress * tdown] * (p - pdown);
+        }
+        if(tdown == tup && pdown == pup){
+            kappa[i] = entr_kappa[pdown + entr_npress * tdown];
         }
     }
 }
 
 
-// interpolate entropy for each layer
-__global__ void entropy_interpol(
+// interpolate heat capacity for each layer
+__global__ void cp_interpol(
         utype* temp, 
         utype* entr_temp, 
         utype* press, 
         utype* entr_press,
-        utype* entropy, 
-        utype* opac_entropy,
+        utype* cp_lay, 
+        utype* entr_cp,
         int 	entr_npress, 
         int 	entr_ntemp, 
         int 	nlayer
@@ -848,39 +842,130 @@ __global__ void entropy_interpol(
         int pup = ceil(p);
 
         if(tdown != tup && pdown != pup){
-            entropy[i] = opac_entropy[pdown + entr_npress * tdown] * (pup - p) * (tup - t)
-                            + opac_entropy[pup + entr_npress * tdown] * (p - pdown) * (tup - t)
-                            + opac_entropy[pdown + entr_npress * tup] * (pup - p) * (t -  tdown)
-                            + opac_entropy[pup + entr_npress * tup] * (p - pdown) * (t - tdown);
+            cp_lay[i] = entr_cp[pdown + entr_npress * tdown] * (pup - p) * (tup - t)
+                            + entr_cp[pup + entr_npress * tdown] * (p - pdown) * (tup - t)
+                            + entr_cp[pdown + entr_npress * tup] * (pup - p) * (t -  tdown)
+                            + entr_cp[pup + entr_npress * tup] * (p - pdown) * (t - tdown);
         }
         if(tdown != tup && pdown == pup){
-            entropy[i] = opac_entropy[pdown + entr_npress * tdown] * (tup - t)
-                            + opac_entropy[pdown + entr_npress * tup] * (t -  tdown);
+            cp_lay[i] = entr_cp[pdown + entr_npress * tdown] * (tup - t)
+                            + entr_cp[pdown + entr_npress * tup] * (t -  tdown);
         }
         if(tdown == tup && pdown != pup){
-            entropy[i] = opac_entropy[pdown + entr_npress * tdown] * (pup - p)
-                            + opac_entropy[pup + entr_npress * tdown] * (p - pdown);
+            cp_lay[i] = entr_cp[pdown + entr_npress * tdown] * (pup - p)
+                            + entr_cp[pup + entr_npress * tdown] * (p - pdown);
         }
         if(tdown == tup && pdown == pup){
-            entropy[i] = opac_entropy[pdown + entr_npress * tdown];
+            cp_lay[i] = entr_cp[pdown + entr_npress * tdown];
         }
     }
 }
 
 
-// calculate the heat capacity from kappa and meanmolmass
-__global__ void calculate_cp(
-        utype* kappa,
-        utype* meanmolmass_lay,
-        utype* c_p_lay,
-        int nlayer
+// interpolate entropy for each layer
+__global__ void entropy_interpol(
+        utype* temp, 
+        utype* entr_temp, 
+        utype* press, 
+        utype* entr_press,
+        utype* entropy, 
+        utype* entr_entropy,
+        int 	entr_npress, 
+        int 	entr_ntemp, 
+        int 	nlayer
 ){
-    
+
     int i = threadIdx.x + blockIdx.x * blockDim.x;
 
     if(i < nlayer){
+
+        utype delta_temp = (log10(entr_temp[entr_ntemp-1]) - log10(entr_temp[0])) / (entr_ntemp-1.0);
+        utype delta_press = (log10(entr_press[entr_npress-1]) - log10(entr_press[0])) / (entr_npress-1.0);
+        utype t = (log10(temp[i]) - log10(entr_temp[0])) / delta_temp;
+
+        t = min(entr_ntemp-1.001, max(0.001, t));
         
-        c_p_lay[i] = KBOLTZMANN / (kappa[i] * meanmolmass_lay[i]);
+        int tdown = floor(t);
+        int tup = ceil(t);
+
+        utype p = (log10(press[i]) - log10(entr_press[0])) / delta_press;
+
+        p = min(entr_npress-1.001, max(0.001, p));
+        
+        int pdown = floor(p);
+        int pup = ceil(p);
+
+        if(tdown != tup && pdown != pup){
+            entropy[i] = entr_entropy[pdown + entr_npress * tdown] * (pup - p) * (tup - t)
+                            + entr_entropy[pup + entr_npress * tdown] * (p - pdown) * (tup - t)
+                            + entr_entropy[pdown + entr_npress * tup] * (pup - p) * (t -  tdown)
+                            + entr_entropy[pup + entr_npress * tup] * (p - pdown) * (t - tdown);
+        }
+        if(tdown != tup && pdown == pup){
+            entropy[i] = entr_entropy[pdown + entr_npress * tdown] * (tup - t)
+                            + entr_entropy[pdown + entr_npress * tup] * (t -  tdown);
+        }
+        if(tdown == tup && pdown != pup){
+            entropy[i] = entr_entropy[pdown + entr_npress * tdown] * (pup - p)
+                            + entr_entropy[pup + entr_npress * tdown] * (p - pdown);
+        }
+        if(tdown == tup && pdown == pup){
+            entropy[i] = entr_entropy[pdown + entr_npress * tdown];
+        }
+    }
+}
+
+
+// interpolate water phase state number for each layer
+__global__ void phase_number_interpol(
+        utype* temp, 
+        utype* entr_temp, 
+        utype* press, 
+        utype* entr_press,
+        utype* state, 
+        utype* entr_state,
+        int 	entr_npress, 
+        int 	entr_ntemp, 
+        int 	nlayer
+){
+
+    int i = threadIdx.x + blockIdx.x * blockDim.x;
+
+    if(i < nlayer){
+
+        utype delta_temp = (entr_temp[entr_ntemp-1] - entr_temp[0]) / (entr_ntemp-1.0);
+        utype delta_press = (log10(entr_press[entr_npress-1]) - log10(entr_press[0])) / (entr_npress-1.0);
+        utype t = (temp[i] - entr_temp[0]) / delta_temp;
+
+        t = min(entr_ntemp-1.001, max(0.001, t));
+        
+        int tdown = floor(t);
+        int tup = ceil(t);
+
+        utype p = (log10(press[i]) - log10(entr_press[0])) / delta_press;
+
+        p = min(entr_npress-1.001, max(0.001, p));
+        
+        int pdown = floor(p);
+        int pup = ceil(p);
+
+        if(tdown != tup && pdown != pup){
+            state[i] = entr_state[pdown + entr_npress * tdown] * (pup - p) * (tup - t)
+                            + entr_state[pup + entr_npress * tdown] * (p - pdown) * (tup - t)
+                            + entr_state[pdown + entr_npress * tup] * (pup - p) * (t -  tdown)
+                            + entr_state[pup + entr_npress * tup] * (p - pdown) * (t - tdown);
+        }
+        if(tdown != tup && pdown == pup){
+            state[i] = entr_state[pdown + entr_npress * tdown] * (tup - t)
+                            + entr_state[pdown + entr_npress * tup] * (t -  tdown);
+        }
+        if(tdown == tup && pdown != pup){
+            state[i] = entr_state[pdown + entr_npress * tdown] * (pup - p)
+                            + entr_state[pup + entr_npress * tdown] * (p - pdown);
+        }
+        if(tdown == tup && pdown == pup){
+            state[i] = entr_state[pdown + entr_npress * tdown];
+        }
     }
 }
 

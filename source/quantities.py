@@ -143,6 +143,14 @@ class Store(object):
         self.dev_entr_temp = None
         self.entr_press = []
         self.dev_entr_press = None
+        self.entr_kappa = []
+        self.dev_entr_kappa = None
+        self.entr_c_p = []
+        self.dev_entr_c_p = None
+        self.entr_phase_number = []
+        self.dev_entr_phase_number = None
+        self.entr_entropy = []
+        self.dev_entr_entropy = None
         self.opac_k = None
         self.dev_opac_k = None
         self.opac_y = None
@@ -479,6 +487,10 @@ class Store(object):
         self.opac_meanmass = np.array(self.opac_meanmass, self.fl_prec)
         self.opac_kappa = np.array(self.opac_kappa, self.fl_prec)
         self.opac_entropy = np.array(self.opac_entropy, self.fl_prec)
+        self.entr_kappa = np.array(self.entr_kappa, self.fl_prec)
+        self.entr_c_p = np.array(self.entr_c_p, self.fl_prec)
+        self.entr_entropy = np.array(self.entr_entropy, self.fl_prec)
+        self.entr_phase_number = np.array(self.entr_phase_number, self.fl_prec)
         self.starflux = np.array(self.starflux, self.fl_prec)
         self.T_lay = np.array(self.T_lay, self.fl_prec)
         self.abs_cross_cloud = np.array(self.abs_cross_cloud, self.fl_prec)
@@ -573,6 +585,7 @@ class Store(object):
         self.kappa_lay = np.zeros(self.nlayer, self.fl_prec)
         self.kappa_int = np.zeros(self.ninterface, self.fl_prec)
         self.entropy_lay = np.zeros(self.nlayer, self.fl_prec)
+        self.phase_number_lay = np.zeros(self.nlayer, self.fl_prec)
         self.trans_weight_band = np.zeros(self.nlayer_nbin, self.fl_prec)
         self.contr_func_band = np.zeros(self.nlayer_nbin, self.fl_prec)
         self.cloud_opac_lay = np.zeros(self.nlayer, self.fl_prec)
@@ -631,6 +644,10 @@ class Store(object):
         self.dev_kpress = gpuarray.to_gpu(self.kpress)
         self.dev_entr_temp = gpuarray.to_gpu(self.entr_temp)
         self.dev_entr_press = gpuarray.to_gpu(self.entr_press)
+        self.dev_entr_kappa = gpuarray.to_gpu(self.entr_kappa)
+        self.dev_entr_c_p = gpuarray.to_gpu(self.entr_c_p)
+        self.dev_entr_phase_number = gpuarray.to_gpu(self.entr_phase_number)
+        self.dev_entr_entropy = gpuarray.to_gpu(self.entr_entropy)
         self.dev_opac_k = gpuarray.to_gpu(self.opac_k)
         self.dev_opac_y = gpuarray.to_gpu(self.opac_y)
         self.dev_gauss_weight = gpuarray.to_gpu(self.gauss_weight)
@@ -639,8 +656,10 @@ class Store(object):
         self.dev_opac_interwave = gpuarray.to_gpu(self.opac_interwave)
         self.dev_opac_scat_cross = gpuarray.to_gpu(self.opac_scat_cross)
         self.dev_opac_meanmass = gpuarray.to_gpu(self.opac_meanmass)
-        self.dev_opac_kappa = gpuarray.to_gpu(self.opac_kappa)
-        self.dev_opac_entropy = gpuarray.to_gpu(self.opac_entropy)
+        self.dev_entr_kappa = gpuarray.to_gpu(self.entr_kappa)
+        self.dev_entr_c_p = gpuarray.to_gpu(self.entr_c_p)
+        self.dev_entr_phase_number = gpuarray.to_gpu(self.entr_phase_number)
+        self.dev_entr_entropy = gpuarray.to_gpu(self.entr_entropy)
         self.dev_starflux = gpuarray.to_gpu(self.starflux)
         self.dev_T_lay = gpuarray.to_gpu(self.T_lay)
         self.dev_abs_cross_cloud = gpuarray.to_gpu(self.abs_cross_cloud)
@@ -725,6 +744,7 @@ class Store(object):
         self.dev_kappa_lay = gpuarray.to_gpu(self.kappa_lay)
         self.dev_kappa_int = gpuarray.to_gpu(self.kappa_int)
         self.dev_entropy_lay = gpuarray.to_gpu(self.entropy_lay)
+        self.dev_phase_number_lay = gpuarray.to_gpu(self.phase_number_lay)
         self.dev_trans_weight_band = gpuarray.to_gpu(self.trans_weight_band)
         self.dev_contr_func_band = gpuarray.to_gpu(self.contr_func_band)
         self.dev_cloud_opac_lay = gpuarray.to_gpu(self.cloud_opac_lay)
@@ -788,6 +808,7 @@ class Store(object):
         self.kappa_lay = self.dev_kappa_lay.get()
         self.kappa_int = self.dev_kappa_int.get()
         self.entropy_lay = self.dev_entropy_lay.get()
+        self.phase_number_lay = self.dev_phase_number_lay.get()
         self.trans_weight_band = self.dev_trans_weight_band.get()
         self.contr_func_band = self.dev_contr_func_band.get()
         self.cloud_opac_lay = self.dev_cloud_opac_lay.get()
