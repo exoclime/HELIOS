@@ -145,13 +145,53 @@ class Read(object):
             os.system("python3 helios.py")  # recompile and restart program
             raise SystemExit()  # prevent old program from resuming at the end
 
+    def read_param_file_and_command_line(self, quant, Vmod):
+        """ reads the input file and command line options """
 
-    def read_param_file(self, quant, Vmod):
-        """ reads the input file """
+        # set up command line options.
+        parser = argparse.ArgumentParser(description=
+                                         "The following are the possible command-line parameters for HELIOS")
+
+        parser.add_argument('-outputdir', help='output directory', required=False)
+        parser.add_argument('-g', help='surface gravity [cm s^-2]', required=False)
+        parser.add_argument('-a', help='orbital distance [AU]', required=False)
+        parser.add_argument('-rstar', help='stellar radius [R_sun]', required=False)
+        parser.add_argument('-rplanet', help='planetary radius [R_jup]', required=False)
+        parser.add_argument('-tstar', help='stellar temperature [K]', required=False)
+        parser.add_argument('-tintern', help='internal flux temperature [K]', required=False)
+        parser.add_argument('-name', help='name of output', required=False)
+        parser.add_argument('-Viter', help='VULCAN coupling iteration step nr.', required=False)
+        parser.add_argument('-angle', help='zenith angle measured from the vertical', required=False)
+        parser.add_argument('-isothermal', help='isothermal layers?', required=False)
+        parser.add_argument('-postprocess', help='pure post-processing?', required=False)
+        parser.add_argument('-temperaturepath', help='path to the temperature file', required=False)
+        parser.add_argument('-plot', help='realtime plotting?', required=False)
+        parser.add_argument('-opacitypath', help='path to the opacity table file', required=False)
+        parser.add_argument('-energycorrection', help='include correction for global incoming energy?', required=False)
+        parser.add_argument('-planet', help='name of the planet to be modeled', required=False)
+        parser.add_argument('-nlayers', help='number of layers in the grid', required=False)
+        parser.add_argument('-ptoa', help='pressure at the TOA', required=False)
+        parser.add_argument('-pboa', help='pressure at the BOA', required=False)
+        parser.add_argument('-f', help='f heat redistribution factor', required=False)
+        parser.add_argument('-tau_lw', help='tau_lw', required=False)
+        parser.add_argument('-star', help='spectral model of the star', required=False)
+        parser.add_argument('-Vfile', help='path to the file with VULCAN mixing ratios', required=False)
+        parser.add_argument('-kappa', help='adiabatic coefficient, kappa = (ln T / ln P)_S', required=False)
+        parser.add_argument('-kappapath', help='path to kappa/adiabatic coefficient file', required=False)
+        parser.add_argument('-param', help='parameter file', required=False)
+
+        args = parser.parse_args()
+
+        # read parameter file name. If none specified, use standard name.
+        if args.param:
+            param_file = args.param
+        else:
+            param_file = "param.dat"
+
         try:
-            with open("param.dat", "r", encoding='utf-8') as param_file:
+            with open(param_file, "r", encoding='utf-8') as pfile:
 
-                for line in param_file:
+                for line in pfile:
                     column = line.split()
                     if column:
 
@@ -302,40 +342,7 @@ class Read(object):
             print("ABORT - Input file not found!")
             raise SystemExit()
 
-    def read_command_line(self, quant, Vmod):
-        """ reads any eventual command-line arguments"""
-
-        parser = argparse.ArgumentParser(description=
-                                         "The following are the possible command-line parameters for HELIOS")
-
-        parser.add_argument('-outputdir', help='output directory', required=False)
-        parser.add_argument('-g', help='surface gravity [cm s^-2]', required=False)
-        parser.add_argument('-a', help='orbital distance [AU]', required=False)
-        parser.add_argument('-rstar', help='stellar radius [R_sun]', required=False)
-        parser.add_argument('-rplanet', help='planetary radius [R_jup]', required=False)
-        parser.add_argument('-tstar', help='stellar temperature [K]', required=False)
-        parser.add_argument('-tintern', help='internal flux temperature [K]', required=False)
-        parser.add_argument('-name', help='name of output', required=False)
-        parser.add_argument('-Viter', help='VULCAN coupling iteration step nr.', required=False)
-        parser.add_argument('-angle', help='zenith angle measured from the vertical', required=False)
-        parser.add_argument('-isothermal', help='isothermal layers?', required=False)
-        parser.add_argument('-postprocess', help='pure post-processing?', required=False)
-        parser.add_argument('-temperaturepath', help='path to the temperature file', required=False)
-        parser.add_argument('-plot', help='realtime plotting?', required=False)
-        parser.add_argument('-opacitypath', help='path to the opacity table file', required=False)
-        parser.add_argument('-energycorrection', help='include correction for global incoming energy?', required=False)
-        parser.add_argument('-planet', help='name of the planet to be modeled', required=False)
-        parser.add_argument('-nlayers', help='number of layers in the grid', required=False)
-        parser.add_argument('-ptoa', help='pressure at the TOA', required=False)
-        parser.add_argument('-pboa', help='pressure at the BOA', required=False)
-        parser.add_argument('-f', help='f heat redistribution factor', required=False)
-        parser.add_argument('-tau_lw', help='tau_lw', required=False)
-        parser.add_argument('-star', help='spectral model of the star', required=False)
-        parser.add_argument('-Vfile', help='path to the file with VULCAN mixing ratios', required=False)
-        parser.add_argument('-kappa', help='adiabatic coefficient, kappa = (ln T / ln P)_S', required=False)
-
-        args = parser.parse_args()
-
+        # read remaining command line options
         if args.outputdir:
             self.output_path = args.outputdir
 
@@ -414,6 +421,9 @@ class Read(object):
 
         if args.kappa:
             quant.kappa_manual_value = args.kappa
+
+        if args.kappapath:
+            self.entr_kappa_path = args.kappapath
 
         # now that we know the name for sure, let's do some pleasantries
         print("\n### Welcome to HELIOS! This run has the name: " + quant.name + ". Enjoy the ride! ###")

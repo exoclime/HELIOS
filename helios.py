@@ -44,8 +44,7 @@ def run_helios():
     Vmodder = Vmod.Vcoupling()
 
     # read input files and do preliminary calculations
-    reader.read_param_file(keeper, Vmodder)
-    reader.read_command_line(keeper, Vmodder)
+    reader.read_param_file_and_command_line(keeper, Vmodder)
 
     if Vmodder.V_coupling == 1:
         Vmodder.read_or_create_iter_count()
