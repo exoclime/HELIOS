@@ -137,9 +137,9 @@ Sets manually a constant value to the adiabatic coefficient. For an ideal gas, t
 
 Sets the path to the file with the tabulated adiabatic coefficient (and optionally the entropy).
 
-   ``damping parameter (auto, 1 - 5000)``
+   ``damping parameter (auto, adaptive, number [1 - 1000])``
 
-Sets the damping strength of the convective adjustment shift to match the global radiative equilibrium. In almost all cases, this should be set to "auto". For debugging purposes, e.g. if a convergence in a particular case fails, one can try with a fixed value. Usually a value between 1 and 5000 is a good starting point. The larger the number the more stable the model. However, it is also harder to achieve global equilibrium then.
+Sets the damping strength of the convective adjustment shift to match the global radiative equilibrium. In almost all cases, this should be set to "auto". If convergence fails, one should try with the "adaptive" setting in that particular case. This setting makes the model much slower, but also more stable. As ultima ratio also a fixed number can be set. Something between 1 and 1000 is a good starting point. The larger the number the more stable the model. However, it is also harder to achieve global equilibrium.
 
 **ASTRONOMICAL PARAMETERS**
 

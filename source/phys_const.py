@@ -22,13 +22,13 @@
 # ==============================================================================
 
 from astropy import constants as const
-import math
 
 
 C = const.c.cgs.value                   # speed of light in cm / s
 K_B = const.k_B.cgs.value               # Boltzmann constant in erg / K
 H = const.h.cgs.value                   # Planck constant in erg s
 R_UNIV = const.R.cgs.value              # universal gas constant in erg / mol / K
+N_A = const.N_A.cgs.value               # Avogadro's number 1 / mol
 SIGMA_SB = const.sigma_sb.cgs.value     # Stefan-Boltzmann constant in erg / cm2 / K
 AU = const.au.cgs.value                 # astronomical unit in cm
 AMU = const.u.cgs.value                 # atomic mass unit in g

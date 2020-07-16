@@ -565,6 +565,7 @@ class Read(object):
                 next(entr_file)
                 next(entr_file)
                 next(entr_file)
+                next(entr_file)
 
                 for line in entr_file:
                     column = line.split()
@@ -574,7 +575,7 @@ class Read(object):
                         quant.entr_kappa.append(quant.fl_prec(column[2]))
                         quant.entr_c_p.append(quant.fl_prec(column[3]))
                         quant.entr_entropy.append(quant.fl_prec(column[4]))
-                        quant.entr_phase_number.append(column[10])
+                        quant.entr_phase_number.append(column[7])
 
             quant.entr_press = self.delete_duplicates(quant.entr_press)
             quant.entr_temp = self.delete_duplicates(quant.entr_temp)

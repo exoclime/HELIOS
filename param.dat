@@ -51,7 +51,7 @@ energy budget correction =              yes                                     
 convective adjustment =                 yes
 kappa value =                           0.2857                                 (file, number)
 entropy/kappa file path =               insert_path_here
-damping parameter =                     auto                                     (default choice: 'auto'. or any integer for debugging.)
+damping parameter =                     auto                                     (default choice: 'auto'. alternative (slower): 'adaptive', or any integer for debugging.)
 ———
 
 ### ASTRONOMICAL PARAMETERS ###

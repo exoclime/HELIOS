@@ -420,7 +420,7 @@ def conv_correct(quant, fudging):
 
                 else: # toplayers
 
-                    interface_to_be_tested = int(0.8 * end_layers[m] + 0.2 * quant.ninterface - 1)
+                    interface_to_be_tested = int(0.8 * end_layers[m] + 0.2 * (quant.ninterface - 1))
 
             ####### OLD CHUNK (keep for the moment in case new version fails somehow) ############################
             # # with external stellar radiation
@@ -452,19 +452,52 @@ def conv_correct(quant, fudging):
             #     fudge_factor[n] = (quant.F_intern / quant.F_net[interface_to_be_tested]) ** (1.0 / quant.dampara)
             ###############################################
 
-            if quant.input_dampara == "auto":
+            if quant.input_dampara == 'adaptive':
+
+                if quant.iter_value < 1000:
+
+                    quant.dampara = 4
+
+                else:
+
+                    if quant.iter_value % 5 == 0:
+
+                        if n < len(start_layers) - 1:
+
+                            local_convergence = ((start_layers[n+1]-1) - end_layers[n]) == sum(quant.converged[end_layers[n]+1:start_layers[n+1]])
+
+                            if local_convergence:
+
+                                quant.dampara /= 1.05
+
+                            else:
+
+                                quant.dampara *= 1.001
+
+                            # comment out for debugging
+                            # print(n, local_convergence, quant.dampara)
+
+            elif quant.input_dampara == "auto":
 
                 quant.dampara = 4
 
                 # boost for very bottom
-                # at iter step 0 it is 2 ** 5 = 32 and at step 10'000 it is 2 ** -5 = 1 / 32
+                # proceeds from 2**2 to 2**-2 as time goes by
                 if n == 0:
-                    quant.dampara = 2 ** max(-2, (- 1 / 1000 * max(0, quant.iter_value - 3000) + 2))
+                    quant.dampara = 2 ** max(-2, (- 1 / 500 * max(0, quant.iter_value - 1000) + 2))
+
+                    # comment out for debugging
+                    # if quant.iter_value % 10 == 0:
+                    #     print(quant.dampara)
 
             else:
                 quant.dampara = float(quant.input_dampara)
 
-            fudge_factor[n] = ((quant.F_intern + quant.F_down_tot[interface_to_be_tested]) / quant.F_up_tot[interface_to_be_tested]) ** (1.0 / quant.dampara)
+            if n < len(start_layers) - 1:
+                fudge_factor[n] = ((quant.F_intern + quant.F_down_tot[interface_to_be_tested]) / quant.F_up_tot[interface_to_be_tested]) ** (1.0 / quant.dampara)
+            else:
+                fudge_factor[n] = ((quant.F_intern + quant.F_down_tot[interface_to_be_tested]) / quant.F_up_tot[interface_to_be_tested]) ** (1.0 / 4.0)
+
             fudge_factor[n] = min(1.01, max(0.99, fudge_factor[n]))  # to prevent instabilities
 
         ### uncomment next few lines for debugging
@@ -487,7 +520,7 @@ def conv_correct(quant, fudging):
 
         for i in range(start_index, stop_index + 1):
 
-            num += quant.c_p_lay[i] * quant.T_lay[i] * (quant.p_int[i] - quant.p_int[i+1])
+            num += quant.c_p_lay[i] / (quant.meanmolmass_lay[i] * pc.N_A) * quant.T_lay[i] * (quant.p_int[i] - quant.p_int[i+1]) # converting c_p from "per mole" to "per gram"
 
             denom_element = 1
 
@@ -497,7 +530,7 @@ def conv_correct(quant, fudging):
 
                     denom_element *= (quant.p_lay[j]/quant.p_int[j])**quant.kappa_int[j] * (quant.p_int[j+1]/quant.p_lay[j])**quant.kappa_lay[j]
 
-            denom_element *= (quant.p_lay[i]/quant.p_int[i])**quant.kappa_int[i] * quant.c_p_lay[i] * (quant.p_int[i] - quant.p_int[i+1])
+            denom_element *= (quant.p_lay[i]/quant.p_int[i])**quant.kappa_int[i] * quant.c_p_lay[i] / (quant.meanmolmass_lay[i] * pc.N_A) * (quant.p_int[i] - quant.p_int[i+1])
 
             denom += denom_element
 

@@ -918,7 +918,8 @@ class Compute(object):
                 self.interpolate_kappa_and_cp(quant)
                 quant.kappa_lay = quant.dev_kappa_lay.get()
                 quant.kappa_int = quant.dev_kappa_int.get()
-                quant.c_p_lay = quant.dev_c_p_lay.get()
+                quant.c_p_lay = quant.dev_c_p_lay.get()  # needed by convective adjustment
+                quant.meanmolmass_lay = quant.dev_meanmolmass_lay.get()
                 quant.T_lay = quant.dev_T_lay.get()
                 hsfunc.convective_adjustment(quant)
                 quant.dev_T_lay = gpuarray.to_gpu(quant.T_lay)
