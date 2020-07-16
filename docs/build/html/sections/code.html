@@ -58,14 +58,8 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="read.Read.read_command_line">
-<code class="descname">read_command_line</code><span class="sig-paren">(</span><em>quant</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.read_command_line" title="Permalink to this definition">¶</a></dt>
-<dd><p>reads any eventual command-line arguments</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="read.Read.read_entropy_table">
-<code class="descname">read_entropy_table</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.read_entropy_table" title="Permalink to this definition">¶</a></dt>
+<dt id="read.Read.read_kappa_table">
+<code class="descname">read_kappa_table</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.read_kappa_table" title="Permalink to this definition">¶</a></dt>
 <dd><p>reads in entropy and kappa (for the stellar community: delad) values from ASCII table</p>
 </dd></dl>
 
@@ -76,9 +70,9 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="read.Read.read_param_file">
-<code class="descname">read_param_file</code><span class="sig-paren">(</span><em>quant</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.read_param_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>reads the input file</p>
+<dt id="read.Read.read_param_file_and_command_line">
+<code class="descname">read_param_file_and_command_line</code><span class="sig-paren">(</span><em>quant</em>, <em>Vmod</em><span class="sig-paren">)</span><a class="headerlink" href="#read.Read.read_param_file_and_command_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads the input file and command line options</p>
 </dd></dl>
 
 <dl class="method">
@@ -267,12 +261,6 @@
 <dt id="computation.Compute">
 <em class="property">class </em><code class="descclassname">computation.</code><code class="descname">Compute</code><a class="headerlink" href="#computation.Compute" title="Permalink to this definition">¶</a></dt>
 <dd><p>class incorporating the computational core of HELIOS</p>
-<dl class="method">
-<dt id="computation.Compute.calculate_c_p">
-<code class="descname">calculate_c_p</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.calculate_c_p" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculates the layer heat capacity from kappa and the mean molecular mass</p>
-</dd></dl>
-
 <dl class="method">
 <dt id="computation.Compute.calculate_contribution_function">
 <code class="descname">calculate_contribution_function</code><span class="sig-paren">(</span><em>quant</em><span class="sig-paren">)</span><a class="headerlink" href="#computation.Compute.calculate_contribution_function" title="Permalink to this definition">¶</a></dt>

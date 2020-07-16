@@ -107,6 +107,9 @@ class Rayleigh_scat(object):
 
         A = delta * (a0 + a1*delta + a2*theta + a3*Lamda**2*theta + a4*Lamda**-2 + a5 / (Lamda**2 - Lamda_UV**2) + a6 / (Lamda**2 - Lamda_IR**2) + a7*delta**2)
 
+        # because refractive index is complex number
+        A = complex(A)
+
         result = ((2 * A + 1)/(1 - A))**0.5
 
         return result
@@ -164,7 +167,7 @@ class Rayleigh_scat(object):
 
         if lamda <= lamda_limit:
 
-            result = 24.0 * np.pi ** 3 / (n_ref ** 2 * lamda ** 4) * ((index ** 2 - 1.0) / (index ** 2 + 2.0)) ** 2 * King
+            result = 24.0 * np.pi ** 3 / (n_ref ** 2 * lamda ** 4) * ((index ** 2 - 1.0) / (index ** 2 + 2.0)).real ** 2 * King
         else:
             result = 0
 
