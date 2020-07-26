@@ -345,6 +345,8 @@ class Store(object):
         self.dev_delta_z_lay = None
         self.z_lay = None
         self.dev_z_lay = None
+        self.phase_number_lay = None
+        self.dev_phase_number_lay = None
         self.test_arr = None
         self.dev_test_arr = None
 
@@ -656,10 +658,6 @@ class Store(object):
         self.dev_opac_interwave = gpuarray.to_gpu(self.opac_interwave)
         self.dev_opac_scat_cross = gpuarray.to_gpu(self.opac_scat_cross)
         self.dev_opac_meanmass = gpuarray.to_gpu(self.opac_meanmass)
-        self.dev_entr_kappa = gpuarray.to_gpu(self.entr_kappa)
-        self.dev_entr_c_p = gpuarray.to_gpu(self.entr_c_p)
-        self.dev_entr_phase_number = gpuarray.to_gpu(self.entr_phase_number)
-        self.dev_entr_entropy = gpuarray.to_gpu(self.entr_entropy)
         self.dev_starflux = gpuarray.to_gpu(self.starflux)
         self.dev_T_lay = gpuarray.to_gpu(self.T_lay)
         self.dev_abs_cross_cloud = gpuarray.to_gpu(self.abs_cross_cloud)

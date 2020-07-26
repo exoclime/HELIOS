@@ -575,7 +575,7 @@ class Read(object):
                         quant.entr_kappa.append(quant.fl_prec(column[2]))
                         quant.entr_c_p.append(quant.fl_prec(column[3]))
                         quant.entr_entropy.append(quant.fl_prec(column[4]))
-                        quant.entr_phase_number.append(column[7])
+                        quant.entr_phase_number.append(quant.fl_prec(column[7]))
 
             quant.entr_press = self.delete_duplicates(quant.entr_press)
             quant.entr_temp = self.delete_duplicates(quant.entr_temp)
@@ -630,15 +630,16 @@ class Read(object):
                     quant.opac_kappa.append(kappa[t + quant.entr_ntemp * p])
 
         else:
-            # some value needed by the kernel "kappa_interpol"
-            quant.entr_npress = npy.int32(1)
-            quant.entr_ntemp = npy.int32(1)
-            quant.entr_press = [0]
-            quant.entr_temp = [0]
-            quant.entr_kappa = [0]
-            quant.entr_c_p = [0]
-            quant.entr_entropy = [0]
-            quant.entr_phase_number = [-1]
+            # some values needed by the kernels interpolating this stuff to the atmospheric layers
+            # those are all dummy values and will never actually be used anywhere
+            quant.entr_npress = npy.int32(2)
+            quant.entr_ntemp = npy.int32(2)
+            quant.entr_press = [1, 10]
+            quant.entr_temp = [100, 200]
+            quant.entr_kappa = [0, 0, 0, 0]
+            quant.entr_c_p = [0, 0, 0, 0]
+            quant.entr_entropy = [0, 0, 0, 0]
+            quant.entr_phase_number = [-1, -1, -1, -1]
 
     def read_star(self, quant):
         """ reads the correct stellar spectrum from the corresponding file """
