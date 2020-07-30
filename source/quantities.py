@@ -121,6 +121,7 @@ class Store(object):
         self.F_net_conv = []
         self.F_ratio = []
         self.marked_red = None
+        self.converged = None
 
         # input arrays to be copied CPU --> GPU
         # these need to be converted from lists to np.arrays of correct data format

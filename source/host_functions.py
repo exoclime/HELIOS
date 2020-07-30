@@ -266,7 +266,7 @@ def check_for_local_eq(quant):
 
     criterion = 0
 
-    converged_list = []
+    quant.converged = np.zeros(quant.nlayer+1)
     quant.marked_red = np.zeros(quant.nlayer+1)
 
     for i in range(quant.nlayer+1):  # including surface/BOA "ghost layer"
@@ -289,20 +289,22 @@ def check_for_local_eq(quant):
             elif i == quant.nlayer:
 
                 combined_F_net = quant.F_intern - quant.F_net[0]
+
             if quant.T_lay[i] == 0:
                 print(i ,quant.T_lay[i])
+
             div_lim_quant = abs(combined_F_net) / (pc.SIGMA_SB * quant.T_lay[i] ** 4.0)
 
             # check for criterion satisfaction
             if div_lim_quant < quant.local_limit_conv_iter:
-                converged_list.append(1)
+                quant.converged[i]=1
             else:
                 quant.marked_red[i] = 1
-                # feedback suppressed for the moment
-                # if quant.iter_value % 10 == 9:
-                #     print("layer: {:<5g}, delta_flux/BB_layer: {:<12.3e}".format(i, div_lim_quant))
+                # uncomment for debugging
+                # if quant.iter_value % 100 == 99:
+                #     print("layer: {:<5g}, delta_flux/BB_layer: {:<12.3e}, delta_flux: {:<12.3e}, BB: {:<12.3e}".format(i, div_lim_quant, abs(combined_F_net), pc.SIGMA_SB * quant.T_lay[i] ** 4.0))
 
-    if len(converged_list) == (quant.nlayer + 1) - sum(quant.conv_layer):
+    if sum(quant.converged) == (quant.nlayer + 1) - sum(quant.conv_layer):
         criterion = 1
 
     return criterion

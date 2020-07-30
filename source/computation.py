@@ -747,7 +747,7 @@ class Compute(object):
 
         cuda.Context.synchronize()
 
-    def radiation_loop(self, quant, write, rt_plot, Vmod):
+    def radiation_loop(self, quant, write, read, rt_plot, Vmod):
         """ loops over the relevant kernels iteratively until the equilibrium TP - profile reached """
 
         condition = True
@@ -844,7 +844,7 @@ class Compute(object):
 
                 # time restriction for the run. It aborts automatically after the following time steps and prevents a hung job.
                 if quant.iter_value > 1e5:
-                    write.write_abort_file(quant)
+                    write.write_abort_file(quant, read)
 
                     print("\nRun exceeds allowed maximum allowed number of iteration steps. Aborting...")
 
@@ -859,7 +859,7 @@ class Compute(object):
         print("\nTime for radiative iteration [s]: {:.2f}".format(time_total * 1e-3))
         print("Total number of iterative steps: "+str(quant.iter_value))
 
-    def convection_loop(self, quant, write, rt_plot, Vmod):
+    def convection_loop(self, quant, write, read, rt_plot, Vmod):
         """ loops interchangeably through the radiative and convection schemes """
 
         # kappa is required for the conv. instability check
@@ -995,7 +995,7 @@ class Compute(object):
                 # length restriction for the run. aborts after a upper limit on the number of steps and thus prevents a hung up job.
                 if quant.iter_value > 1e5:  # warning: hardcoded number
 
-                    write.write_abort_file(quant)
+                    write.write_abort_file(quant, read)
 
                     print("\nRun exceeds allowed maximum allowed number of iteration steps. Aborting...")
 

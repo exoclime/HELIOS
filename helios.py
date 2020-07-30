@@ -80,9 +80,9 @@ def run_helios():
             Vmodder.interpolate_f_molecule_and_meanmolmass(keeper)
             Vmodder.combine_to_scat_cross(keeper)
 
-    computer.radiation_loop(keeper, writer, plotter, Vmodder)
+    computer.radiation_loop(keeper, writer, reader, plotter, Vmodder)
 
-    computer.convection_loop(keeper, writer, plotter, Vmodder)
+    computer.convection_loop(keeper, writer, reader, plotter, Vmodder)
 
     computer.integrate_optdepth_transmission(keeper)
     computer.calculate_contribution_function(keeper)
