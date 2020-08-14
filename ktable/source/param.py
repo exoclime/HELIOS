@@ -38,7 +38,8 @@ class Param(object):
         self.cond_path = None
         self.species_path = None
         self.final_path = None
-
+        self.units = None
+        self.condensation = None
 
     def read_param_file(self):
         """ reads the param file """
@@ -76,13 +77,16 @@ class Param(object):
                             self.fastchem_path = column[5]
                         elif column[0] == "final" and column[1] == "output":
                             self.final_path = column[6]
+                        elif column[0] == "units" and column[4] == "table":
+                            self.units = column[6]
+                            if self.units not in ["MKS", "CGS"]:
+                                raise ValueError("Chosen units for the opacity table unknown. Please double-check entry in the parameter file.")
 
                         # experimental
                         elif column[0] == "include" and column[1] == "condensation":
                             self.condensation = column[3]
                         elif column[0] == "path" and column[2] == "condensation":
                             self.cond_path = column[5]
-
 
 
         except IOError:

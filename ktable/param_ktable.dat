@@ -26,6 +26,7 @@ directory with individual files =             ./output/r50/
 path to final species file =                  ./input/final_species/sample_eq_abundances.dat
 path to FastChem output =                     ./input/chemistry/asplund_m0/                (only required if mixing ratios obtained from "FastChem")
 final output (mixed table) directory =        ./output/r50/mixed_sample/
+units of final opacity table =                CGS                                          (CGS [used in HELIOS], MKS)
 --------
 
 ################### DANGER ZONE ################### PROCEED UPON OWN RISK ###################

@@ -447,6 +447,17 @@ class Comb(object):
         elif param.format == 'sampling':
             filename = "mixed_opac_sampling.h5"
 
+        # change units to MKS if chosen in param file
+        if param.units == "MKS":
+            self.final_press = [p * 1e-1 for p in self.final_press]
+            self.combined_opacities = [c * 1e-1 for c in self.combined_opacities]
+            self.combined_cross_sections = [c * 1e-4 for c in self.combined_cross_sections]
+            self.k_x = [k * 1e-2 for k in self.k_x]
+
+            if param.format == "ktable":
+                self.k_i = [k * 1e-2 for k in self.k_i]
+                self.k_w = [k * 1e-2 for k in self.k_w]
+
         with h5py.File(param.final_path + filename, "w") as mixed_file:
             mixed_file.create_dataset("pressures", data=self.final_press)
             mixed_file.create_dataset("temperatures", data=self.final_temp)
@@ -456,6 +467,7 @@ class Comb(object):
             mixed_file.create_dataset("included molecules", data=self.molname_list)
             mixed_file.create_dataset("wavelengths", data=self.k_x)
             mixed_file.create_dataset("FastChem path", data=param.fastchem_path)
+            mixed_file.create_dataset("units", data=param.units)
 
             if param.format == 'ktable':
                 mixed_file.create_dataset("center wavelengths", data=self.k_x)
