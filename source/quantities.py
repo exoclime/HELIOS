@@ -350,6 +350,10 @@ class Store(object):
         self.dev_phase_number_lay = None
         self.test_arr = None
         self.dev_test_arr = None
+        self.F_smooth = None
+        self.dev_F_smooth = None
+        self.F_smooth_sum = None
+        self.dev_F_smooth_sum = None
 
         # arrays exclusively used on the GPU
         # these are defined directly on the GPU and stay there. No copying required.
@@ -613,6 +617,8 @@ class Store(object):
         self.contr_cia_h2he = np.zeros(self.nbin, self.fl_prec)
         self.contr_rayleigh = np.zeros(self.nbin, self.fl_prec)
         self.contr_cloud = np.zeros(self.nbin, self.fl_prec)
+        self.F_smooth = np.zeros(self.nlayer, self.fl_prec)
+        self.F_smooth_sum = np.zeros(self.nlayer, self.fl_prec)
 
         if Vmod.V_iter_nr == 0: ## otherwise already filled with values
             self.meanmolmass_lay = np.zeros(self.nlayer, self.fl_prec)
@@ -664,6 +670,8 @@ class Store(object):
         self.dev_abs_cross_cloud = gpuarray.to_gpu(self.abs_cross_cloud)
         self.dev_scat_cross_cloud = gpuarray.to_gpu(self.scat_cross_cloud)
         self.dev_g_0_cloud = gpuarray.to_gpu(self.g_0_cloud)
+        self.dev_F_smooth = gpuarray.to_gpu(self.F_smooth)
+        self.dev_F_smooth_sum = gpuarray.to_gpu(self.F_smooth_sum)
 
         # used for Vmod
         if Vmod.V_coupling == 1:

@@ -231,9 +231,9 @@ def check_for_global_eq(quant):
             interface_to_be_tested = int((end_conv_layers[n] + start_conv_layers[n + 1]) / 2)
 
         if quant.T_intern != 0:  # with internal heat
-            lim_quant[n] = abs(quant.F_intern - quant.F_net[interface_to_be_tested]) / quant.F_intern
+            lim_quant[n] = abs(quant.F_intern + quant.F_smooth_sum[interface_to_be_tested-1] - quant.F_net[interface_to_be_tested]) / quant.F_intern
         elif quant.T_intern == 0:  # without internal heat. in this case there must be a star
-            lim_quant[n] = abs(quant.F_net[interface_to_be_tested]) / quant.F_down_tot[interface_to_be_tested]
+            lim_quant[n] = abs(quant.F_net[interface_to_be_tested] - quant.F_smooth_sum[interface_to_be_tested-1]) / quant.F_down_tot[interface_to_be_tested]
 
         # user feedback -- only once per iterstep
         if quant.iter_value % 100 == 0:
@@ -275,16 +275,7 @@ def check_for_local_eq(quant):
 
             if i < quant.nlayer:
 
-                # temperature smoothing (analogous to rad_temp_iter kernel)
-                t_mid = quant.T_lay[i]
-
-                if quant.smooth == 1:
-                    if quant.p_lay[i] < 1e6 and i < quant.nlayer - 1:
-                        t_mid = (quant.T_lay[i - 1] + quant.T_lay[i + 1]) / 2
-
-                F_temp = (t_mid - quant.T_lay[i])**7
-
-                combined_F_net = quant.F_net_diff[i] + F_temp
+                combined_F_net = quant.F_net_diff[i] + quant.F_smooth[i]
 
             elif i == quant.nlayer:
 
@@ -496,9 +487,9 @@ def conv_correct(quant, fudging):
                 quant.dampara = float(quant.input_dampara)
 
             if n < len(start_layers) - 1:
-                fudge_factor[n] = ((quant.F_intern + quant.F_down_tot[interface_to_be_tested]) / quant.F_up_tot[interface_to_be_tested]) ** (1.0 / quant.dampara)
+                fudge_factor[n] = ((quant.F_intern + quant.F_smooth_sum[interface_to_be_tested-1] + quant.F_down_tot[interface_to_be_tested]) / quant.F_up_tot[interface_to_be_tested]) ** (1.0 / quant.dampara)
             else:
-                fudge_factor[n] = ((quant.F_intern + quant.F_down_tot[interface_to_be_tested]) / quant.F_up_tot[interface_to_be_tested]) ** (1.0 / 4.0)
+                fudge_factor[n] = ((quant.F_intern + quant.F_smooth_sum[interface_to_be_tested-1] + quant.F_down_tot[interface_to_be_tested]) / quant.F_up_tot[interface_to_be_tested]) ** (1.0 / 4.0)
 
             fudge_factor[n] = min(1.01, max(0.99, fudge_factor[n]))  # to prevent instabilities
 

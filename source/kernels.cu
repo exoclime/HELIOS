@@ -1990,6 +1990,8 @@ __global__ void rad_temp_iter(
         int* 	abrt, 
         utype* T_store, 
         utype* deltat_prefactor,
+        utype* F_smooth,
+        utype* F_smooth_sum,
         int 	itervalue, 
         utype 	f_factor, 
         int 	foreplay,
@@ -2018,31 +2020,39 @@ __global__ void rad_temp_iter(
         // net flux divergence for each layer
         F_net_diff[i] = F_net[i] - F_net[i+1];
         
-        // tweaking points
+        // tweaking points for smoothing
         utype t_mid = tlay[i];
         
         if(smooth ==1){
+            
             if(play[i] < 1e6 && i < numlayers -1 && i > 0){
                 t_mid = (tlay[i-1]+tlay[i+1])/2.0;
             }
+            
+            // temperature smoothing force (or "smoothing flux") -- dependent on the temperature displacement (power of 7 found to be best "middle" between cheating and energy conservation)
+            F_smooth[i] = pow((t_mid - tlay[i]), 7.0);
+            
+            __syncthreads(); // syncing threads needed because all F_smooth[i] are summed up below
+            
+            // summing up smoothing fluxes -- necessary to be included in the radiative equilibrium criterion
+            F_smooth_sum[i] = 0;
+            for(int j=0; j<=i; j++) F_smooth_sum[i] += F_smooth[j];
         }
-        // temperature smoothing force -- dependent on the temperature displacement (power of 7 found to be best "middle" between cheating and energy conservation)
-        utype F_temp = pow((t_mid - tlay[i]), 7.0);
         
         // net flux gradient -- combination of pure radiative net flux and temperature smoothing term
-        combined_F_net_diff = F_net_diff[i] + F_temp;
+        combined_F_net_diff = F_net_diff[i] + F_smooth[i];
         }
-        else{ // i = numlayers, i.e., surface/BOA "ghost layer" case
-            
+        else{ 
+            // i = numlayers, i.e., surface/BOA "ghost layer" case
             combined_F_net_diff = F_intern - F_net[0];
         }
-
+        
         // if using varying timestep
         if(varydelta == 1){
             if (itervalue == foreplay){
                 deltat_prefactor[i] = 1e0; // 1e0 found to be most stable. earlier value was 1e2.
             }
-
+            
             if(combined_F_net_diff != 0){
                 delta_t = deltat_prefactor[i] * play[0] / pow(abs(combined_F_net_diff), 0.9); // through tweaking 0.9 found to be most stable
             }
@@ -2116,6 +2126,8 @@ __global__ void conv_temp_iter(
         utype* c_p_lay,
         utype* T_store, 
         utype* deltat_prefactor,
+        utype* F_smooth,
+        utype* F_smooth_sum,
         int*   conv_layer,
         utype 	g, 
         int 	numlayers,
@@ -2146,15 +2158,22 @@ __global__ void conv_temp_iter(
                 if(play[i] < 1e6 && i < numlayers -1){
                     t_mid = (tlay[i-1]+tlay[i+1])/2.0;
                 }
+                
+                // temperature smoothing force (or "smoothing flux") -- dependent on the temperature displacement (power of 7 found to be best "middle" between cheating and energy conservation)
+                F_smooth[i] = pow((t_mid - tlay[i]), 7.0);
+                
+                __syncthreads(); // syncing threads needed because all F_smooth[i] are summed up below
+                
+                // summing up smoothing fluxes -- necessary to be included in the radiative equilibrium criterion
+                F_smooth_sum[i] = 0;
+                for(int j=0; j<=i; j++) F_smooth_sum[i] += F_smooth[j];
             }
-            // temperature smoothing force -- dependent on the temperature displacement (power of 7 found to be best "middle" between smoothed temperatures and energy conservation)
-            utype F_temp = pow((t_mid - tlay[i]), 7.0);
             
             // net flux gradient -- combination of pure radiative net flux and temperature smoothing term
-            combined_F_net_diff =  F_net_diff[i] + F_temp;
+            combined_F_net_diff =  F_net_diff[i] + F_smooth[i];
         }
-        else{ // i = numlayers is the surface/BOA "ghost layer"
-            
+        else{ 
+            // i = numlayers is the surface/BOA "ghost layer"
             combined_F_net_diff = F_intern - F_net[0];
         }
         // set initial timestep prefactor

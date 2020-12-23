@@ -702,6 +702,8 @@ class Compute(object):
                     quant.dev_abort,
                     quant.dev_T_store,
                     quant.dev_delta_t_prefactor,
+                    quant.dev_F_smooth,
+                    quant.dev_F_smooth_sum,
                     quant.iter_value,
                     quant.f_factor,
                     quant.foreplay,
@@ -734,6 +736,8 @@ class Compute(object):
                      quant.dev_c_p_lay,
                      quant.dev_T_store,
                      quant.dev_delta_t_prefactor,
+                     quant.dev_F_smooth,
+                     quant.dev_F_smooth_sum,
                      quant.dev_conv_layer,
                      quant.g,
                      quant.nlayer,
@@ -921,6 +925,7 @@ class Compute(object):
                 quant.c_p_lay = quant.dev_c_p_lay.get()  # needed by convective adjustment
                 quant.meanmolmass_lay = quant.dev_meanmolmass_lay.get()
                 quant.T_lay = quant.dev_T_lay.get()
+                quant.F_smooth_sum = quant.dev_F_smooth_sum.get()
                 hsfunc.convective_adjustment(quant)
                 quant.dev_T_lay = gpuarray.to_gpu(quant.T_lay)
 
@@ -963,8 +968,10 @@ class Compute(object):
                 # mark convection zone. used by realtime plotting
                 hsfunc.mark_convective_layers(quant, stitching=1)
 
-                # checks whether to continue the loop
-                condition = not(hsfunc.check_for_global_local_equilibrium(quant)) or quant.iter_value < 500
+                # checks whether to continue the loop. Runs always at least for 400 steps to avoid taking some initial instabilities as final result.
+                quant.F_smooth_sum = quant.dev_F_smooth_sum.get()
+                quant.F_smooth = quant.dev_F_smooth.get()
+                condition = not(hsfunc.check_for_global_local_equilibrium(quant)) or (quant.iter_value < 400) or (sum(quant.conv_layer) == 0)
 
                 # relax global convergence limit somewhat if taking too long to converge
                 if quant.iter_value == 1e4:  # warning: hardcoded number
