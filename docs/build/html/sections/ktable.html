@@ -1,19 +1,19 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>k-Table Generator &#8212; HELIOS 2.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="License" href="license.html" />
@@ -83,35 +83,35 @@
 <h2>final species file<a class="headerlink" href="#final-species-file" title="Permalink to this headline">¶</a></h2>
 <p>The format for this file is as follows (see also figure). Each species can be listed individually in no particular order. The listed name has to match the name of the individual opacity files. For absorbing species (species that possess opacity files) the “absorbing” option should be set to “yes”. If Rayleigh scattering cross-sections for a given species should be included, “scattering” has to be set to “yes”. At the moment the following Rayleigh cross-sections are included (plus references):</p>
 <ul class="simple">
-<li>H2: Cox 2000</li>
-<li>He: Sneep &amp; Ubachs 2005, Thalman et al. 2014</li>
-<li>H: Lee &amp; Kim 2004</li>
-<li>H2O: Murphy 1977, Wagner &amp; Kretzschmar 2008</li>
-<li>CO: Sneep &amp; Ubachs 2005</li>
-<li>CO2: Sneep &amp; Ubachs 2005, Thalman et al. 2014</li>
-<li>O2: Sneep &amp; Ubachs 2005, Thalman et al. 2014</li>
-<li>N2: Sneep &amp; Ubachs 2005, Thalman et al. 2014</li>
+<li><p>H2: Cox 2000</p></li>
+<li><p>He: Sneep &amp; Ubachs 2005, Thalman et al. 2014</p></li>
+<li><p>H: Lee &amp; Kim 2004</p></li>
+<li><p>H2O: Murphy 1977, Wagner &amp; Kretzschmar 2008</p></li>
+<li><p>CO: Sneep &amp; Ubachs 2005</p></li>
+<li><p>CO2: Sneep &amp; Ubachs 2005, Thalman et al. 2014</p></li>
+<li><p>O2: Sneep &amp; Ubachs 2005, Thalman et al. 2014</p></li>
+<li><p>N2: Sneep &amp; Ubachs 2005, Thalman et al. 2014</p></li>
 </ul>
 <p>Next, we set the volume mixing ratio. They can be either read in from FastChem output files (set “FastChem”) or be given as numbers explicitely (same column). If FastChem is used the next column is important as it sets the name of this molecule as defined in FastChem. For constant mixing ratios this column can be ignored. Lastly, the mass for each species is needed in order to allow the code to convert between volume and mass mixing ratios.</p>
 <p>Special are CIA opacities. They work as any other species, but require two entries for the mixing ratio (if given as number) and two entries for the Fastchem name separated by a “&amp;”. For the mass, the value of the <em>second</em> collision partner should be used. E.g., for CIA H2-He this is the mass of He, for CIA O2-N2 this would be the mass of N2, etc.</p>
-<div class="figure" id="id1">
+<div class="figure align-default" id="id1">
 <a class="reference internal image-reference" href="../_images/sample_final_species.png"><img alt="map to buried treasure" src="../_images/sample_final_species.png" style="width: 525.0px; height: 316.4px;" /></a>
-<p class="caption"><span class="caption-text"><em>Figure: final species file format</em></span></p>
+<p class="caption"><span class="caption-text"><em>Figure: final species file format</em></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="ktable-vs-sampling">
 <h2>ktable vs sampling<a class="headerlink" href="#ktable-vs-sampling" title="Permalink to this headline">¶</a></h2>
 <p><strong>ktable</strong></p>
 <p>If the first parameter in <code class="docutils literal notranslate"><span class="pre">param_ktable.dat</span></code> is set to “ktable”, the program will calculate the k-distribution tables for the individual species, using the Chebyshev coefficients from the HELIOS-K output. For this it needs to access the “cbin” files containing the Chebyshev coefficients. It will generature individual opacity containers with 20 Gaussian points per wavelength bin. This is required in HELIOS. The number of wavelength bins is given by the resolution of the “cbin” files. See the HELIOS-K ReadMe for more info on those. The species considered in this process are simply the species present in the directory (or subdirectories) set in the parameter file.</p>
-<div class="figure" id="id2">
+<div class="figure align-default" id="id2">
 <a class="reference internal image-reference" href="../_images/cbin_files.png"><img alt="map to buried treasure" src="../_images/cbin_files.png" style="width: 744.0px; height: 224.4px;" /></a>
-<p class="caption"><span class="caption-text"><em>Figure: cbin files produced by HELIOS-K.</em></span></p>
+<p class="caption"><span class="caption-text"><em>Figure: cbin files produced by HELIOS-K.</em></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <p><strong>sampling</strong></p>
 <p>If the first parameter in <code class="docutils literal notranslate"><span class="pre">param_ktable.dat</span></code> is set to “sampling”, the program will sample the opacity output from HELIOS-K at the wavelength grid, as specified in the <code class="docutils literal notranslate"><span class="pre">param_ktable.dat</span></code> file and convert it into individual molecular opacity files. The species to be sampled and where to find them is set the “sampling species file”.</p>
-<div class="figure" id="id3">
+<div class="figure align-default" id="id3">
 <a class="reference internal image-reference" href="../_images/Opacity3.png"><img alt="map to buried treasure" src="../_images/Opacity3.png" style="width: 493.2px; height: 260.4px;" /></a>
-<p class="caption"><span class="caption-text"><em>Figure: Directory with pre-calculated opacity files from HELIOS-K. This is a good input for the opacity table generation using the ‘’sampling’’ method. The ‘’_e2b’’ directories should be used for any species.</em></span></p>
+<p class="caption"><span class="caption-text"><em>Figure: Directory with pre-calculated opacity files from HELIOS-K. This is a good input for the opacity table generation using the ‘’sampling’’ method. The ‘’_e2b’’ directories should be used for any species.</em></span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 </div>
@@ -169,17 +169,15 @@
 
 
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -188,8 +186,8 @@
       &copy;2018, Matej Malik.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.7</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/sections/ktable.rst.txt"

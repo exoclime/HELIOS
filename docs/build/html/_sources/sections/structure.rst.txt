@@ -129,20 +129,20 @@ The standard output of HELIOS may also be used as an input profile.
 
 Practically, the read-in temperature profile is linearly interpolated to the HELIOS pressure grid, set by the top and bottom of atmosphere pressures and the number of layers.
 
-adiabatic coefficient
-^^^^^^^^^^^^^^^^^^^^^
+adiabatic coefficient & specific heat capacity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To enable the convective adjustment, the adiabatic coefficient as function of temperature and pressure needs to be known. In the simplest case, a constant value for the the adiabatic coefficient can be set manually.
+In order to use the convective adjustment functionality, the adiabatic coefficient (usually called kappa or delad) and the specific heat capacity need to be known. One can manually set a constant numerical value for kappa/delad in the parameter file. The heat capacity is then internally calculated via R_univ / kappa. This is the most straightforward albeit only approximative way. Since these quantities depend on the temperature, pressure and atmospheric composition, it is recommend to pre-tabulate them. To this end, the functionality to read in an ASCII table is implemented in HELIOS as well. The format of such a table needs to be the following.
 
-If a file is to be read in, it should be in ASCII format, with the adiabatic coefficient listed as function of pressure and temperature, with log10 temperature being on the smaller loop and log10 pressure on the larger one, i.e. from top to down we get kappa[t+n_t*p], with the pressure index p and the temperature index t, and n_t the number of temperature values. If the corresponding entropy is listed as well, its layer values will be given out as output as well.
+First we need two header lines (contents of these two lines are irrelevant). Then, the columns have to come in the order as shown in below screenshot. First column is temperature, second column pressure, third column kappa/delad, fourth column the specific heat capacity and fifth column the entropy. Make sure that the units are as shown in below screenshot! The entropy is not used in the actual RT calculation and only included to give the entropy of the final converged atmosphere. The entropy column can just as well be filled with zeroes. For the pre-tabulation in temperature and pressure, the temperature needs to be on the outer (larger) loop and the pressure on the inner (smaller) loop so that reading the file from top to down gives kappa[p + n_p * t], with the pressure index p and the temperature index t, and n_p the number of pressure points. All other quantities have to be pre-tabulated analogously.
 
-The format of the file should be:
+The file should look like this:
 
-.. figure:: ../figures/adiabat.png
+.. figure:: ../figures/kappa_c_p_file.png
    :scale: 60 %
    :alt: map to buried treasure
 
-   *Figure: Format of the adiabatic coefficient/entropy file.*
+   *Figure: Format of the adiabatic coefficient & heat capacity file used for the convective adjustment.*
 
 planet parameters
 ^^^^^^^^^^^^^^^^^

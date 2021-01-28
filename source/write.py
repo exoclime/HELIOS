@@ -131,7 +131,7 @@ These are the parameters used in the production of this HELIOS output.
             file.writelines("\n### CONVECTIVE ADJUSTMENT ###")
             file.writelines("\n")
             file.writelines("\nconvective adjustment = " + self.convert_1_0_to_yes_no(quant.convection))
-            file.writelines("\nkappa value = " + quant.kappa_manual_value)
+            file.writelines("\nkappa value = " + str(quant.kappa_manual_value))
             file.writelines("\nentropy/kappa file path = " + read.entr_kappa_path)
             file.writelines("\ndamping parameter = " + quant.input_dampara)
             file.writelines("\n---")
@@ -248,41 +248,40 @@ These are the parameters used in the production of this HELIOS output.
     def write_colmass_mu_cp_entropy(quant, read):
         """ writes the layer column mass, mean molecular weight and specific heat capacity to a file """
 
-        try:
-            with open(read.output_path + quant.name + "/" + quant.name + "_colmass_mu_cp_kappa_entropy.dat", "w") as file:
+        with open(read.output_path + quant.name + "/" + quant.name + "_colmass_mu_cp_kappa_entropy.dat", "w") as file:
+            file.writelines(
+                "This file contains the total pressure and the column mass difference, mean molecular weight and specific heat capacity of each layer.")
+            file.writelines(
+                "\n{:<8}{:<24}{:<26}{:<21}{:<32}{:<23}{:<30}".format(
+                    "layer", "cent.press.[10^-6bar]", "delta_col.mass[g cm^-2]",
+                    "mean mol. weight", "spec.heat cap.[erg mol^-1 K^-1]", "adiabatic coefficient", "entropy [erg mol^-1 K^-1]")
+            )
+            for i in range(quant.nlayer):
                 file.writelines(
-                    "This file contains the total pressure and the column mass difference, mean molecular weight and specific heat capacity of each layer.")
-                file.writelines(
-                    "\n{:<8}{:<24}{:<26}{:<21}{:<32}{:<23}{:<30}".format(
-                        "layer", "cent.press.[10^-6bar]", "delta_col.mass[g cm^-2]",
-                        "mean mol. weight", "spec.heat cap.[erg mol^-1 K^-1]", "adiabatic coefficient", "entropy [erg mol^-1 K^-1]")
+                    "\n{:<8g}".format(i)
+                    + "{:<24g}".format(quant.p_lay[i])
+                    + "{:<26g}".format(quant.delta_colmass[i])
+                    + "{:<21g}".format(quant.meanmolmass_lay[i] / pc.AMU)
                 )
-                for i in range(quant.nlayer):
-                    file.writelines(
-                        "\n{:<8g}".format(i)
-                        + "{:<24g}".format(quant.p_lay[i])
-                        + "{:<26g}".format(quant.delta_colmass[i])
-                        + "{:<21g}".format(quant.meanmolmass_lay[i] / pc.AMU)
-                    )
-                    if quant.c_p_lay[i] == 0:
-                        file.writelines("{:<32s}".format("not_calculated"))
-                    else:
-                        file.writelines("{:<32g}".format(quant.c_p_lay[i]))
-                    if quant.kappa_lay[i] == 0:
-                        file.writelines("{:<23s}".format("not_calculated"))
-                    else:
-                        file.writelines("{:<23g}".format(quant.kappa_lay[i]))
-                    if quant.entropy_lay[i] == 0:
-                        file.writelines("{:<30s}".format("not_calculated"))
-                    else:
-                        file.writelines("{:<30g}".format(quant.entropy_lay[i]))
-        except TypeError:
-            print("File '*_colmass_mu_cp_kappa_entropy.dat' generation corrupted. You might want to look  into it!")
+                if quant.c_p_lay[i] == 0:
+                    file.writelines("{:<32s}".format("not_calculated"))
+                else:
+                    file.writelines("{:<32g}".format(quant.c_p_lay[i]))
+                if quant.kappa_lay[i] == 0:
+                    file.writelines("{:<23s}".format("not_calculated"))
+                else:
+                    file.writelines("{:<23g}".format(quant.kappa_lay[i]))
+                if quant.entropy_lay[i] == 0:
+                    file.writelines("{:<30s}".format("not_calculated"))
+                else:
+                    file.writelines("{:<30g}".format(quant.entropy_lay[i]))
 
     @staticmethod
     def write_phase_state(quant, read):
 
-        try:
+        # only executed for "water_atmo" file format
+        if quant.kappa_manual_value == "water_atmo":
+
             with open(read.output_path + quant.name + "/" + quant.name + "_state.dat", "w") as file:
 
                 file.writelines(
@@ -300,12 +299,7 @@ These are the parameters used in the production of this HELIOS output.
                             "\n{:<8g}".format(i)
                             + "{:<18g}".format(quant.T_lay[i])
                             + "{:<24g}".format(quant.p_lay[i]))
-                        if quant.phase_number_lay[i] == -1:
-                            file.writelines("{:<24}".format("not_calculated"))
-                        else:
-                            file.writelines("{:<24g}".format(quant.phase_number_lay[i]))
-        except TypeError:
-            print("File '*_state.dat generation' corrupted. You might want to look into it!")
+                        file.writelines("{:<24g}".format(quant.phase_number_lay[i]))
 
     @staticmethod
     def write_integrated_flux(quant, read):

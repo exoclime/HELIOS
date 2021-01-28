@@ -199,7 +199,8 @@ class Compute(object):
 
     def interpolate_kappa_and_cp(self, quant):
 
-        if quant.kappa_manual_value == "file":
+        # if kappa/delad is read in from a file
+        if quant.kappa_manual_value in ["file", "water_atmo"]:
 
             kappa_interpol = self.mod.get_function("kappa_interpol")
             kappa_interpol(quant.dev_T_lay,
@@ -249,22 +250,10 @@ class Compute(object):
 
                 cuda.Context.synchronize()
 
-        else:
-
-            quant.kappa_lay = np.ones(quant.nlayer, quant.fl_prec) * float(quant.kappa_manual_value)
-            quant.dev_kappa_lay = gpuarray.to_gpu(quant.kappa_lay)
-
-            c_p = pc.R_UNIV / float(quant.kappa_manual_value)
-            quant.c_p_lay = np.ones(quant.nlayer, quant.fl_prec) * c_p
-            quant.dev_c_p_lay = gpuarray.to_gpu(quant.c_p_lay)
-
-            if quant.iso == 0:
-                quant.kappa_int = np.ones(quant.ninterface, quant.fl_prec) * float(quant.kappa_manual_value)
-                quant.dev_kappa_int = gpuarray.to_gpu(quant.kappa_int)
-
     def interpolate_entropy(self, quant):
 
-        if quant.convection == 1:
+        # only executed if kappa/delad is read from file
+        if quant.kappa_manual_value == str(quant.kappa_manual_value):
 
             entr_interpol = self.mod.get_function("entropy_interpol")
             entr_interpol(quant.dev_T_lay,
@@ -284,19 +273,22 @@ class Compute(object):
 
     def interpolate_phase_state(self, quant):
 
-            entr_interpol = self.mod.get_function("phase_number_interpol")
-            entr_interpol(quant.dev_T_lay,
-                          quant.dev_entr_temp,
-                          quant.dev_p_lay,
-                          quant.dev_entr_press,
-                          quant.dev_phase_number_lay,
-                          quant.dev_entr_phase_number,
-                          quant.entr_npress,
-                          quant.entr_ntemp,
-                          quant.nlayer,
-                          block=(16, 1, 1),
-                          grid=((int(quant.nlayer) + 15) // 16, 1, 1)
-                          )
+        # only executed for "water_atmo" file format
+        if quant.kappa_manual_value == "water_atmo":
+
+            phase_interpol = self.mod.get_function("phase_number_interpol")
+            phase_interpol(quant.dev_T_lay,
+                           quant.dev_entr_temp,
+                           quant.dev_p_lay,
+                           quant.dev_entr_press,
+                           quant.dev_phase_number_lay,
+                           quant.dev_entr_phase_number,
+                           quant.entr_npress,
+                           quant.entr_ntemp,
+                           quant.nlayer,
+                           block=(16, 1, 1),
+                           grid=((int(quant.nlayer) + 15) // 16, 1, 1)
+                           )
 
             cuda.Context.synchronize()
 

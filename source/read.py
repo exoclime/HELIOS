@@ -279,7 +279,10 @@ class Read(object):
                         elif column[0] == "convective":
                             quant.convection = self.__read_yes_no__(column[3])
                         elif column[0] == "kappa" and column[1] == "value":
-                            quant.kappa_manual_value = column[3]
+                            try:
+                                quant.kappa_manual_value = npy.float(column[3])  # if floating point number
+                            except ValueError:
+                                quant.kappa_manual_value = column[3]  # else treat as string
                         elif column[0] == "entropy/kappa" and column[2] == "path":
                             self.entr_kappa_path = column[4]
                         elif column[0] == "damping" and column[1] == "parameter":
@@ -553,93 +556,81 @@ class Read(object):
     def read_kappa_table(self, quant):
         """ reads in entropy and kappa (for the stellar community: delad) values from ASCII table """
 
-        if quant.kappa_manual_value == "file":
+        # kappa/delad is being read from file
+        if quant.kappa_manual_value == str(quant.kappa_manual_value):
 
-            print("\nReading kappa values from file with NEW format.")
+            if quant.kappa_manual_value == "file":
 
-            quant.kappa_file_format = npy.int32(1)
+                print("\nReading kappa/delad values from file (standard format).")
 
-            with open(self.entr_kappa_path, "r") as entr_file:
-
-                next(entr_file)
-                next(entr_file)
-                next(entr_file)
-                next(entr_file)
-                next(entr_file)
-
-                for line in entr_file:
-                    column = line.split()
-                    if column:
-                        quant.entr_temp.append(quant.fl_prec(column[0]))
-                        quant.entr_press.append(quant.fl_prec(column[1]))
-                        quant.entr_kappa.append(quant.fl_prec(column[2]))
-                        quant.entr_c_p.append(quant.fl_prec(column[3]))
-                        quant.entr_entropy.append(quant.fl_prec(column[4]))
-                        quant.entr_phase_number.append(quant.fl_prec(column[7]))
-
-            quant.entr_press = self.delete_duplicates(quant.entr_press)
-            quant.entr_temp = self.delete_duplicates(quant.entr_temp)
-            quant.entr_press.sort()
-            quant.entr_temp.sort()
-            quant.entr_npress = npy.int32(len(quant.entr_press))
-            quant.entr_ntemp = npy.int32(len(quant.entr_temp))
-
-        elif quant.kappa_manual_value == "oldfile":
-
-            print("\nReading entropy/kappa values from file.")
-
-            entropy = []
-            kappa = []
-
-            try:
                 with open(self.entr_kappa_path, "r") as entr_file:
+
                     next(entr_file)
                     next(entr_file)
+
                     for line in entr_file:
                         column = line.split()
                         if column:
-                            quant.entr_press.append(10 ** quant.fl_prec(column[0]))
-                            quant.entr_temp.append(10 ** quant.fl_prec(column[1]))
-                            entropy.append(quant.fl_prec(column[4]))
-                            kappa.append(quant.fl_prec(column[5]))
-            except IndexError:
+                            quant.entr_temp.append(quant.fl_prec(column[0]))
+                            quant.entr_press.append(quant.fl_prec(column[1]))
+                            quant.entr_kappa.append(quant.fl_prec(column[2]))
+                            quant.entr_c_p.append(quant.fl_prec(column[3]))
+                            quant.entr_entropy.append(quant.fl_prec(column[4]))
+
+            elif quant.kappa_manual_value == "water_atmo":
+
+                print("\nReading kappa/delad values from file (water atmospheres format).")
 
                 with open(self.entr_kappa_path, "r") as entr_file:
+
                     next(entr_file)
                     next(entr_file)
+                    next(entr_file)
+                    next(entr_file)
+                    next(entr_file)
+
                     for line in entr_file:
                         column = line.split()
                         if column:
-                            quant.entr_press.append(10 ** quant.fl_prec(column[0]))
-                            quant.entr_temp.append(10 ** quant.fl_prec(column[1]))
-                            entropy.append(0)
-                            kappa.append(quant.fl_prec(column[2]))
+                            quant.entr_temp.append(quant.fl_prec(column[0]))
+                            quant.entr_press.append(quant.fl_prec(column[1]))
+                            quant.entr_kappa.append(quant.fl_prec(column[2]))
+                            quant.entr_c_p.append(quant.fl_prec(column[3]))
+                            quant.entr_entropy.append(quant.fl_prec(column[4]))
+                            quant.entr_phase_number.append(quant.fl_prec(column[7]))
 
-            quant.entr_press = self.delete_duplicates(quant.entr_press)
-            quant.entr_temp = self.delete_duplicates(quant.entr_temp)
-            quant.entr_press.sort()
-            quant.entr_temp.sort()
+            quant.entr_press = npy.sort(list(set(quant.entr_press)))
+            quant.entr_temp = npy.sort(list(set(quant.entr_temp)))
             quant.entr_npress = npy.int32(len(quant.entr_press))
             quant.entr_ntemp = npy.int32(len(quant.entr_temp))
 
-            # change into the correct order in terms of pressure and temperature
-            for t in range(quant.entr_ntemp):
+            # layer quantities will be filled (=interpolated to) later during iteration
+            quant.kappa_lay = npy.zeros(quant.nlayer, quant.fl_prec)
+            quant.c_p_lay = npy.zeros(quant.nlayer, quant.fl_prec)
+            if quant.iso == 0:
+                quant.kappa_int = npy.zeros(quant.ninterface, quant.fl_prec)
 
-                for p in range(quant.entr_npress):
-                    quant.opac_entropy.append(entropy[t + quant.entr_ntemp * p])
-                    quant.opac_kappa.append(kappa[t + quant.entr_ntemp * p])
-
+        # a constant kappa/delad value has been set manually
         else:
-            # some values needed by the kernels interpolating this stuff to the atmospheric layers
-            # those are all dummy values and will never actually be used anywhere
-            quant.entr_npress = npy.int32(2)
-            quant.entr_ntemp = npy.int32(2)
-            quant.entr_press = [1, 10]
-            quant.entr_temp = [100, 200]
-            quant.entr_kappa = [0, 0, 0, 0]
-            quant.entr_c_p = [0, 0, 0, 0]
-            quant.entr_entropy = [0, 0, 0, 0]
-            quant.entr_phase_number = [-1, -1, -1, -1]
+            # some values are needed by the kernels interpolating these quantities to the atmospheric layers
+            # the following are all dummy values and will never be actually used anywhere
+            # quant.entr_press = [1, 10] # TODO double-check that these values are really not needed
+            # quant.entr_temp = [100, 200]
+            #
+            # quant.entr_kappa = npy.zeros((quant.entr_npress * quant.entr_ntemp))
+            # quant.entr_c_p = npy.zeros((quant.entr_npress * quant.entr_ntemp))
+            # quant.entr_entropy = npy.zeros((quant.entr_npress * quant.entr_ntemp))
+            # quant.entr_phase_number = npy.ones((quant.entr_npress * quant.entr_ntemp)) * -1
+
+            quant.kappa_lay = npy.ones(quant.nlayer, quant.fl_prec) * float(quant.kappa_manual_value)
+
+            c_p_value = pc.R_UNIV / float(quant.kappa_manual_value)
+
+            quant.c_p_lay = npy.ones(quant.nlayer, quant.fl_prec) * c_p_value
+
+            if quant.iso == 0:
+
+                quant.kappa_int = npy.ones(quant.ninterface, quant.fl_prec) * float(quant.kappa_manual_value)
 
     def read_star(self, quant):
         """ reads the correct stellar spectrum from the corresponding file """

@@ -101,7 +101,6 @@ class Store(object):
         self.geom_zenith_corr = None
         self.scat_corr = None
         self.kappa_manual_value = None
-        self.kappa_kernel_value = None
         self.surf_albedo = None
         self.T_below = 0  # T_below is either the surface temperature for rocky planets or the below grid temperature for gas planets
         self.approx_f = None
@@ -277,6 +276,12 @@ class Store(object):
         self.dev_T_lay = None
         self.abort = None
         self.dev_abort = None
+        self.c_p_lay = None
+        self.dev_c_p_lay = None
+        self.kappa_lay = None
+        self.dev_kappa_lay = None
+        self.kappa_int = None
+        self.dev_kappa_int = None
 
         # arrays to be copied GPU --> CPU
         # for these, zero arrays of correct size are created and then copied to GPU with "gpuarray" and copied back
@@ -318,12 +323,6 @@ class Store(object):
         self.dev_trans_band = None
         self.meanmolmass_lay = None
         self.dev_meanmolmass_lay = None
-        self.c_p_lay = None
-        self.dev_c_p_lay = None
-        self.kappa_lay = None
-        self.dev_kappa_lay = None
-        self.kappa_int = None
-        self.dev_kappa_int = None
         self.entropy_lay = None
         self.dev_entropy_lay = None
         self.trans_weight_band = None
@@ -587,10 +586,7 @@ class Store(object):
         self.trans_band = np.zeros(self.nlayer_nbin, self.fl_prec)
         self.delta_tau_band = np.zeros(self.nlayer_nbin, self.fl_prec)
         self.abort = np.zeros(self.nlayer + 1, np.int32) # including "ghost layer" below
-        self.c_p_lay = np.zeros(self.nlayer, self.fl_prec)
         self.test_arr = np.zeros(self.nlayer, self.fl_prec)
-        self.kappa_lay = np.zeros(self.nlayer, self.fl_prec)
-        self.kappa_int = np.zeros(self.ninterface, self.fl_prec)
         self.entropy_lay = np.zeros(self.nlayer, self.fl_prec)
         self.phase_number_lay = np.zeros(self.nlayer, self.fl_prec)
         self.trans_weight_band = np.zeros(self.nlayer_nbin, self.fl_prec)
@@ -657,6 +653,9 @@ class Store(object):
         self.dev_entr_c_p = gpuarray.to_gpu(self.entr_c_p)
         self.dev_entr_phase_number = gpuarray.to_gpu(self.entr_phase_number)
         self.dev_entr_entropy = gpuarray.to_gpu(self.entr_entropy)
+        self.dev_c_p_lay = gpuarray.to_gpu(self.c_p_lay)
+        self.dev_kappa_lay = gpuarray.to_gpu(self.kappa_lay)
+        self.dev_kappa_int = gpuarray.to_gpu(self.kappa_int)
         self.dev_opac_k = gpuarray.to_gpu(self.opac_k)
         self.dev_opac_y = gpuarray.to_gpu(self.opac_y)
         self.dev_gauss_weight = gpuarray.to_gpu(self.gauss_weight)
@@ -747,9 +746,6 @@ class Store(object):
         self.dev_delta_tau_band = gpuarray.to_gpu(self.delta_tau_band)
         self.dev_abort = gpuarray.to_gpu(self.abort)
         self.dev_meanmolmass_lay = gpuarray.to_gpu(self.meanmolmass_lay)
-        self.dev_c_p_lay = gpuarray.to_gpu(self.c_p_lay)
-        self.dev_kappa_lay = gpuarray.to_gpu(self.kappa_lay)
-        self.dev_kappa_int = gpuarray.to_gpu(self.kappa_int)
         self.dev_entropy_lay = gpuarray.to_gpu(self.entropy_lay)
         self.dev_phase_number_lay = gpuarray.to_gpu(self.phase_number_lay)
         self.dev_trans_weight_band = gpuarray.to_gpu(self.trans_weight_band)
