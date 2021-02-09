@@ -480,12 +480,11 @@ class Comb(object):
 
         print("\nCalculating scattering cross sections ...")
 
-        # this is kind of hidden -- TODO move to a better location at some point
         # references for the scattering data:
         # H2: Cox 2000
         # He: Sneep & Ubachs 2005, Thalman et al. 2014
         # H: Lee & Kim 2004
-        # H2O: Murphy 1977, Wagner & Kretzschmar 2008
+        # H2O: Murphy 1977, Schiebener et al. 1990, Wagner & Kretzschmar 2008
         # CO: Sneep & Ubachs 2005
         # CO2: Sneep & Ubachs 2005, Thalman et al. 2014
         # O2: Sneep & Ubachs 2005, Thalman et al. 2014
@@ -508,8 +507,8 @@ class Comb(object):
 
                             if species.name == "H2O":
 
-                                index = ray.index_h2o(self.k_x[x], self.final_press[p], self.final_temp[t], self.mu[p + self.final_np * t])
-                                n_ref = ray.n_ref_h2o(self.final_press[p], self.final_temp[t])
+                                index = ray.index_h2o(self.k_x[x], self.final_press[p], self.final_temp[t], vol_mix_ratio[p + self.final_np * t])
+                                n_ref = ray.n_ref_h2o(self.final_press[p], self.final_temp[t], vol_mix_ratio[p + self.final_np * t])
                                 King = ray.King_h2o
                                 lamda_limit = 2.5e-4
 

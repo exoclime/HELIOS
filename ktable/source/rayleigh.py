@@ -84,10 +84,10 @@ class Rayleigh_scat(object):
         return result
 
     @staticmethod
-    def index_h2o(lam, press, temp, mu):
+    def index_h2o(lam, press, temp, f_h2o):
         """ calculates the refractive index of H2O """
 
-        dens = press * mu * pc.AMU / (pc.K_B * temp)
+        dens = f_h2o * press * pc.M_H2O * pc.AMU / (pc.K_B * temp)  # mass density of water
 
         Lamda = lam / 0.589e-4
         delta = dens / 1.0
@@ -126,14 +126,12 @@ class Rayleigh_scat(object):
 
     ### reference densities (unless constant) ###
     @staticmethod
-    def n_ref_h2o(press, temp):
+    def n_ref_h2o(press, temp, f_h2o):
         """ calculates the reference number density of water (it is the actual number density) """
 
-        n = press / (pc.K_B * temp)
+        n_ref = f_h2o * press / (pc.K_B * temp)
 
-        result = n
-
-        return result
+        return n_ref
 
     ### King factors (unless constant) ###
     @staticmethod
