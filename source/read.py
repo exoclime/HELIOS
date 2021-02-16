@@ -659,6 +659,10 @@ class Read(object):
                     else:
                         print("\nInvalid input. Try again with \"yes\" or \"no\".")
 
+            # test that stellar spectrum is on the same wavelength grid as the opacities
+            if len(quant.starflux) != quant.nbin:
+                raise OverflowError("Stellar spectrum and opacity files have different wavelength bins. Please double-check your input files.")
+
         elif quant.stellar_model == "blackbody":
             quant.starflux = npy.zeros(quant.nbin, quant.fl_prec)
             print("\nUsing blackbody flux for the stellar irradiation.")
