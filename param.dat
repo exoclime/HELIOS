@@ -15,7 +15,7 @@ realtime plotting =                     no                                     (
 isothermal layers =                     no                                     (set 'no' for iterative runs and 'yes' for post-processing only)
 number of layers =                      105                                     (10 layers per magnitude of pressure as rule of thumb)
 TOA pressure [10^-6 bar] =              1e-1                                   (typically 1e0 or 1e-1 for common applications)
-BOA pressure [10^-6 bar] =              1e9                                    (bottom pressure. or surface pressure. for gas planets usually 1e3 or 1e2.)
+BOA pressure [10^-6 bar] =              1e9                                    (bottom pressure. or surface pressure. for gas planets usually 1e8 or 1e9.)
 planet type =                           gas                                    (rocky, gas)
 ———
 
