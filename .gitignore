@@ -1,0 +1,8 @@
+# Don't track bash scripts, special parameter files and files in the input and output directories
+/*.bash
+/*.sbatch
+/param_*.dat
+/output/
+/input/
+/ktable/input/
+/ktable/output/
