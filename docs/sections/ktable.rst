@@ -1,125 +1,166 @@
-k-Table Generator
-=================
+==================
+**ktable Program**
+==================
 
-This script called the "k-Table Generator" is a tool that converts HELIOS-K output opacity files into a combined opacity table, which can be used in by HELIOS. 
+General Info
+============
 
-To combine the individual opacities one can either set a constant volume mixing ratio for each species. Or one can read in pre-calculated equilibrium abundances using the FastChem code (see :doc:`software`). Pre-tabulated HELIOS-K opacities may be found `here <https://chaldene.unibe.ch/data/Opacity3/>`_. Data in the directories marked with the suffix "_e2b" should be used.
+The ktable program is an included tool that converts HELIOS-K output opacity files into opacity tables that can be used in by HELIOS. The most straightforward way is to use the pre-calculated HELIOS-K opacity that can be downloaded from the `online opacity database <https://dace.unige.ch/opacityDatabase/>`_ at the University of Geneva. Always download the whole temperature and pressure ranges and extract all the files into a directory. Each species should have a separate directory.
 
+The ktable program is run by typing::
 
-Getting Started
----------------
+	python3 ktable.py
 
-The program is run by typing::
+while being in the ``ktable`` directory. All parameters are set in the parameter file, per default named ``param_ktable.dat``. (The file name can be changed via the command-line option '--parameter_file'.) The source code files are located in the ``source_ktable`` subdirectory, and additional input files are conveniently in the input directory (though all input file paths can be modified). All output paths are set in the parameter file.
 
-	python3 ktable.dat
+As with the main HELIOS code, most input parameters can be set via command-line. Parameters that have provide this option are marked as (CL:Y) and those that do not as (CL:N). The command-line option has the **same name** as the respective parameter given in ``param_ktable.dat`` with the following limitations:
 
-in the ``ktable`` directory. Additional source files are located in the source subdirectory, and additional input files in the input directory. The output goes per default to the output subdirectory. Note, every path can be modified in the parameter file ``param_ktable.dat``. Further parameters are described below.
+- small letters only
+- all spaces and dash symbols are replaced by an underscore
+- without the square brackets and their content
+- no dependency information (parameter name starts after the arrow)
 
-**Main idea**
+Main Workflow
+-------------
 
-The opacity table generation comes in *two stages*. In the first stage, one opacity container is individually created for each species from the HELIOS-K output. In the second stage, the individual opacities are weighted by the respective molecule's mixing ratio and combined to the final mixed opacity table. This final mixed opacity table can be then used in HELIOS.
+The ktable program works in **two stages**.
 
+In the first stage, for each species the HELIOS-K output files are converted to a single HDF5 file containing the pre-tabulated opacity. As opacity format, HELIOS supports **'opacity sampling'** and the **'k-distribution method'**. If sampling is selected, the high-resolution opacity is merely interpolated to the HELIOS wavelength grid. For the 'k-distribution method' the high-resolution opacity is converted to k-coefficients with chosen bins and number of Gaussian points (note that only 20 Gaussian points are currently supported by the RO method in HELIOS).
 
-Parameter File and Input
-------------------------
+In the second stage, the individual opacities are interpolated to a common temperature-pressure grid, weighted by the respective molecule's mixing ratio and combined to the final mixed opacity table. This final mixed opacity table can then be used in HELIOS when the 'premixed' setting is selected. For 'on-the-fly' opacity mixing, the individual opacity files are used. Note that since the individual opacities have to be on the same temperature-pressure grid, the **interpolated files have to be used** for that purpose, i.e., the files that have '_ip_' in their name. (Obviously, the opacities have to be on the same wavelength grid as well.)
 
-The parameter file ``param_ktable.dat`` contains the parameters for the correct reading and writing of the opacities. The parameters are as follows.
+Parameter File
+==============
 
-``format (ktable, sampling)``
+Below a detailed explanation of the input parameters as found in the parameter file.
 
-This determines the type of the opacity tables you want to generate. Either k-distribution tables (ktable) or opacity sampling tables (=simple per-wavelength opacities) can be used in HELIOS. The "ktable" option more accurate, but appear very low resolution with coarse wavelength bins. The sampling method is slightly less accurate and usually used to post-process spectra at a high resolution. Using sampling is more straightforward so I recommend using the sampling method for the lowest effort. 
+First Stage
+-----------
 
-``individual species calculation (yes, no)``
+   ``individual species calculation   [yes, no]   (CL: Y)``
 
-Sets whether the files for individual molecules need to be calculated (aka the first stage of the process). If starting from the HELIOS-K output, this should be set to "yes". If the individual files have already been generated previously and you want to directly start with combining the species (e.g., to choose different chemical abundances than before), set this to "no".
+This determines whether the first stage will be executed. If not, the program starts directly at the second stage. Set 'yes', when starting from HELIOS-K output and you need to produce the individual opacity files. Set 'no', if you already have the individual files and just want to produce a new mixed file.
 
-``path to HELIOS-K output``
+   ``format   [k-distribution, sampling]   (CL: Y)``
 
-Sets the path to the HELIOS-K output directory. This directory should include all the opacity files in the ''cbin'' Helios-K format. (The files can be in subdirectories.) This parameter is **only considered in the ktable setting**.
+HELIOS supports opacity tables in two formats: sampling and k-distribution. The k-distribution approach is more accurate when calculating the global energy budget of the atmosphere and the goal is finding the equilibrium T-P profile. The opacity sampling approach allows for a higher resolution in wavelength than the k-distribution method for given hardware costs (because only 1 opacity value per wavelength point instead of 20) and thus in order to generate a planetary spectrum with many spectral points 'sampling' is the way to go.
 
-``path to sampling species file``
+   ``HELIOS-K output format   [binary, text]   (CL: Y)``
 
-Sets the path to the file which lists all the species and their respective paths for the sampling calculation. This is usually located somewhere in the main HELIOS-K output directory. The first column is the name of the species. In theory the name can be chosen freely, but it is recommended to choose the usual chemistry notation. Also, the name of the files is used later on again to pick the correct files for each species. This parameter is **only considered in the ''sampling'' setting**.
+The format of the HELIOS-K output files. The files from the online database come in binary format (to reduce their size). Per default though, HELIOS-K generates output files in text (ASCII) format. Files of different format cannot be mixed in the same directory.
 
-``HELIOS-K output format (binary, text)``
+   ``path to individual species file   [file path]   (CL: Y)``
 
-Sets the format of the HELIOS-K output files. Possible are either binary files or text/ASCII files. Usually, the pre-calculated output of HELIOS-K comes in binary format. If using HELIOS-K yourself, the files will most probably be text files. If you are not sure, simply look at the ending of the HELIOS-K output files. Is it ``.bin`` (= binary) or ``.dat`` (= text)?
+Path to the file which lists all species to be used for the production of individual opacity files (= first stage calculation).
 
-``sampling wavelength grid (resolution, limits in micron [lower, upper])``
+   ``grid format   [fixed_resolution, file]   (CL: Y)``
 
-Sets the wavelength grid to be used for the opacity sampling process. Three numbers specify the grid. The first number sets the sampling resolution in wavelength. The second and third numbers give the lower and upper wavelength limits in micron, respectively. Usually I use something around "R=3000" with a lower limit at 0.34 micron and a upper limit at 200 micron.
+For the opacities and the HELIOS calculation, either a fixed resolution grid in wavelength can be used, or specific wavelengths can be read from a file. Fixed resolution means that R = delta_lambda / lambda is constant throughout the grid.
 
-``directory with individual files``
+   ``wavelength grid   [resolution, lower limit, upper limit [micron]]   (CL: N)``
 
-This directory will be created and the files generated in Stage 1 will be put into here.
+This defines the wavelength grid to be used. First parameter is the resolution, R = delta_lambda / lambda, followed by the lower and upper wavelength limits of the grid. The limits are in micron. Note that if opacity sampling is used those limits set the first and last wavelength points. If the k-distribution method is used, those limits set the lower interface of the first wavelength bin and the upper interface of the last bin. *This parameter is only used if grid format is set to 'fixed_resolution'.*
 
-``path to final species file``
+   ``path to grid file   [path to file]   (CL: Y)``
 
-Sets the path to the file, which contains all the species to be included in the final mixed table. The format of this file is explained further below.
+Path to the a file with the wavelength grid. The format is a text file with a single column listing the wavelengths in cm(!). Note that if opacity sampling is used, the listed values directly set the wavelength points. However, if the k-distribution method is used, the listed values set the wavelength bin interfaces. *This parameter is only used if grid format is set to 'file'.*
 
-``path to FastChem output``
+   ``number of Gaussian points   [number > 1]   (CL: Y)``
 
-Sets the path to the FastChem output. This setting is optional and only needed if FastChem is used to pre-calculate the equilibrium abundances of the species. In the current version the output needs to come in two files named ``chem_high.dat`` and ``chem_low.dat``, containing the chemical abundance for a temperature pressure grid, whereas the first file contains the higher temperature regime and the second one the lower temperatures. The grid structure [p + n_p * t] is used. Check out the example file included in the input/chemistry subdirectory for reference. (This will be made more user-friendly in a future update.) As example, I use a grid in P=[1e-6,1e3,Delta_P=1/3dex] and T=[100, 6000, Delta_T=50] for my own calculations.
+Number of Gaussian points in a wavelength bin. Important: currently the RO method is *hard-coded to require 20 points*. If not using RO, this number can be anything > 1.
 
-``final output (mixed table) directory``
+   ``directory with individual files   [directory path]   (CL: Y)``
 
-Sets the path to the final mixed opacity table and corresponding temporary and info files.
+This sets the directory where the individual opacity files are written, i.e., the output directory of the first stage calculation.
 
-Note: Many temporary files are being generated to save intermediate calculations, e.g., interpolated opacity files (files with an "ip" in their name). This allows for a speed-up the next time the same species are used for a calculation. These temporary files can be safely deleted, should they use up too much storage space.
+Second Stage
+------------
 
-**EXPERIMENTAL / DANGER ZONE**
+   ``mixed table production   [yes, no]   (CL: Y)``
 
-There are experimental options, which are under testing for functionality. For the moment these parameters should be left alone. *Beware of the danger zone!*
+Determines whether the second stage calculation will be executed. If set to 'no', the ktable program stops after producing the individual opacity files without combining them.
 
-Sample Files for Reference
---------------------------
+   ``path to final species file   [file path]   (CL: Y)``
+
+This sets the path to the file which lists all the species to be included in the final, combined opacity table.
+
+   ``path to FastChem output   [directory path]   (CL: Y)``
+
+This sets the path to the directory with the FastChem output files. Only necessary if at least one species obtains its mixing ratio from FastChem.
+
+   ``mixed table output directory   [directory path]   (CL: Y)``
+
+This sets the path to the directory where the final, mixed opacity table is written. If all goes well and the whole ktable program runs through,  either ``mixed_opac_kdistr.h5`` or ``mixed_opac_sampling.h5`` will appear in that directory, depending on the opacity format used.
+
+   ``units of mixed opacity table   [CGS, MKS]   (CL: Y)``
+
+This sets the units of the opacity in the final, mixed table. For HELIOS, always use 'CGS'. However, if using the table for another RT code that employs MKS units, there is an option for that too.
+
+Input Files Format
+==================
 
 The installation comes with reference examples for all the required input files.
 
-final species file
-------------------
+Individual Species File
+-----------------------
 
-The format for this file is as follows (see also figure). Each species can be listed individually in no particular order. The listed name has to match the name of the individual opacity files. For absorbing species (species that possess opacity files) the "absorbing" option should be set to "yes". If Rayleigh scattering cross-sections for a given species should be included, "scattering" has to be set to "yes". At the moment the following Rayleigh cross-sections are included (plus references):
+There is an example file ``ktable/input/individual_species.dat`` included in the HELIOS installation (just make a copy of the file and modify it for your own purpose.)
 
-* H2: Cox 2000
-* He: Sneep & Ubachs 2005, Thalman et al. 2014
-* H: Lee & Kim 2004
-* H2O: Murphy 1977, Wagner & Kretzschmar 2008
-* CO: Sneep & Ubachs 2005
-* CO2: Sneep & Ubachs 2005, Thalman et al. 2014
-* O2: Sneep & Ubachs 2005, Thalman et al. 2014
-* N2: Sneep & Ubachs 2005, Thalman et al. 2014
+For each species that is to be processed (= an opacity file is produced), one first sets the name and then the respective path to the directory with the HELIOS--K output files. The name of the species can be set quite arbitrarily, as it simply determines how the output files are named.
 
-Next, we set the volume mixing ratio. They can be either read in from FastChem output files (set "FastChem") or be given as numbers explicitely (same column). If FastChem is used the next column is important as it sets the name of this molecule as defined in FastChem. For constant mixing ratios this column can be ignored. Lastly, the mass for each species is needed in order to allow the code to convert between volume and mass mixing ratios.
+.. _final-species-file:
 
-Special are CIA opacities. They work as any other species, but require two entries for the mixing ratio (if given as number) and two entries for the Fastchem name separated by a "&". For the mass, the value of the *second* collision partner should be used. E.g., for CIA H2-He this is the mass of He, for CIA O2-N2 this would be the mass of N2, etc.
+Final Species File
+------------------ 
 
-.. figure:: ../figures/sample_final_species.png
-   :scale: 70 %
-   :alt: map to buried treasure
+There is an example file ``ktable/input/final_species.dat`` included in the HELIOS installation (just make a copy the file and modify for your own purpose.).
 
-   *Figure: final species file format*
+First, the chosen name in this file needs to coincide with the name of the opacity file for this species. Then, one sets whether this species should be included as absorber of scatterer in the final table. Lastly, one needs to choose how the mixing ratio is included. Two options exist, 'FastChem' and a numerical value. If 'FastChem' is set, the FastChem output is read (see next parameter which sets the file path for that). If a number is inserted, a constant mixing ratio of this value is assumed. 
+
+For CIA opacity, if setting a constant mixing ratio, one needs to include a value for each collision pair and so two numbers have to be given, separated by a '&'. For instance, 0.9&0.1 is a valid input.
+
+Note that **each species in the species file has to exist in the species database** ``source/species_database.py`` because the properties are pulled from there. Most of the common species should already be pre-defined. If an error is returned that there is no such entry in ``species_database.py`` a new one has to be manually created. When creating a new entry just follow the format of the existing ones. The FastChem name can be looked up in the FastChem output file. The weight parameter is the species' molecular weight in AMU (or the molar weight in g). For CIA pairs, it is the weight of the secondly-listed molecule.
+
+Not every species can be included as scatterer. At the moment, the Rayleigh cross-sections for the following species are included (plus references):
+
+   * H2: Cox 2000
+   * He: Sneep & Ubachs 2005, Thalman et al. 2014
+   * H: Lee & Kim 2004
+   * H2O: Murphy 1977, Wagner & Kretzschmar 2008
+   * CO: Sneep & Ubachs 2005
+   * CO2: Sneep & Ubachs 2005, Thalman et al. 2014
+   * O2: Sneep & Ubachs 2005, Thalman et al. 2014
+   * N2: Sneep & Ubachs 2005, Thalman et al. 2014
+   * e--: Thomson scattering cross-section from 'astropy.constants' package.
 
 
-ktable vs sampling
-------------------
+Lastly, the bound-free and free-free absorption of H- and the free-free absorption of He- can be included. If including H-, the free-free and bound-free contributions have to be listed as two separate species, i.e., H-_ff and H-_bf. If using constant mixing ratios, the mixing ratio of H- is set for H-_bf (because the electron is bound = H-) and the mixing ratios of e- and H are set for H-_ff (because here the e- is unbound around a neutral H) separated by a '&', analogously to the CIA pairs.
 
-**ktable**
+No additional files have to be provided when including H-_ff, H-_bf and He- because these opacities are calculated directly using the approximations from `John 1988 <https://ui.adsabs.harvard.edu/abs/1988A%2526A...193..189J>`_ and `John 1994 <https://ui.adsabs.harvard.edu/abs/1994MNRAS.269..871J>`_. Note that there is a typo in John 1988. The value for alpha, in the line underneath Eq. (3), should be 1.439e4 instead of 1.439e8. (Actually, this value is never used here because the mixing ratio of H- is taken from FastChem, which is more accurate than the Saha equation approximation of John 1988.)
 
-If the first parameter in ``param_ktable.dat`` is set to "ktable", the program will calculate the k-distribution tables for the individual species, using the Chebyshev coefficients from the HELIOS-K output. For this it needs to access the "cbin" files containing the Chebyshev coefficients. It will generature individual opacity containers with 20 Gaussian points per wavelength bin. This is required in HELIOS. The number of wavelength bins is given by the resolution of the "cbin" files. See the HELIOS-K ReadMe for more info on those. The species considered in this process are simply the species present in the directory (or subdirectories) set in the parameter file.
+.. _ktable-code-structure:
 
-.. figure:: ../figures/cbin_files.png
-   :scale: 60 %
-   :alt: map to buried treasure
+ktable Code Structure
+=====================
 
-   *Figure: cbin files produced by HELIOS-K.*
+In the main directory there is:
 
-**sampling**
+- ``ktable.py``: the main run file
 
-If the first parameter in ``param_ktable.dat`` is set to "sampling", the program will sample the opacity output from HELIOS-K at the wavelength grid, as specified in the ``param_ktable.dat`` file and convert it into individual molecular opacity files. The species to be sampled and where to find them is set the "sampling species file".
+- ``param_ktable.dat``: main parameter file. This file can be renamed and, if renamed, included via the command-line option '-parameter_file'.
 
-.. figure:: ../figures/Opacity3.png
-   :scale: 60 %
-   :alt: map to buried treasure
+The ``source_ktable`` directory contains the source code with the files:
 
-   *Figure: Directory with pre-calculated opacity files from HELIOS-K. This is a good input for the opacity table generation using the ''sampling'' method. The ''_e2b'' directories should be used for any species.*
+- ``param.py``: reads the parameter file and command-line options
+
+- ``build_individual_opacities.py``: generates the individual opacity files from HELIOS-K output
+
+- ``combination.py``: interpolates the individual opacities, adds scattering, weights with the respective mixing ratios and combines everything to a final, mixed opacity table
+
+- ``continuous.py``: calculates the continuous opacities of the H- and He- ions
+
+- ``rayleigh.py``: calculates the Rayleigh scattering cross sections for all included species
+
+- ``information.py``: writes a text file next to the final opacity table describing the contents and format.
+
+Lastly, input data and files are usually included in the ``input`` subdirectory, though all paths can be in the freely chosen in the parameter file.

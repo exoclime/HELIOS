@@ -1,6 +1,6 @@
 # ==============================================================================
 # This program generates the opacity table used in HELIOS.
-# Copyright (C) 2018 Matej Malik
+# Copyright (C) 2018 - 2022 Matej Malik
 #
 # ==============================================================================
 # This file is part of HELIOS.
@@ -20,14 +20,20 @@
 #     <http://www.gnu.org/licenses/>.
 # ==============================================================================
 
-from source import param as para
-from source import build_opac_ktable as bok
-from source import build_opac_sampling as bos
-from source import combination as comb
-from source import rayleigh as ray
-from source import continuous as cont
-from source import information as inf
-from source import condensation as condens
+import os
+import sys
+
+# including the Helios main directory into Python paths in order to read files from 'helios/source'
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(1, parentdir)
+
+from source_ktable import param as para
+from source_ktable import build_individual_opacities as bio
+from source_ktable import combination as comb
+from source_ktable import rayleigh as ray
+from source_ktable import continuous as cont
+from source_ktable import information as inf
 
 
 def main():
@@ -35,48 +41,33 @@ def main():
 
     # create objects of classes
     param = para.Param()
-    ktable_builder = bok.Production()
-    sampling_builder = bos.Production()
+    opacity_builder = bio.Production()
     comber = comb.Comb()
     scatter = ray.Rayleigh_scat()
     conti = cont.ContiClass()
-    cond = condens.Condense()
     info = inf.Info()
 
     # read in the parameter file
-    param.read_param_file()
+    param.read_param_file_and_command_line()
 
-    # generate ktables / downsample HELIOS-K output
+    # 1st stage -- generate opacity files for individual species
     if param.building == "yes":
 
-        if param.format == "ktable":
-            # ktable_builder.fix_exomol_name(param)  # in case the files have the wrong name one can use this script to fix that
-            ktable_builder.gen_ypoints()
-            ktable_builder.search_dir(param)
-            ktable_builder.get_parameters()
-            ktable_builder.resort()
-            ktable_builder.big_loop(param)
-            ktable_builder.write_names()
-            ktable_builder.success()
+        opacity_builder.read_individual_species_file(param)
+        opacity_builder.initialize_wavelength_grid(param)
+        opacity_builder.set_up_press_dict()
+        opacity_builder.big_loop(param)
+        opacity_builder.success()
 
-        elif param.format == "sampling":
+    # 2nd stage -- combine individual opacities weighted by their mixing ratio to mixed opacity table
+    if param.mixing == "yes":
 
-            sampling_builder.read_param_sampling(param)
-            sampling_builder.initialize_wavelength_grid(param)
-            sampling_builder.set_up_press_dict()
-            sampling_builder.big_loop(param)
-            sampling_builder.success()
+        comber.combine_all_species(param, scatter, conti)
+        comber.success()
+        # write information file
+        info.write(param)
 
-    # combine individual opacities and weight with their equilibrium abundances obtained from FastChem
-    # it starts with water (water is always necessary) and then adds more species
-    comber.combine_all_species(param, scatter, cond, conti)
-
-    comber.success()
-
-    # write information file
-    info.write(param)
-
-    print("\nDone! Production of k-tables went fine :)")
+    print("\nDone! The 'ktable' program finished successfully!")
 
 # run the whole thing
 main()

@@ -3,19 +3,19 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to HELIOS!
-==================
+Welcome to HELIOS v3.0
+======================
 
 On this page you find the documentation for HELIOS, the radiative transfer code for exoplanetary atmospheres. 
 
+This documentation has been **extensively revised** for the new version 3 of HELIOS. If you find any new errors or inaccuracies, please send them to *malik@umd.edu*.
+
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    sections/about
 
    sections/requirements
-
-   sections/software
 
    sections/tutorial
 
@@ -26,12 +26,6 @@ On this page you find the documentation for HELIOS, the radiative transfer code 
    sections/ktable
 
    sections/license
-
-   sections/acknowledgements
-
-   sections/code
-
-
 
 Indices and tables
 ==================

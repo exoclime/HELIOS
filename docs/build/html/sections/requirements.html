@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Requirements &#8212; HELIOS 2.0 documentation</title>
+    <title>Requirements &#8212; HELIOS 3.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -16,7 +16,7 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Software" href="software.html" />
+    <link rel="next" title="Tutorial" href="tutorial.html" />
     <link rel="prev" title="About" href="about.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -35,21 +35,21 @@
           <div class="body" role="main">
             
   <div class="section" id="requirements">
-<h1>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h1>
-<p>HELIOS was developed on a machine with Mac OS X 10.9 - 10.13 and also successfully tested on Ubuntu and Archlinux. It has not been tested to run on other operating systems, but should in principle work if the following requirements are met.</p>
+<h1><strong>Requirements</strong><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h1>
+<p>HELIOS was developed on a machine with Mac OS X 10.9 – 11.6 and also successfully tested on Ubuntu and Archlinux. It has not been tested to run on other operating systems (like Windows), but should in principle work if the following requirements are met.</p>
 <div class="section" id="hardware">
 <h2>Hardware<a class="headerlink" href="#hardware" title="Permalink to this headline">¶</a></h2>
-<p>HELIOS is a GPU-accelerated program developed with CUDA. It thus requires an NVIDIA graphics card (GPU) to operate on. Any relatively new GeForce or Tesla card should be sufficient.</p>
+<p>HELIOS is a GPU-accelerated software developed with parts written in CUDA. It thus requires an NVIDIA graphics card (GPU) to operate on. Any GeForce or Tesla card manufactured since 2013 and with 2 GB VRAM or more should suffice to run standard applications of HELIOS.</p>
 </div>
 <div class="section" id="cuda">
 <h2>CUDA<a class="headerlink" href="#cuda" title="Permalink to this headline">¶</a></h2>
 <p>CUDA is the NVIDIA API responsible for the communication between the graphics card (aka device) and the CPU (aka host). The software package consists of the core libraries, development utilities and the NVCC compiler to interpret C/C++ code. The CUDA toolkit can be downloaded from <a class="reference external" href="https://developer.nvidia.com/cuda-downloads">here</a>.</p>
-<p>HELIOS has been tested with CUDA 7.5 and 8.0. In principle, it should be compatible with any newer version.</p>
+<p>HELIOS has been tested with CUDA versions 7.x – 11.x and should, in principle, also be compatible with any newer version.</p>
 </div>
 <div class="section" id="python">
 <h2>Python<a class="headerlink" href="#python" title="Permalink to this headline">¶</a></h2>
 <p>HELIOS’s computational core is written in CUDA C++, but the user shell comes in Python modular format. To communicate between the host and the device the PyCUDA wrapper is used.</p>
-<p>The following Python packages are required.</p>
+<p>The following Python packages are required to run HELIOS.</p>
 <ul class="simple">
 <li><p>numpy</p></li>
 <li><p>scipy</p></li>
@@ -57,13 +57,14 @@
 <li><p>matplotlib</p></li>
 <li><p>h5py</p></li>
 <li><p>PyCUDA</p></li>
+<li><p>wget (to prepare stellar spectra yourself)</p></li>
 </ul>
-<p>Some of them may be already included in the python distribution. Otherwise they can be installed with the Python package manager pip. To install e.g. PyCUDA type:</p>
+<p>Some of them may be already included in the python distribution (e.g., Anaconda). Otherwise they can be installed with the Python package manager pip. To install, e.g., PyCUDA type:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pycuda</span>
 </pre></div>
 </div>
-<p>This may fail, if you don’t have admin permissions on the machine you are trying to install software. For this case, so-called <em>virtual environments</em> exist which embed your Python installation in a user-manageable frame. See e.g. <a class="reference external" href="https://docs.python-guide.org/dev/virtualenvs/">this</a> for a nice tutorial on that.</p>
-<p>Note that HELIOS has been tested with Python 3.5.x and 3.6.x. It may not be compatible with earlier versions. HELIOS does not run with Python 2.</p>
+<p>This may fail, if you don’t have admin permissions on the machine you are trying to install software. For this case, so-called <em>virtual environments</em> exist which embed your Python installation in a user-manageable ‘bubble’. See, e.g., <a class="reference external" href="https://docs.python.org/3/tutorial/venv.html">here</a>, <a class="reference external" href="https://realpython.com/python-virtual-environments-a-primer/">here</a> or <a class="reference external" href="https://docs.python-guide.org/dev/virtualenvs/">there</a> for tutorials on virtual environments.</p>
+<p>Note that HELIOS has been tested with Python versions 3.5.x – 3.8.x. It should be compatible with newer versions but may not be compatible with earlier versions. <strong>HELIOS does not run with Python 2.</strong></p>
 </div>
 </div>
 
@@ -99,21 +100,18 @@
 
 <h3>Navigation</h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Requirements</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html"><strong>About</strong></a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><strong>Requirements</strong></a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#hardware">Hardware</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#cuda">CUDA</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#python">Python</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="software.html">Software</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter File</a></li>
-<li class="toctree-l1"><a class="reference internal" href="structure.html">Structure &amp; I/O</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ktable.html">k-Table Generator</a></li>
-<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
-<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code.html">Code Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html"><strong>Tutorial</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html"><strong>Input Parameters</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html"><strong>Code Structure</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="ktable.html"><strong>ktable Program</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html"><strong>License</strong></a></li>
 </ul>
 
 
@@ -132,7 +130,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2018, Matej Malik.
+      &copy;2018-2022, Matej Malik.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>

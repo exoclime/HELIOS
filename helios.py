@@ -1,6 +1,6 @@
 # ==============================================================================
 # This is the main file of HELIOS.
-# Copyright (C) 2018 Matej Malik
+# Copyright (C) 2018 - 2022 Matej Malik
 #
 # To run HELIOS simply execute this file with Python 3.x
 # ==============================================================================
@@ -29,73 +29,76 @@ from source import write
 from source import computation as comp
 from source import realtime_plotting as rt_plot
 from source import clouds
-from source import Vcoupling_modification as Vmod
+from source import additional_heating as add_heat
 
 
 def run_helios():
-    """ runs a normal HELIOS run with standard I/O """
+    """ a full HELIOS run """
 
     reader = read.Read()
     keeper = quant.Store()
     computer = comp.Compute()
     writer = write.Write()
     plotter = rt_plot.Plot()
-    cloudy = clouds.Cloud()
-    Vmodder = Vmod.Vcoupling()
+    fogger = clouds.Cloud()
 
-    # read input files and do preliminary calculations
-    reader.read_param_file_and_command_line(keeper, Vmodder)
+    # read input files and do preliminary calculations, like setting up the grid, etc.
+    reader.read_param_file_and_command_line(keeper, fogger)
 
-    if Vmodder.V_coupling == 1:
-        Vmodder.read_or_create_iter_count()
-        Vmodder.read_species()
-        Vmodder.read_molecular_opacities(keeper)
-        Vmodder.read_layer_molecular_abundance(keeper)
-    reader.read_opac_file(keeper, Vmodder)
-    reader.read_kappa_table(keeper)
-    cloudy.main_cloud_method(keeper)
+    if keeper.opacity_mixing == "premixed":
+        reader.load_premixed_opacity_table(keeper)
+
+    elif keeper.opacity_mixing == "on-the-fly":
+        reader.read_species_file(keeper)
+        reader.read_species_opacities(keeper)
+        reader.read_species_scat_cross_sections(keeper)
+        reader.read_species_mixing_ratios(keeper)
+
+
+    reader.read_kappa_table_or_use_constant_kappa(keeper)
+    reader.read_or_fill_surf_albedo_array(keeper)
     keeper.dimensions()
     reader.read_star(keeper)
     hsfunc.planet_param(keeper, reader)
     hsfunc.set_up_numerical_parameters(keeper)
     hsfunc.construct_grid(keeper)
-    hsfunc.initial_temp(keeper, reader, Vmodder)
-    if keeper.approx_f == 1:
+    hsfunc.initial_temp(keeper, reader)
+
+    if keeper.approx_f == 1 and keeper.planet_type == "rocky":
         hsfunc.approx_f_from_formula(keeper, reader)
+
     hsfunc.calc_F_intern(keeper)
+    add_heat.load_heating_terms_or_not(keeper)
 
+    fogger.cloud_pre_processing(keeper)
 
-    # get ready for GPU computations
-    keeper.create_zero_arrays(Vmodder)
-    keeper.convert_input_list_to_array(Vmodder)
-    keeper.copy_host_to_device(Vmodder)
-    keeper.allocate_on_device(Vmodder)
+    # create, convert and copy arrays to be used in the GPU computations
+    keeper.create_zero_arrays()
+    keeper.convert_input_list_to_array()
+    keeper.copy_host_to_device()
+    keeper.allocate_on_device()
 
-    # conduct the GPU core computations
+    # conduct core computations on the GPU
     computer.construct_planck_table(keeper)
     computer.correct_incident_energy(keeper)
 
-    if Vmodder.V_coupling == 1:
-        if Vmodder.V_iter_nr > 0:
-            Vmodder.interpolate_f_molecule_and_meanmolmass(keeper)
-            Vmodder.combine_to_scat_cross(keeper)
+    computer.radiation_loop(keeper, writer, reader, plotter)
 
-    computer.radiation_loop(keeper, writer, reader, plotter, Vmodder)
-
-    computer.convection_loop(keeper, writer, reader, plotter, Vmodder)
+    computer.convection_loop(keeper, writer, reader, plotter)
 
     computer.integrate_optdepth_transmission(keeper)
     computer.calculate_contribution_function(keeper)
-    computer.interpolate_entropy(keeper)
-    computer.interpolate_phase_state(keeper)
+    if keeper.convection == 1:
+        computer.interpolate_entropy(keeper)
+        computer.interpolate_phase_state(keeper)
     computer.calculate_mean_opacities(keeper)
     computer.integrate_beamflux(keeper)
 
-    # copy everything back to host and write to files
+    # copy everything from the GPU back to host and write output quantities to files
     keeper.copy_device_to_host()
     hsfunc.calculate_conv_flux(keeper)
     hsfunc.calc_F_ratio(keeper)
-    writer.write_info(keeper, reader, Vmodder)
+    writer.create_output_dir_and_copy_param_file(reader, keeper)
     writer.write_colmass_mu_cp_entropy(keeper, reader)
     writer.write_integrated_flux(keeper, reader)
     writer.write_downward_spectral_flux(keeper, reader)
@@ -107,28 +110,31 @@ def run_helios():
     writer.write_tp(keeper, reader)
     writer.write_tp_cut(keeper, reader)
     writer.write_opacities(keeper, reader)
+    writer.write_cloud_mixing_ratio(keeper, reader)
+    writer.write_cloud_opacities(keeper, reader)
     writer.write_Rayleigh_cross_sections(keeper, reader)
     writer.write_cloud_scat_cross_sections(keeper, reader)
-    writer.write_cloud_absorption(keeper, reader)
     writer.write_g_0(keeper, reader)
     writer.write_transmission(keeper, reader)
     writer.write_opt_depth(keeper, reader)
+    writer.write_cloud_opt_depth(keeper, reader)
     writer.write_trans_weight_function(keeper, reader)
     writer.write_contribution_function(keeper, reader)
     writer.write_mean_extinction(keeper, reader)
     writer.write_flux_ratio_only(keeper, reader)
     writer.write_phase_state(keeper, reader)
+    writer.write_surface_albedo(keeper, reader)
+    writer.write_criterion_warning_file(keeper, reader)
 
-    if Vmodder.V_coupling == 1:
-        Vmodder.write_tp_VULCAN(keeper)
+    if keeper.coupling == 1:
+        writer.write_tp_for_coupling(keeper, reader)
+        hsfunc.calculate_coupling_convergence(keeper, reader)
+
     if keeper.approx_f == 1:
         hsfunc.calc_tau_lw_sw(keeper, reader)
 
     # prints the success message - yay!
     hsfunc.success_message(keeper)
-
-    if Vmodder.V_coupling == 1:
-        Vmodder.test_coupling_convergence(keeper)
 
 
 def main():

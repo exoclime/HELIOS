@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>About &#8212; HELIOS 2.0 documentation</title>
+    <title>About &#8212; HELIOS 3.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Requirements" href="requirements.html" />
-    <link rel="prev" title="Welcome to HELIOS!" href="../index.html" />
+    <link rel="prev" title="Welcome to HELIOS v3.0" href="../index.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -35,12 +35,11 @@
           <div class="body" role="main">
             
   <div class="section" id="about">
-<h1>About<a class="headerlink" href="#about" title="Permalink to this headline">¶</a></h1>
-<p>HELIOS is an open-source radiative transfer code, which is constructed for studying exoplanetary atmospheres in their full variety. The model atmospheres are one-dimensional and plane-parallel, and the equation of radiative transfer is solved in the hemispheric two-stream approximation with non-isotropic scattering. For given opacities and planetary parameters, HELIOS finds the atmospheric temperature profile in radiative-convective equilibrium and the corresponding planetary emission spectrum.</p>
-<p>HELIOS is part of the Exoclimes Simulation Platform (<a class="reference external" href="http://www.exoclime.org">ESP</a>).</p>
-<p>The optimal application of HELIOS is in combination with the equilibrium chemistry solver <a class="reference external" href="https://github.com/exoclime/FASTCHEM/">FASTCHEM</a> and the opacity calculator <a class="reference external" href="https://github.com/exoclime/HELIOS-K/">HELIOS-K</a>. They may be used to compute the equilibrium chemical abundances and the opacities, respectively. The opacity table is constructed with a small k-table generator, included in the HELIOS package.</p>
-<p>Do not worry! There are sample files included in the installation package as reference that allow HELIOS to run even without those dependencies.</p>
-<p>If you use HELIOS for your own work, please cite its two method papers: <a class="reference external" href="http://adsabs.harvard.edu/abs/2017AJ....153...56M">Malik et al. 2017</a> and <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2019AJ....157..170M/">Malik et al. 2019</a>.</p>
+<h1><strong>About</strong><a class="headerlink" href="#about" title="Permalink to this headline">¶</a></h1>
+<p>HELIOS is an open-source radiative transfer code, which is designed to study exoplanetary atmospheres in their full variety. The model atmospheres are one-dimensional and plane-parallel, and the equation of radiative transfer is solved in the hemispheric two-stream approximation with non-isotropic, multiple scattering. For given opacities and planetary parameters, HELIOS finds the atmospheric temperature profile in radiative-convective equilibrium and the corresponding planetary emission spectrum. Version 3 of the code now also has the option to include a solid surface with a non-gray albedo, calculating the surface temperature in equilibrium and the corresponding surface spectrum.</p>
+<p>HELIOS is part of the Exoclimes Simulation Platform (<a class="reference external" href="http://www.exoclime.org">ESP</a>) and is designed to be used together with the equilibrium chemistry solver <a class="reference external" href="https://github.com/exoclime/FASTCHEM/">FASTCHEM</a> and the opacity calculator <a class="reference external" href="https://github.com/exoclime/HELIOS-K/">HELIOS-K</a>, both also part of the <a class="reference external" href="http://www.exoclime.org">ESP</a>. Those codes compute the equilibrium chemical abundances and the opacities, respectively, both crucial ingredients for atmospheric radiative transfer modeling. It is possible to use chemistry and opacity data from other sources, but then the file format needs to be adjusted as HELIOS accepts only a certain kind of format for the input files. The final premixed opacity table (or individual tables for molecular opacities) to be used in HELIOS can be generated with the ktable program, included in the HELIOS package.</p>
+<p>Note that there are sample files included in the installation package as reference to help get started without having to install and run a handful of different codes.</p>
+<p>If you use HELIOS for your own work, please cite its two core method papers: <a class="reference external" href="http://adsabs.harvard.edu/abs/2017AJ....153...56M">Malik et al. (2017)</a> and <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2019AJ....157..170M/">Malik et al. (2019a)</a>. If you use the solid surface, please also cite the two papers describing the surface implementation: <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2019ApJ...886..142M">Malik et al. (2019b)</a> and <a class="reference external" href="https://arxiv.org/abs/2207.08889">Whittaker et al. (2022)</a>.</p>
 <p>Any questions, issues or bug reports are appreciated and can be sent to <em>malik&#64;umd.edu</em>.</p>
 <p>Thank you for considering HELIOS!</p>
 </div>
@@ -77,16 +76,13 @@
 
 <h3>Navigation</h3>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">About</a></li>
-<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="software.html">Software</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter File</a></li>
-<li class="toctree-l1"><a class="reference internal" href="structure.html">Structure &amp; I/O</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ktable.html">k-Table Generator</a></li>
-<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
-<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code.html">Code Reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><strong>About</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html"><strong>Requirements</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html"><strong>Tutorial</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html"><strong>Input Parameters</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html"><strong>Code Structure</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="ktable.html"><strong>ktable Program</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html"><strong>License</strong></a></li>
 </ul>
 
 
@@ -105,7 +101,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2018, Matej Malik.
+      &copy;2018-2022, Matej Malik.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>

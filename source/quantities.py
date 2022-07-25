@@ -1,7 +1,7 @@
 # ==============================================================================
 # Module for storing all the necessary quantities like parameters,
 # arrays, input & output data, etc.
-# Copyright (C) 2018 Matej Malik
+# Copyright (C) 2018 - 2022 Matej Malik
 # ==============================================================================
 # This file is part of HELIOS.
 #
@@ -27,7 +27,7 @@ import pycuda.gpuarray as gpuarray
 
 
 class Store(object):
-    """ class that stores parameters, quantities, arrays, etc., used in the HELIOS code"""
+    """ class that stores parameters, quantities, arrays, etc., used in the HELIOS code """
 
     def __init__(self):
 
@@ -40,10 +40,9 @@ class Store(object):
         self.p_toa = None
         self.p_boa = None
         self.singlewalk = None
-        self.varying_tstep = None
-        self.tstep = None
         self.scat = None
         self.diffusivity = None
+        self.convection = None
         self.epsi = None
         self.epsi2 = None
         self.f_factor = None
@@ -64,7 +63,6 @@ class Store(object):
         self.real_star = np.int32(0)
         self.name = None
         self.foreplay = None
-        self.fake_opac = None
         self.realtime_plot = None
         self.prec = None
         self.fl_prec = None
@@ -82,16 +80,12 @@ class Store(object):
         self.dir_angle = None
         self.mu_star = None
         self.w_0_limit = None
+        self.w_0_scat_limit = None
         self.delta_tau_limit = None
-        self.local_limit_rad_iter = None
+        self.rad_convergence_limit = None
         self.global_limit = None
         self.n_plot = None
         self.energy_correction = None
-        self.clouds = None
-        self.cloud_path = None
-        self.cloud_opac_tot = None
-        self.cloud_press = None
-        self.cloud_width = None
         self.star_corr_factor = np.int32(1)
         self.input_dampara = None
         self.dampara = None
@@ -100,19 +94,40 @@ class Store(object):
         self.smooth = None
         self.geom_zenith_corr = None
         self.scat_corr = None
-        self.kappa_manual_value = None
-        self.surf_albedo = None
-        self.T_below = 0  # T_below is either the surface temperature for rocky planets or the below grid temperature for gas planets
+        self.input_kappa_value = None
         self.approx_f = None
         self.tau_lw = 1
         self.planet_type = None
         self.F_sens = 0
         self.debug = None
+        self.kappa_file_format = np.int32(0)
         self.i2s_transition = None
-        # number of pre-tabulated temperature values for the planck table
-        self.plancktable_dim = np.int32(8000)
-        # temperature step for the planck table. e.g. dim = 10000 and step = 2 will give a table from 1 K to 19999 K in 2 K steps
-        self.plancktable_step = np.int32(2)
+        self.flux_calc_method = None
+        self.relaxed_criterion_trigger = 0
+        self.clouds = None
+        self.add_heating = None
+        self.add_heating_path = None
+        self.add_heating_file_header_lines = None
+        self.add_heating_file_press_name = None
+        self.add_heating_file_press_unit = None
+        self.add_heating_file_data_name = None
+        self.add_heating_file_data_conv_factor = None
+        self.no_atmo_mode = np.int32(0)
+        self.physical_tstep = None
+        self.runtime_limit = None
+        self.force_start_tp_from_file = None
+        self.plancktable_dim = None
+        self.plancktable_step = None
+        self.kcoeff_mixing = None
+        self.opacity_mixing = None
+        self.coupling = None
+        self.coupling_full_output = None
+        self.coupling_speed_up = None
+        self.coupling_iter_nr = None
+        self.coupl_tp_write_interval = None
+        self.coupl_convergence_limit = None
+        self.max_nr_iterations = None
+
 
         # arrays/lists exclusively used on the CPU
         self.T_restart = []
@@ -121,6 +136,11 @@ class Store(object):
         self.F_ratio = []
         self.marked_red = None
         self.converged = None
+        self.add_heat_dens = None
+        self.f_all_clouds_lay = None
+        self.f_all_clouds_int = None
+        self.species_list = []
+        self.crit_relaxation_numbers = None
 
         # input arrays to be copied CPU --> GPU
         # these need to be converted from lists to np.arrays of correct data format
@@ -143,18 +163,10 @@ class Store(object):
         self.dev_entr_temp = None
         self.entr_press = []
         self.dev_entr_press = None
-        self.entr_kappa = []
-        self.dev_entr_kappa = None
-        self.entr_c_p = []
-        self.dev_entr_c_p = None
-        self.entr_phase_number = []
-        self.dev_entr_phase_number = None
-        self.entr_entropy = []
-        self.dev_entr_entropy = None
         self.opac_k = None
         self.dev_opac_k = None
-        self.opac_y = None
-        self.dev_opac_y = None
+        self.gauss_y = None
+        self.dev_gauss_y = None
         self.gauss_weight = None
         self.dev_gauss_weight = None
         self.opac_wave = None
@@ -167,108 +179,39 @@ class Store(object):
         self.dev_opac_scat_cross = None
         self.opac_meanmass = None
         self.dev_opac_meanmass = None
-        self.opac_kappa = []
-        self.dev_opac_kappa = None
-        self.opac_entropy = []
-        self.dev_opac_entropy = None
-        self.starflux = []
+        self.entr_kappa = []
+        self.dev_entr_kappa = None
+        self.entr_c_p = []
+        self.dev_entr_c_p = None
+        self.entr_phase_number = []
+        self.dev_entr_phase_number = None
+        self.entr_entropy = []
+        self.dev_entr_entropy = None
+        self.starflux = None
         self.dev_starflux = None
-        self.scat_cross_cloud = []
-        self.dev_scat_cross_cloud = None
-        self.abs_cross_cloud = []
-        self.dev_abs_cross_cloud = None
-        self.g_0_cloud = []
-        self.dev_g_0_cloud = None
-        self.opac_wg_lay = []  # only used for the chem type calculation
-        self.opac_k_h2o = None
-        self.dev_opac_k_h2o = None
-        self.opac_k_co2 = None
-        self.dev_opac_k_co2 = None
-        self.opac_k_co = None
-        self.dev_opac_k_co = None
-        self.opac_k_ch4 = None
-        self.dev_opac_k_ch4 = None
-        self.opac_k_nh3 = None
-        self.dev_opac_k_nh3 = None
-        self.opac_k_hcn = None
-        self.dev_opac_k_hcn = None
-        self.opac_k_c2h2 = None
-        self.dev_opac_k_c2h2 = None
-        self.opac_k_tio = None
-        self.dev_opac_k_tio = None
-        self.opac_k_vo = None
-        self.dev_opac_k_vo = None
-        self.opac_k_h2s = None
-        self.dev_opac_k_h2s = None
-        self.opac_k_na = None
-        self.dev_opac_k_na = None
-        self.opac_k_k = None
-        self.dev_opac_k_k = None
-        self.opac_k_cia_h2h2 = None
-        self.dev_opac_k_cia_h2h2 = None
-        self.opac_k_cia_h2he = None
-        self.dev_opac_k_cia_h2he = None
-        self.k_scat_cross = None
-        self.dev_k_scat_cross = None
-        self.f_h2o_tab = None
-        self.dev_f_h2o_tab = None
-        self.f_co2_tab = None
-        self.dev_f_co2_tab = None
-        self.f_co_tab = None
-        self.dev_f_co_tab = None
-        self.f_ch4_tab = None
-        self.dev_f_ch4_tab = None
-        self.f_nh3_tab = None
-        self.dev_f_nh3_tab = None
-        self.f_hcn_tab = None
-        self.dev_f_hcn_tab = None
-        self.f_h2s_tab = None
-        self.dev_f_h2s_tab = None
-        self.f_h_tab = None
-        self.dev_f_h_tab = None
-        self.f_h2_tab = None
-        self.dev_f_h2_tab = None
-        self.f_he_tab = None
-        self.dev_f_he_tab = None
-        self.f_c2h2_tab = None
-        self.dev_f_c2h2_tab = None
-        self.f_k_tab = None
-        self.dev_f_k_tab = None
-        self.f_na_tab = None
-        self.dev_f_na_tab = None
         self.conv_layer = None
         self.dev_conv_layer = None
+        self.surf_albedo = None
+        self.dev_surf_albedo = None
+        self.abs_cross_all_clouds_lay = None
+        self.dev_abs_cross_all_clouds_lay = None
+        self.abs_cross_all_clouds_int = None
+        self.dev_abs_cross_all_clouds_int = None
+        self.scat_cross_all_clouds_lay = None
+        self.dev_scat_cross_all_clouds_lay = None
+        self.scat_cross_all_clouds_int = None
+        self.dev_scat_cross_all_clouds_int = None
+        self.g_0_all_clouds_lay = None
+        self.dev_g_0_all_clouds_lay = None
+        self.g_0_all_clouds_int = None
+        self.dev_g_0_all_clouds_int = None
 
-        # only used by Vmod
-        self.f_h2o_lay = None
-        self.dev_f_h2o_lay = None
-        self.f_co2_lay = None
-        self.dev_f_co2_lay = None
-        self.f_co_lay = None
-        self.dev_f_co_lay = None
-        self.f_ch4_lay = None
-        self.dev_f_ch4_lay = None
-        self.f_nh3_lay = None
-        self.dev_f_nh3_lay = None
-        self.f_hcn_lay = None
-        self.dev_f_hcn_lay = None
-        self.f_c2h2_lay = None
-        self.dev_f_c2h2_lay = None
-        self.f_h2s_lay = None
-        self.dev_f_h2s_lay = None
-        self.f_h2_lay = None
-        self.dev_f_h2_lay = None
-        self.f_he_lay = None
-        self.dev_f_he_lay = None
-        self.f_na_lay = None
-        self.dev_f_na_lay = None
-        self.f_k_lay = None
-        self.dev_f_k_lay = None
-        self.f_tio_lay = None
-        self.dev_f_tio_lay = None
-        self.f_vo_lay = None
-        self.dev_f_vo_lay = None
-
+        # arrays to be filled with species data in the on-the-fly opacity mixing mode (i.e., CPU --> GPU)
+        self.dev_vmr_spec_lay = None
+        self.dev_vmr_spec_int = None
+        self.dev_opacity_spec_pretab = None
+        self.dev_scat_cross_spec_lay = None
+        self.dev_scat_cross_spec_int = None
 
         # arrays to be copied CPU --> GPU --> CPU
         # these are copied to GPU by "gpuarray" and copied back
@@ -300,6 +243,11 @@ class Store(object):
         self.opac_band_lay = None
         self.dev_opac_band_lay = None
         self.scat_cross_lay = None
+        self.dev_scat_cross_int = None
+        self.opac_wg_lay = None
+        self.dev_opac_wg_lay = None
+        self.opac_wg_int = None
+        self.dev_opac_wg_int = None
         self.dev_scat_cross_lay = None
         self.F_net = None
         self.dev_F_net = None
@@ -323,20 +271,14 @@ class Store(object):
         self.dev_trans_band = None
         self.meanmolmass_lay = None
         self.dev_meanmolmass_lay = None
+        self.meanmolmass_int = None
+        self.dev_meanmolmass_int = None
         self.entropy_lay = None
         self.dev_entropy_lay = None
         self.trans_weight_band = None
         self.dev_trans_weight_band = None
         self.contr_func_band = None
         self.dev_contr_func_band = None
-        self.cloud_opac_lay = None
-        self.dev_cloud_opac_lay = None
-        self.cloud_opac_int = None
-        self.dev_cloud_opac_int = None
-        self.cloud_scat_cross_lay = None
-        self.dev_cloud_scat_cross_lay = None
-        self.cloud_scat_cross_int = None
-        self.dev_cloud_scat_cross_int = None
         self.g_0_tot_lay = None
         self.dev_g_0_tot_lay = None
         self.g_0_tot_int = None
@@ -347,8 +289,16 @@ class Store(object):
         self.dev_z_lay = None
         self.phase_number_lay = None
         self.dev_phase_number_lay = None
-        self.test_arr = None
-        self.dev_test_arr = None
+        self.T_int = None
+        self.dev_T_int = None
+        self.scat_trigger = None
+        self.dev_scat_trigger = None
+        self.delta_tau_all_clouds = None
+        self.dev_delta_tau_all_clouds = None
+        self.F_add_heat_lay = None
+        self.dev_F_add_heat_lay = None
+        self.F_add_heat_sum = None
+        self.dev_F_add_heat_sum = None
         self.F_smooth = None
         self.dev_F_smooth = None
         self.F_smooth_sum = None
@@ -356,14 +306,10 @@ class Store(object):
 
         # arrays exclusively used on the GPU
         # these are defined directly on the GPU and stay there. No copying required.
-        self.dev_T_int = None
         self.dev_delta_t_prefactor = None
         self.dev_T_store = None
         self.dev_planckband_grid = None
         self.dev_opac_int = None
-        self.dev_scat_cross_int = None
-        self.dev_opac_wg_lay = None
-        self.dev_opac_wg_int = None
         self.F_up_wg = None
         self.dev_F_up_wg = None
         self.F_down_wg = None
@@ -376,6 +322,7 @@ class Store(object):
         self.dev_Fc_up_wg = None
         self.Fc_dir_wg = None
         self.dev_Fc_dir_wg = None
+
         self.dev_trans_wg = None
         self.dev_trans_wg_upper = None
         self.dev_trans_wg_lower = None
@@ -401,77 +348,22 @@ class Store(object):
         self.dev_w_0 = None
         self.dev_w_0_upper = None
         self.dev_w_0_lower = None
-        self.dev_opac_h2o_wg_lay = None
-        self.dev_opac_co2_wg_lay = None
-        self.dev_opac_co_wg_lay = None
-        self.dev_opac_ch4_wg_lay = None
-        self.dev_opac_nh3_wg_lay = None
-        self.dev_opac_hcn_wg_lay = None
-        self.dev_opac_c2h2_wg_lay = None
-        self.dev_opac_tio_wg_lay = None
-        self.dev_opac_vo_wg_lay = None
-        self.dev_opac_h2s_wg_lay = None
-        self.dev_opac_na_wg_lay = None
-        self.dev_opac_k_wg_lay = None
-        self.dev_opac_cia_h2h2_wg_lay = None
-        self.dev_opac_cia_h2he_wg_lay = None
-        self.contr_h2o = None
-        self.dev_contr_h2o = None
-        self.contr_co2 = None
-        self.dev_contr_co2= None
-        self.contr_co = None
-        self.dev_contr_co = None
-        self.contr_ch4 = None
-        self.dev_contr_ch4 = None
-        self.contr_nh3 = None
-        self.dev_contr_nh3 = None
-        self.contr_hcn = None
-        self.dev_contr_hcn = None
-        self.contr_c2h2 = None
-        self.dev_contr_c2h2 = None
-        self.contr_h2s = None
-        self.dev_contr_h2s = None
-        self.contr_na = None
-        self.dev_contr_na = None
-        self.contr_k = None
-        self.dev_contr_k = None
-        self.contr_cia_h2h2 = None
-        self.dev_contr_cia_h2h2 = None
-        self.contr_cia_h2he = None
-        self.dev_contr_cia_h2he = None
-        self.contr_rayleigh = None
-        self.dev_contr_rayleigh = None
-        self.contr_cloud = None
-        self.dev_contr_cloud = None
+        self.dev_delta_tau_all_clouds_upper = None
+        self.dev_delta_tau_all_clouds_lower = None
 
-        # only used by Vmod
-        self.dev_f_h2o_int = None
-        self.dev_f_co2_int = None
-        self.dev_f_co_int = None
-        self.dev_f_ch4_int = None
-        self.dev_f_nh3_int = None
-        self.dev_f_hcn_int = None
-        self.dev_f_c2h2_int = None
-        self.dev_f_tio_int = None
-        self.dev_f_vo_int = None
-        self.dev_f_h2_int = None
-        self.dev_f_he_int = None
-        self.dev_opac_h2o_wg_int = None
-        self.dev_opac_co2_wg_int = None
-        self.dev_opac_co_wg_int = None
-        self.dev_opac_ch4_wg_int = None
-        self.dev_opac_nh3_wg_int = None
-        self.dev_opac_hcn_wg_int = None
-        self.dev_opac_c2h2_wg_int = None
-        self.dev_opac_tio_wg_int = None
-        self.dev_opac_vo_wg_int = None
-        self.dev_opac_h2s_wg_int = None
-        self.dev_opac_na_wg_int = None
-        self.dev_opac_k_wg_int = None
-        self.dev_opac_cia_h2h2_wg_int = None
-        self.dev_opac_cia_h2he_wg_int = None
+        # for on-the-fly opacity mixing mode (only GPU arrays)
+        self.dev_opac_spec_wg_lay = None
+        self.dev_opac_spec_wg_int = None
 
-    def convert_input_list_to_array(self, Vmod):
+        # for matrix method
+        self.dev_alpha = None
+        self.dev_beta = None
+        self.dev_source_term_down = None
+        self.dev_source_term_up = None
+        self.dev_c_prime = None
+        self.dev_d_prime = None
+
+    def convert_input_list_to_array(self):
         """ converts lists of quantities to arrays """
 
         self.p_lay = np.array(self.p_lay, self.fl_prec)
@@ -484,69 +376,26 @@ class Store(object):
         self.entr_temp = np.array(self.entr_temp, self.fl_prec)
         self.entr_press = np.array(self.entr_press, self.fl_prec)
         self.opac_k = np.array(self.opac_k, self.fl_prec)
-        self.opac_y = np.array(self.opac_y, self.fl_prec)
+        self.gauss_y = np.array(self.gauss_y, self.fl_prec)
         self.gauss_weight = np.array(self.gauss_weight, self.fl_prec)
         self.opac_wave = np.array(self.opac_wave, self.fl_prec)
         self.opac_deltawave = np.array(self.opac_deltawave, self.fl_prec)
         self.opac_interwave = np.array(self.opac_interwave, self.fl_prec)
         self.opac_scat_cross = np.array(self.opac_scat_cross, self.fl_prec)
         self.opac_meanmass = np.array(self.opac_meanmass, self.fl_prec)
-        self.opac_kappa = np.array(self.opac_kappa, self.fl_prec)
-        self.opac_entropy = np.array(self.opac_entropy, self.fl_prec)
         self.entr_kappa = np.array(self.entr_kappa, self.fl_prec)
         self.entr_c_p = np.array(self.entr_c_p, self.fl_prec)
         self.entr_entropy = np.array(self.entr_entropy, self.fl_prec)
         self.entr_phase_number = np.array(self.entr_phase_number, self.fl_prec)
         self.starflux = np.array(self.starflux, self.fl_prec)
         self.T_lay = np.array(self.T_lay, self.fl_prec)
-        self.abs_cross_cloud = np.array(self.abs_cross_cloud, self.fl_prec)
-        self.scat_cross_cloud = np.array(self.scat_cross_cloud, self.fl_prec)
-        self.g_0_cloud = np.array(self.g_0_cloud, self.fl_prec)
-
-        # used for Vmod and molecular transmission function
-        self.opac_k_h2o = np.array(self.opac_k_h2o, self.fl_prec)
-        self.opac_k_co2 = np.array(self.opac_k_co2, self.fl_prec)
-        self.opac_k_co = np.array(self.opac_k_co, self.fl_prec)
-        self.opac_k_ch4 = np.array(self.opac_k_ch4, self.fl_prec)
-        self.opac_k_nh3 = np.array(self.opac_k_nh3, self.fl_prec)
-        self.opac_k_hcn = np.array(self.opac_k_hcn, self.fl_prec)
-        self.opac_k_c2h2 = np.array(self.opac_k_c2h2, self.fl_prec)
-        self.opac_k_tio = np.array(self.opac_k_tio, self.fl_prec)
-        self.opac_k_vo = np.array(self.opac_k_vo, self.fl_prec)
-        self.opac_k_h2s = np.array(self.opac_k_h2s, self.fl_prec)
-        self.opac_k_na = np.array(self.opac_k_na, self.fl_prec)
-        self.opac_k_k = np.array(self.opac_k_k, self.fl_prec)
-        self.opac_k_cia_h2h2 = np.array(self.opac_k_cia_h2h2, self.fl_prec)
-        self.opac_k_cia_h2he = np.array(self.opac_k_cia_h2he, self.fl_prec)
-
-        if Vmod.V_iter_nr > 0:
-            self.f_h2o_lay = np.array(self.f_h2o_lay, self.fl_prec)
-            self.f_co2_lay = np.array(self.f_co2_lay, self.fl_prec)
-            self.f_co_lay = np.array(self.f_co_lay, self.fl_prec)
-            self.f_ch4_lay = np.array(self.f_ch4_lay, self.fl_prec)
-            self.f_nh3_lay = np.array(self.f_nh3_lay, self.fl_prec)
-            self.f_hcn_lay = np.array(self.f_hcn_lay, self.fl_prec)
-            self.f_c2h2_lay = np.array(self.f_c2h2_lay, self.fl_prec)
-            self.f_tio_lay = np.array(self.f_tio_lay, self.fl_prec)
-            self.f_vo_lay = np.array(self.f_vo_lay, self.fl_prec)
-            self.f_h2s_lay = np.array(self.f_h2s_lay, self.fl_prec)
-            self.f_h2_lay = np.array(self.f_h2_lay, self.fl_prec)
-            self.f_he_lay = np.array(self.f_he_lay, self.fl_prec)
-            self.meanmolmass_lay = np.array(self.meanmolmass_lay, self.fl_prec)
-
-        # DISCONTINUED --- used for molecular transmission function
-        # self.f_h2o_tab = np.array(self.f_h2o_tab, self.fl_prec)
-        # self.f_co2_tab = np.array(self.f_co2_tab, self.fl_prec)
-        # self.f_co_tab = np.array(self.f_co_tab, self.fl_prec)
-        # self.f_ch4_tab = np.array(self.f_ch4_tab, self.fl_prec)
-        # self.f_nh3_tab = np.array(self.f_nh3_tab, self.fl_prec)
-        # self.f_hcn_tab = np.array(self.f_hcn_tab, self.fl_prec)
-        # self.f_c2h2_tab = np.array(self.f_c2h2_tab, self.fl_prec)
-        # self.f_h2s_tab = np.array(self.f_h2s_tab, self.fl_prec)
-        # self.f_h2_tab = np.array(self.f_h2_tab, self.fl_prec)
-        # self.f_he_tab = np.array(self.f_he_tab, self.fl_prec)
-        # self.f_na_tab = np.array(self.f_na_tab, self.fl_prec)
-        # self.f_k_tab = np.array(self.f_k_tab, self.fl_prec)
+        self.surf_albedo = np.array(self.surf_albedo, self.fl_prec)
+        self.abs_cross_all_clouds_lay = np.array(self.abs_cross_all_clouds_lay, self.fl_prec)
+        self.abs_cross_all_clouds_int = np.array(self.abs_cross_all_clouds_int, self.fl_prec)
+        self.scat_cross_all_clouds_lay = np.array(self.scat_cross_all_clouds_lay, self.fl_prec)
+        self.scat_cross_all_clouds_int = np.array(self.scat_cross_all_clouds_int, self.fl_prec)
+        self.g_0_all_clouds_lay = np.array(self.g_0_all_clouds_lay, self.fl_prec)
+        self.g_0_all_clouds_int = np.array(self.g_0_all_clouds_int, self.fl_prec)
 
     def dimensions(self):
         """ create the correct dimensions of the grid from input parameters """
@@ -556,9 +405,10 @@ class Store(object):
         self.ninterface_nbin = np.int32(self.ninterface * self.nbin)
         self.ninterface_wg_nbin = np.int32(self.ninterface * self.ny * self.nbin)
         self.nlayer_wg_nbin = np.int32(self.ninterface * self.ny * self.nbin)
+        self.wg_nbin = np.int32(self.ny * self.nbin)
         self.nplanck_grid = np.int32((self.plancktable_dim+1) * self.nbin)
 
-    def create_zero_arrays(self, Vmod):
+    def create_zero_arrays(self):
         """ creates zero arrays of quantities to be used on the GPU with the correct length/dimension """
 
         self.F_up_band = np.zeros(self.ninterface_nbin, self.fl_prec)
@@ -574,9 +424,14 @@ class Store(object):
         self.F_down_tot = np.zeros(self.ninterface, self.fl_prec)
         self.F_dir_tot = np.zeros(self.ninterface, self.fl_prec)
         self.opac_band_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
+        self.opac_wg_lay = np.zeros(self.nlayer_wg_nbin, self.fl_prec)
+        self.opac_wg_int = np.zeros(self.ninterface_wg_nbin, self.fl_prec)
         self.scat_cross_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
+        self.scat_cross_int = np.zeros(self.ninterface_nbin, self.fl_prec)
         self.F_net = np.zeros(self.ninterface, self.fl_prec)
         self.F_net_diff = np.zeros(self.nlayer, self.fl_prec)
+        self.meanmolmass_lay = np.zeros(self.nlayer, self.fl_prec)
+        self.meanmolmass_int = np.zeros(self.ninterface, self.fl_prec)
         self.planckband_lay = np.zeros(self.nlayer_plus2_nbin, self.fl_prec)
         self.planckband_int = np.zeros(self.ninterface_nbin, self.fl_prec)
         self.planck_opac_T_pl = np.zeros(self.nlayer, self.fl_prec)
@@ -585,58 +440,27 @@ class Store(object):
         self.ross_opac_T_star = np.zeros(self.nlayer, self.fl_prec)
         self.trans_band = np.zeros(self.nlayer_nbin, self.fl_prec)
         self.delta_tau_band = np.zeros(self.nlayer_nbin, self.fl_prec)
-        self.abort = np.zeros(self.nlayer + 1, np.int32) # including "ghost layer" below
-        self.test_arr = np.zeros(self.nlayer, self.fl_prec)
+        self.abort = np.zeros(self.nlayer + 1, np.int32)  # "nlayer + 1", because we include surface "layer"
         self.entropy_lay = np.zeros(self.nlayer, self.fl_prec)
         self.phase_number_lay = np.zeros(self.nlayer, self.fl_prec)
         self.trans_weight_band = np.zeros(self.nlayer_nbin, self.fl_prec)
         self.contr_func_band = np.zeros(self.nlayer_nbin, self.fl_prec)
-        self.cloud_opac_lay = np.zeros(self.nlayer, self.fl_prec)
-        self.cloud_opac_int = np.zeros(self.ninterface, self.fl_prec)  # to have zeros when reading in later
-        self.cloud_scat_cross_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
-        self.cloud_scat_cross_int = np.zeros(self.ninterface_nbin, self.fl_prec)  # to have zeros when reading in later
         self.g_0_tot_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
-        self.g_0_tot_int = np.zeros(self.ninterface_nbin, self.fl_prec)  # to have zeros when reading in later
+        self.g_0_tot_int = np.zeros(self.ninterface_nbin, self.fl_prec)
         self.delta_z_lay = np.zeros(self.nlayer, self.fl_prec)
         self.z_lay = np.zeros(self.nlayer, self.fl_prec)
-        self.contr_h2o = np.zeros(self.nbin, self.fl_prec)
-        self.contr_co2 = np.zeros(self.nbin, self.fl_prec)
-        self.contr_co = np.zeros(self.nbin, self.fl_prec)
-        self.contr_ch4 = np.zeros(self.nbin, self.fl_prec)
-        self.contr_nh3 = np.zeros(self.nbin, self.fl_prec)
-        self.contr_hcn = np.zeros(self.nbin, self.fl_prec)
-        self.contr_c2h2 = np.zeros(self.nbin, self.fl_prec)
-        self.contr_h2s = np.zeros(self.nbin, self.fl_prec)
-        self.contr_na = np.zeros(self.nbin, self.fl_prec)
-        self.contr_k = np.zeros(self.nbin, self.fl_prec)
-        self.contr_cia_h2h2 = np.zeros(self.nbin, self.fl_prec)
-        self.contr_cia_h2he = np.zeros(self.nbin, self.fl_prec)
-        self.contr_rayleigh = np.zeros(self.nbin, self.fl_prec)
-        self.contr_cloud = np.zeros(self.nbin, self.fl_prec)
+        self.T_int = np.zeros(self.ninterface, self.fl_prec)
+        self.scat_trigger = np.zeros(self.wg_nbin, np.int32)
+        self.delta_tau_all_clouds = np.zeros(self.nlayer_nbin, self.fl_prec)
+        self.F_add_heat_lay = np.zeros(self.nlayer, self.fl_prec)
+        self.F_add_heat_sum = np.zeros(self.nlayer, self.fl_prec)
         self.F_smooth = np.zeros(self.nlayer, self.fl_prec)
         self.F_smooth_sum = np.zeros(self.nlayer, self.fl_prec)
-
-        if Vmod.V_iter_nr == 0: ## otherwise already filled with values
-            self.meanmolmass_lay = np.zeros(self.nlayer, self.fl_prec)
-            self.f_h2o_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
-            self.f_co2_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
-            self.f_co_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
-            self.f_ch4_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
-            self.f_nh3_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
-            self.f_hcn_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
-            self.f_c2h2_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
-            self.f_tio_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
-            self.f_vo_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
-            self.f_h2s_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
-            self.f_na_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
-            self.f_k_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
-            self.f_h2_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
-            self.f_he_lay = np.zeros(self.nlayer_nbin, self.fl_prec)
 
         # arrays to be used purely on the CPU
         self.conv_layer = np.zeros(self.nlayer + 1, np.int32)
 
-    def copy_host_to_device(self, Vmod):
+    def copy_host_to_device(self):
         """ copies relevant host arrays to device """
 
         # input arrays
@@ -649,78 +473,26 @@ class Store(object):
         self.dev_kpress = gpuarray.to_gpu(self.kpress)
         self.dev_entr_temp = gpuarray.to_gpu(self.entr_temp)
         self.dev_entr_press = gpuarray.to_gpu(self.entr_press)
-        self.dev_entr_kappa = gpuarray.to_gpu(self.entr_kappa)
-        self.dev_entr_c_p = gpuarray.to_gpu(self.entr_c_p)
-        self.dev_entr_phase_number = gpuarray.to_gpu(self.entr_phase_number)
-        self.dev_entr_entropy = gpuarray.to_gpu(self.entr_entropy)
-        self.dev_c_p_lay = gpuarray.to_gpu(self.c_p_lay)
-        self.dev_kappa_lay = gpuarray.to_gpu(self.kappa_lay)
-        self.dev_kappa_int = gpuarray.to_gpu(self.kappa_int)
         self.dev_opac_k = gpuarray.to_gpu(self.opac_k)
-        self.dev_opac_y = gpuarray.to_gpu(self.opac_y)
+        self.dev_gauss_y = gpuarray.to_gpu(self.gauss_y)
         self.dev_gauss_weight = gpuarray.to_gpu(self.gauss_weight)
         self.dev_opac_wave = gpuarray.to_gpu(self.opac_wave)
         self.dev_opac_deltawave = gpuarray.to_gpu(self.opac_deltawave)
         self.dev_opac_interwave = gpuarray.to_gpu(self.opac_interwave)
         self.dev_opac_scat_cross = gpuarray.to_gpu(self.opac_scat_cross)
         self.dev_opac_meanmass = gpuarray.to_gpu(self.opac_meanmass)
+        self.dev_entr_kappa = gpuarray.to_gpu(self.entr_kappa)
+        self.dev_entr_c_p = gpuarray.to_gpu(self.entr_c_p)
+        self.dev_entr_phase_number = gpuarray.to_gpu(self.entr_phase_number)
+        self.dev_entr_entropy = gpuarray.to_gpu(self.entr_entropy)
+        self.dev_c_p_lay = gpuarray.to_gpu(self.c_p_lay)
+        self.dev_kappa_lay = gpuarray.to_gpu(self.kappa_lay)
         self.dev_starflux = gpuarray.to_gpu(self.starflux)
         self.dev_T_lay = gpuarray.to_gpu(self.T_lay)
-        self.dev_abs_cross_cloud = gpuarray.to_gpu(self.abs_cross_cloud)
-        self.dev_scat_cross_cloud = gpuarray.to_gpu(self.scat_cross_cloud)
-        self.dev_g_0_cloud = gpuarray.to_gpu(self.g_0_cloud)
-        self.dev_F_smooth = gpuarray.to_gpu(self.F_smooth)
-        self.dev_F_smooth_sum = gpuarray.to_gpu(self.F_smooth_sum)
-
-        # used for Vmod
-        if Vmod.V_coupling == 1:
-            self.dev_opac_k_h2o = gpuarray.to_gpu(self.opac_k_h2o)
-            self.dev_opac_k_co2 = gpuarray.to_gpu(self.opac_k_co2)
-            self.dev_opac_k_co = gpuarray.to_gpu(self.opac_k_co)
-            self.dev_opac_k_ch4 = gpuarray.to_gpu(self.opac_k_ch4)
-            self.dev_opac_k_nh3 = gpuarray.to_gpu(self.opac_k_nh3)
-            self.dev_opac_k_hcn = gpuarray.to_gpu(self.opac_k_hcn)
-            self.dev_opac_k_c2h2 = gpuarray.to_gpu(self.opac_k_c2h2)
-            self.dev_opac_k_tio = gpuarray.to_gpu(self.opac_k_tio)
-            self.dev_opac_k_vo = gpuarray.to_gpu(self.opac_k_vo)
-            # self.dev_opac_k_h2s = gpuarray.to_gpu(self.opac_k_h2s)
-            # self.dev_opac_k_na = gpuarray.to_gpu(self.opac_k_na)
-            # self.dev_opac_k_k = gpuarray.to_gpu(self.opac_k_k)
-            self.dev_opac_k_cia_h2h2 = gpuarray.to_gpu(self.opac_k_cia_h2h2)
-            self.dev_opac_k_cia_h2he = gpuarray.to_gpu(self.opac_k_cia_h2he)
-
-            # used for Vmod
-            self.dev_f_h2o_lay = gpuarray.to_gpu(self.f_h2o_lay)
-            self.dev_f_co2_lay = gpuarray.to_gpu(self.f_co2_lay)
-            self.dev_f_co_lay = gpuarray.to_gpu(self.f_co_lay)
-            self.dev_f_ch4_lay = gpuarray.to_gpu(self.f_ch4_lay)
-            self.dev_f_nh3_lay = gpuarray.to_gpu(self.f_nh3_lay)
-            self.dev_f_hcn_lay = gpuarray.to_gpu(self.f_hcn_lay)
-            self.dev_f_c2h2_lay = gpuarray.to_gpu(self.f_c2h2_lay)
-            self.dev_f_tio_lay = gpuarray.to_gpu(self.f_tio_lay)
-            self.dev_f_vo_lay = gpuarray.to_gpu(self.f_vo_lay)
-            # self.dev_f_h2s_lay = gpuarray.to_gpu(self.f_h2s_lay)
-            self.dev_f_h2_lay = gpuarray.to_gpu(self.f_h2_lay)
-            self.dev_f_he_lay = gpuarray.to_gpu(self.f_he_lay)
-            self.dev_meanmolmass_lay = gpuarray.to_gpu(self.meanmolmass_lay)
-            # self.dev_f_na_lay = gpuarray.to_gpu(self.f_na_lay)
-            # self.dev_f_k_lay = gpuarray.to_gpu(self.f_k_lay)
-
-        # DISCONTINUED -- used for mol. transmission
-        # self.dev_f_h2o_tab = gpuarray.to_gpu(self.f_h2o_tab)
-        # self.dev_f_co2_tab = gpuarray.to_gpu(self.f_co2_tab)
-        # self.dev_f_co_tab = gpuarray.to_gpu(self.f_co_tab)
-        # self.dev_f_ch4_tab = gpuarray.to_gpu(self.f_ch4_tab)
-        # self.dev_f_nh3_tab = gpuarray.to_gpu(self.f_nh3_tab)
-        # self.dev_f_hcn_tab = gpuarray.to_gpu(self.f_hcn_tab)
-        # self.dev_f_c2h2_tab = gpuarray.to_gpu(self.f_c2h2_tab)
-        # self.dev_f_h2s_tab = gpuarray.to_gpu(self.f_h2s_tab)
-        # self.dev_f_h2_tab = gpuarray.to_gpu(self.f_h2_tab)
-        # self.dev_f_he_tab = gpuarray.to_gpu(self.f_he_tab)
-        # self.dev_f_na_tab = gpuarray.to_gpu(self.f_na_tab)
-        # self.dev_f_k_tab = gpuarray.to_gpu(self.f_k_tab)
-
-
+        self.dev_surf_albedo = gpuarray.to_gpu(self.surf_albedo)
+        self.dev_abs_cross_all_clouds_lay = gpuarray.to_gpu(self.abs_cross_all_clouds_lay)
+        self.dev_scat_cross_all_clouds_lay = gpuarray.to_gpu(self.scat_cross_all_clouds_lay)
+        self.dev_g_0_all_clouds_lay = gpuarray.to_gpu(self.g_0_all_clouds_lay)
 
         # zero arrays (copying anyway to obtain the gpuarray functionality)
         # those arrays will be copied to host at the end of computation or need to be zero-filled
@@ -734,7 +506,10 @@ class Store(object):
         self.dev_F_down_tot = gpuarray.to_gpu(self.F_down_tot)
         self.dev_F_dir_tot = gpuarray.to_gpu(self.F_dir_tot)
         self.dev_opac_band_lay = gpuarray.to_gpu(self.opac_band_lay)
+        self.dev_opac_wg_lay = gpuarray.to_gpu(self.opac_wg_lay)
+        self.dev_opac_wg_int = gpuarray.to_gpu(self.opac_wg_int)
         self.dev_scat_cross_lay = gpuarray.to_gpu(self.scat_cross_lay)
+        self.dev_scat_cross_int = gpuarray.to_gpu(self.scat_cross_int)
         self.dev_F_net = gpuarray.to_gpu(self.F_net)
         self.dev_F_net_diff = gpuarray.to_gpu(self.F_net_diff)
         self.dev_planckband_lay = gpuarray.to_gpu(self.planckband_lay)
@@ -746,33 +521,21 @@ class Store(object):
         self.dev_delta_tau_band = gpuarray.to_gpu(self.delta_tau_band)
         self.dev_abort = gpuarray.to_gpu(self.abort)
         self.dev_meanmolmass_lay = gpuarray.to_gpu(self.meanmolmass_lay)
+        self.dev_meanmolmass_int = gpuarray.to_gpu(self.meanmolmass_int)
         self.dev_entropy_lay = gpuarray.to_gpu(self.entropy_lay)
         self.dev_phase_number_lay = gpuarray.to_gpu(self.phase_number_lay)
         self.dev_trans_weight_band = gpuarray.to_gpu(self.trans_weight_band)
         self.dev_contr_func_band = gpuarray.to_gpu(self.contr_func_band)
-        self.dev_cloud_opac_lay = gpuarray.to_gpu(self.cloud_opac_lay)
-        self.dev_cloud_opac_int = gpuarray.to_gpu(self.cloud_opac_int)
-        self.dev_cloud_scat_cross_lay = gpuarray.to_gpu(self.cloud_scat_cross_lay)
         self.dev_delta_z_lay = gpuarray.to_gpu(self.delta_z_lay)
         self.dev_z_lay = gpuarray.to_gpu(self.z_lay)
         self.dev_g_0_tot_lay = gpuarray.to_gpu(self.g_0_tot_lay)
-        # self.dev_test_arr = gpuarray.to_gpu(self.test_arr)
-
-        # OUTDATED -- used for mol. contribution
-        # self.dev_contr_h2o = gpuarray.to_gpu(self.contr_h2o)
-        # self.dev_contr_co2 = gpuarray.to_gpu(self.contr_co2)
-        # self.dev_contr_co = gpuarray.to_gpu(self.contr_co)
-        # self.dev_contr_ch4 = gpuarray.to_gpu(self.contr_ch4)
-        # self.dev_contr_nh3 = gpuarray.to_gpu(self.contr_nh3)
-        # self.dev_contr_hcn = gpuarray.to_gpu(self.contr_hcn)
-        # self.dev_contr_c2h2 = gpuarray.to_gpu(self.contr_c2h2)
-        # self.dev_contr_h2s = gpuarray.to_gpu(self.contr_h2s)
-        # self.dev_contr_na = gpuarray.to_gpu(self.contr_na)
-        # self.dev_contr_k = gpuarray.to_gpu(self.contr_k)
-        # self.dev_contr_cia_h2h2 = gpuarray.to_gpu(self.contr_cia_h2h2)
-        # self.dev_contr_cia_h2he = gpuarray.to_gpu(self.contr_cia_h2he)
-        # self.dev_contr_rayleigh = gpuarray.to_gpu(self.contr_rayleigh)
-        # self.dev_contr_cloud = gpuarray.to_gpu(self.contr_cloud)
+        self.dev_T_int = gpuarray.to_gpu(self.T_int)
+        self.dev_scat_trigger = gpuarray.to_gpu(self.scat_trigger)
+        self.dev_delta_tau_all_clouds = gpuarray.to_gpu(self.delta_tau_all_clouds)
+        self.dev_F_add_heat_lay = gpuarray.to_gpu(self.F_add_heat_lay)
+        self.dev_F_add_heat_sum = gpuarray.to_gpu(self.F_add_heat_sum)
+        self.dev_F_smooth = gpuarray.to_gpu(self.F_smooth)
+        self.dev_F_smooth_sum = gpuarray.to_gpu(self.F_smooth_sum)
 
         if self.iso == 0:
             self.dev_planckband_int = gpuarray.to_gpu(self.planckband_int)
@@ -780,7 +543,10 @@ class Store(object):
             self.dev_Fc_up_wg = gpuarray.to_gpu(self.Fc_up_wg)
             self.dev_Fc_dir_wg = gpuarray.to_gpu(self.Fc_dir_wg)
             self.dev_g_0_tot_int = gpuarray.to_gpu(self.g_0_tot_int)
-            self.dev_cloud_scat_cross_int = gpuarray.to_gpu(self.cloud_scat_cross_int)
+            self.dev_abs_cross_all_clouds_int = gpuarray.to_gpu(self.abs_cross_all_clouds_int)
+            self.dev_scat_cross_all_clouds_int = gpuarray.to_gpu(self.scat_cross_all_clouds_int)
+            self.dev_g_0_all_clouds_int = gpuarray.to_gpu(self.g_0_all_clouds_int)
+            self.dev_kappa_int = gpuarray.to_gpu(self.kappa_int)
 
     def copy_device_to_host(self):
         """ copies relevant device arrays to host """
@@ -809,60 +575,45 @@ class Store(object):
         self.meanmolmass_lay = self.dev_meanmolmass_lay.get()
         self.c_p_lay = self.dev_c_p_lay.get()
         self.kappa_lay = self.dev_kappa_lay.get()
-        self.kappa_int = self.dev_kappa_int.get()
         self.entropy_lay = self.dev_entropy_lay.get()
         self.phase_number_lay = self.dev_phase_number_lay.get()
         self.trans_weight_band = self.dev_trans_weight_band.get()
         self.contr_func_band = self.dev_contr_func_band.get()
-        self.cloud_opac_lay = self.dev_cloud_opac_lay.get()
-        self.cloud_scat_cross_lay = self.dev_cloud_scat_cross_lay.get()
         self.g_0_tot_lay = self.dev_g_0_tot_lay.get()
         self.delta_z_lay = self.dev_delta_z_lay.get()
         self.z_lay = self.dev_z_lay.get()
-
-        # OUTDATED -- molecular contribution function
-        # self.contr_h2o = self.dev_contr_h2o.get()
-        # self.contr_co2 = self.dev_contr_co2.get()
-        # self.contr_co = self.dev_contr_co.get()
-        # self.contr_ch4 = self.dev_contr_ch4.get()
-        # self.contr_nh3 = self.dev_contr_nh3.get()
-        # self.contr_hcn = self.dev_contr_hcn.get()
-        # self.contr_c2h2 = self.dev_contr_c2h2.get()
-        # self.contr_h2s = self.dev_contr_h2s.get()
-        # self.contr_na = self.dev_contr_na.get()
-        # self.contr_k = self.dev_contr_k.get()
-        # self.contr_cia_h2h2 = self.dev_contr_cia_h2h2.get()
-        # self.contr_cia_h2he = self.dev_contr_cia_h2he.get()
-        # self.contr_rayleigh = self.dev_contr_rayleigh.get()
-        # self.contr_cloud = self.dev_contr_cloud.get()
+        self.delta_tau_all_clouds = self.dev_delta_tau_all_clouds.get()
+        self.F_add_heat_sum = self.dev_F_add_heat_sum.get()
+        self.F_smooth_sum = self.dev_F_smooth_sum.get()
 
         if self.iso == 0:
             self.planckband_int = self.dev_planckband_int.get()
+            self.kappa_int = self.dev_kappa_int.get()
 
-    def allocate_on_device(self, Vmod):
+    def allocate_on_device(self):
         """ allocate memory for arrays existing only on the GPU """
 
         # mem_alloc wants the number of bytes, which is 8 bytes per value for double precision (e.g. np.float64)
         # and 4 bytes per value for single precision (e.g. np.int32, np.float32)
         # save the correct space depending on precision
 
-        size_ninterface = int(self.ninterface * self.nr_bytes)
-        size_nlayer = int(self.nlayer * self.nr_bytes)
         size_nlayer_plus1 = int((self.nlayer+1) * self.nr_bytes)
         size_nlayer_nbin = int(self.nlayer_nbin * self.nr_bytes)
-        size_ninterface_nbin = int(self.ninterface_nbin * self.nr_bytes)
         size_nlayer_wg_nbin = int(self.nlayer_wg_nbin * self.nr_bytes)
-        size_ninterface_wg_nbin = int(self.ninterface_wg_nbin * self.nr_bytes)
+        size_2_nlayer_wg_nbin = int(2 * self.nlayer_wg_nbin * self.nr_bytes)
         size_nplanckgrid = int(self.nplanck_grid * self.nr_bytes)
+        size_ninterface_wg_nbin = int(self.ninterface_wg_nbin * self.nr_bytes)
+        if self.iso == 1:
+            size_nmatrix_wg_nbin = int(2 * self.ninterface_wg_nbin * self.nr_bytes)
+        elif self.iso == 0:
+            size_nmatrix_wg_nbin = int((4 * self.ninterface_wg_nbin - 2) * self.nr_bytes)
 
         # these arrays will never be copied between host and device.
         # Hence the normal mem_alloc functionality
-        self.dev_T_int = cuda.mem_alloc(size_ninterface)
         self.dev_delta_t_prefactor = cuda.mem_alloc(size_nlayer_plus1)
         self.dev_T_store = cuda.mem_alloc(size_nlayer_plus1)
         self.dev_planckband_grid = cuda.mem_alloc(size_nplanckgrid)
         self.dev_opac_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)
-        self.dev_meanmolmass_int = cuda.mem_alloc(size_ninterface)
         self.dev_delta_tau_wg = cuda.mem_alloc(size_nlayer_wg_nbin)
         self.dev_trans_wg = cuda.mem_alloc(size_nlayer_wg_nbin)
         self.dev_w_0 = cuda.mem_alloc(size_nlayer_wg_nbin)
@@ -872,9 +623,10 @@ class Store(object):
         self.dev_G_plus = cuda.mem_alloc(size_nlayer_wg_nbin)
         self.dev_G_minus = cuda.mem_alloc(size_nlayer_wg_nbin)
 
+        if self.opacity_mixing == "on-the-fly":
+            self.dev_opac_spec_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)
+
         if self.iso == 0:
-            self.dev_opac_wg_int = cuda.mem_alloc(size_ninterface_wg_nbin)
-            self.dev_scat_cross_int = cuda.mem_alloc(size_ninterface_nbin)
             self.dev_delta_tau_wg_upper = cuda.mem_alloc(size_nlayer_wg_nbin)
             self.dev_delta_tau_wg_lower = cuda.mem_alloc(size_nlayer_wg_nbin)
             self.dev_trans_wg_upper = cuda.mem_alloc(size_nlayer_wg_nbin)
@@ -891,53 +643,27 @@ class Store(object):
             self.dev_G_plus_lower = cuda.mem_alloc(size_nlayer_wg_nbin)
             self.dev_G_minus_upper = cuda.mem_alloc(size_nlayer_wg_nbin)
             self.dev_G_minus_lower = cuda.mem_alloc(size_nlayer_wg_nbin)
+            self.dev_delta_tau_all_clouds_upper = cuda.mem_alloc(size_nlayer_nbin)
+            self.dev_delta_tau_all_clouds_lower = cuda.mem_alloc(size_nlayer_nbin)
 
-        if Vmod.V_coupling == 1:
+            if self.opacity_mixing == "on-the-fly":
+                self.dev_opac_spec_wg_int = cuda.mem_alloc(size_ninterface_wg_nbin)
 
-            if Vmod.V_iter_nr > 0:
+        # for matrix method
+        if self.flux_calc_method == "matrix":
+            if self.iso == 1:
+                self.dev_alpha = cuda.mem_alloc(size_nlayer_wg_nbin)
+                self.dev_beta = cuda.mem_alloc(size_nlayer_wg_nbin)
+                self.dev_source_term_down = cuda.mem_alloc(size_nlayer_wg_nbin)
+                self.dev_source_term_up = cuda.mem_alloc(size_nlayer_wg_nbin)
+            elif self.iso == 0:
+                self.dev_alpha = cuda.mem_alloc(size_2_nlayer_wg_nbin)
+                self.dev_beta = cuda.mem_alloc(size_2_nlayer_wg_nbin)
+                self.dev_source_term_down = cuda.mem_alloc(size_2_nlayer_wg_nbin)
+                self.dev_source_term_up = cuda.mem_alloc(size_2_nlayer_wg_nbin)
+            self.dev_c_prime = cuda.mem_alloc(size_nmatrix_wg_nbin)
+            self.dev_d_prime = cuda.mem_alloc(size_nmatrix_wg_nbin)
 
-                self.dev_opac_h2o_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)
-                self.dev_opac_co2_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)
-                self.dev_opac_co_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)
-                self.dev_opac_ch4_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)
-                self.dev_opac_nh3_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)
-                self.dev_opac_hcn_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)
-                self.dev_opac_c2h2_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)
-                self.dev_opac_tio_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)
-                self.dev_opac_vo_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)
-                self.dev_opac_h2s_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)
-                self.dev_opac_na_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)
-                self.dev_opac_k_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)
-                self.dev_opac_cia_h2h2_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)
-                self.dev_opac_cia_h2he_wg_lay = cuda.mem_alloc(size_nlayer_wg_nbin)
-
-                if self.iso == 0:
-
-                    self.dev_f_h2o_int = cuda.mem_alloc(size_ninterface)
-                    self.dev_f_co2_int = cuda.mem_alloc(size_ninterface)
-                    self.dev_f_co_int = cuda.mem_alloc(size_ninterface)
-                    self.dev_f_ch4_int = cuda.mem_alloc(size_ninterface)
-                    self.dev_f_nh3_int = cuda.mem_alloc(size_ninterface)
-                    self.dev_f_hcn_int = cuda.mem_alloc(size_ninterface)
-                    self.dev_f_c2h2_int = cuda.mem_alloc(size_ninterface)
-                    self.dev_f_tio_int = cuda.mem_alloc(size_ninterface)
-                    self.dev_f_vo_int = cuda.mem_alloc(size_ninterface)
-                    self.dev_f_h2_int = cuda.mem_alloc(size_ninterface)
-                    self.dev_f_he_int = cuda.mem_alloc(size_ninterface)
-                    self.dev_opac_h2o_wg_int = cuda.mem_alloc(size_ninterface_wg_nbin)
-                    self.dev_opac_co2_wg_int = cuda.mem_alloc(size_ninterface_wg_nbin)
-                    self.dev_opac_co_wg_int = cuda.mem_alloc(size_ninterface_wg_nbin)
-                    self.dev_opac_ch4_wg_int = cuda.mem_alloc(size_ninterface_wg_nbin)
-                    self.dev_opac_nh3_wg_int = cuda.mem_alloc(size_ninterface_wg_nbin)
-                    self.dev_opac_hcn_wg_int = cuda.mem_alloc(size_ninterface_wg_nbin)
-                    self.dev_opac_c2h2_wg_int = cuda.mem_alloc(size_ninterface_wg_nbin)
-                    self.dev_opac_tio_wg_int = cuda.mem_alloc(size_ninterface_wg_nbin)
-                    self.dev_opac_vo_wg_int = cuda.mem_alloc(size_ninterface_wg_nbin)
-                    self.dev_opac_h2s_wg_int = cuda.mem_alloc(size_ninterface_wg_nbin)
-                    self.dev_opac_na_wg_int = cuda.mem_alloc(size_ninterface_wg_nbin)
-                    self.dev_opac_k_wg_int = cuda.mem_alloc(size_ninterface_wg_nbin)
-                    self.dev_opac_cia_h2h2_wg_int = cuda.mem_alloc(size_ninterface_wg_nbin)
-                    self.dev_opac_cia_h2he_wg_int = cuda.mem_alloc(size_ninterface_wg_nbin)
 
 if __name__ == "__main__":
     print("This module is for storing and allocating all the necessary quantities used in HELIOS"

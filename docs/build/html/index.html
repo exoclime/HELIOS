@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Welcome to HELIOS! &#8212; HELIOS 2.0 documentation</title>
+    <title>Welcome to HELIOS v3.0 &#8212; HELIOS 3.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -33,51 +33,80 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="welcome-to-helios">
-<h1>Welcome to HELIOS!<a class="headerlink" href="#welcome-to-helios" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="welcome-to-helios-v3-0">
+<h1>Welcome to HELIOS v3.0<a class="headerlink" href="#welcome-to-helios-v3-0" title="Permalink to this headline">¶</a></h1>
 <p>On this page you find the documentation for HELIOS, the radiative transfer code for exoplanetary atmospheres.</p>
+<p>This documentation has been <strong>extensively revised</strong> for the new version 3 of HELIOS. If you find any new errors or inaccuracies, please send them to <em>malik&#64;umd.edu</em>.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="sections/about.html">About</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sections/requirements.html">Requirements</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="sections/about.html"><strong>About</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="sections/requirements.html"><strong>Requirements</strong></a><ul>
 <li class="toctree-l2"><a class="reference internal" href="sections/requirements.html#hardware">Hardware</a></li>
 <li class="toctree-l2"><a class="reference internal" href="sections/requirements.html#cuda">CUDA</a></li>
 <li class="toctree-l2"><a class="reference internal" href="sections/requirements.html#python">Python</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="sections/software.html">Software</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="sections/software.html#helios">HELIOS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sections/software.html#fastchem">FastChem</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sections/software.html#helios-k">HELIOS-K</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sections/tutorial.html"><strong>Tutorial</strong></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sections/tutorial.html#installation">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sections/tutorial.html#setting-up">Setting Up</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sections/tutorial.html#get-helios">Get HELIOS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sections/tutorial.html#download-input-files">Download Input Files</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="sections/tutorial.html">Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="sections/tutorial.html#step-by-step-installation">Step-by-step Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="sections/tutorial.html#first-run">First Run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sections/tutorial.html#sample-files">Sample Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sections/tutorial.html#use-different-chemistry">Use Different Chemistry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sections/tutorial.html#include-more-opacities">Include More Opacities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sections/tutorial.html#creating-a-stellar-spectrum-file">Creating a Stellar Spectrum File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sections/tutorial.html#using-pre-tabulated-kappa-and-c-p">Using Pre-Tabulated kappa and c_p</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sections/tutorial.html#using-vertical-chemistry-profiles-or-on-the-fly-opacity-mixing">Using Vertical Chemistry Profiles or On–the–fly Opacity Mixing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sections/tutorial.html#scattering-ions-and-cia">Scattering, Ions and CIA</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="sections/parameters.html">Parameter File</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sections/structure.html">Structure &amp; I/O</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sections/tutorial.html#coupling-to-photochemical-kinetics">Coupling to Photochemical Kinetics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sections/tutorial.html#including-clouds">Including Clouds</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sections/parameters.html"><strong>Input Parameters</strong></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sections/parameters.html#general-info">General Info</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sections/parameters.html#parameter-file">Parameter File</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sections/parameters.html#general">General</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sections/parameters.html#grid">Grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sections/parameters.html#iteration">Iteration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sections/parameters.html#radiation">Radiation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sections/parameters.html#opacity-mixing">Opacity Mixing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sections/parameters.html#convective-adjustment">Convective Adjustment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sections/parameters.html#stellar-and-planetary-parameters">Stellar and Planetary Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sections/parameters.html#clouds">Clouds</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sections/parameters.html#photochemical-kinetics-coupling">Photochemical Kinetics Coupling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sections/parameters.html#advanced-settings">Advanced Settings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sections/structure.html"><strong>Code Structure</strong></a><ul>
 <li class="toctree-l2"><a class="reference internal" href="sections/structure.html#directories">Directories</a></li>
 <li class="toctree-l2"><a class="reference internal" href="sections/structure.html#files">Files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sections/structure.html#mandatory-input">Mandatory Input</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sections/structure.html#optional-input">Optional Input</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sections/structure.html#command-line-options">Command Line Options</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sections/structure.html#output">Output</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="sections/ktable.html">k-Table Generator</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="sections/ktable.html#getting-started">Getting Started</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sections/ktable.html#parameter-file-and-input">Parameter File and Input</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sections/ktable.html#sample-files-for-reference">Sample Files for Reference</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sections/ktable.html#final-species-file">final species file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sections/ktable.html#ktable-vs-sampling">ktable vs sampling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sections/ktable.html"><strong>ktable Program</strong></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sections/ktable.html#general-info">General Info</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sections/ktable.html#main-workflow">Main Workflow</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="sections/license.html">License</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sections/acknowledgements.html">Acknowledgements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sections/code.html">Code Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sections/ktable.html#parameter-file">Parameter File</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sections/ktable.html#first-stage">First Stage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sections/ktable.html#second-stage">Second Stage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sections/ktable.html#input-files-format">Input Files Format</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sections/ktable.html#individual-species-file">Individual Species File</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sections/ktable.html#final-species-file">Final Species File</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sections/ktable.html#ktable-code-structure">ktable Code Structure</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sections/license.html"><strong>License</strong></a></li>
 </ul>
 </div>
 </div>
@@ -122,16 +151,13 @@
 
 <h3>Navigation</h3>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="sections/about.html">About</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sections/requirements.html">Requirements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sections/software.html">Software</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sections/tutorial.html">Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sections/parameters.html">Parameter File</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sections/structure.html">Structure &amp; I/O</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sections/ktable.html">k-Table Generator</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sections/license.html">License</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sections/acknowledgements.html">Acknowledgements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sections/code.html">Code Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sections/about.html"><strong>About</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="sections/requirements.html"><strong>Requirements</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="sections/tutorial.html"><strong>Tutorial</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="sections/parameters.html"><strong>Input Parameters</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="sections/structure.html"><strong>Code Structure</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="sections/ktable.html"><strong>ktable Program</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="sections/license.html"><strong>License</strong></a></li>
 </ul>
 
 
@@ -150,7 +176,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2018, Matej Malik.
+      &copy;2018-2022, Matej Malik.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>

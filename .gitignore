@@ -1,8 +1,18 @@
-# Don't track bash scripts, special parameter files and files in the input and output directories
-/*.bash
-/*.sbatch
-/param_*.dat
+# Don't track the following subdirectories
 /output/
 /input/
-/ktable/input/
+/source/__pycache__/
+/__pycache__/
+/.idea/
+
+/star_tool/input/
+/star_tool/output/
+
+/plotting/
+
 /ktable/output/
+/ktable/input/
+/ktable/continuum/
+/ktable/fastchem/
+/ktable/testing/
+/ktable/source_ktable/__pycache__/

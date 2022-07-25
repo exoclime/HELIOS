@@ -1,6 +1,6 @@
 # ==============================================================================
-# Module for implementing (maybe later even calculating) Aerosol extinction (module experimental!)
-# Copyright (C) 2018 Matej Malik
+# Module adding aerosol extinction to HELIOS
+# Copyright (C) 2020 - 2022 Matej Malik
 # ==============================================================================
 # This file is part of HELIOS.
 #
@@ -20,191 +20,237 @@
 # ==============================================================================
 
 
-import sys
-import h5py
+import numpy as np
+from scipy import interpolate as itp
+from source import tools as tls
 
 
 class Cloud(object):
-    """ class that reads in cloud parameters, which then can be used in the HELIOS code """
+    """ class that reads in cloud parameters to be used in the HELIOS code """
 
     def __init__(self):
-        self.lamda_orig = []
-        self.scat_cross_orig = []
-        self.abs_cross_orig = []
-        self.g_0_orig = []
-        self.cloud_name = None
+        self.nr_cloud_decks = None
+        self.mie_path = None
+        self.cloud_r_mode = None
+        self.cloud_r_std_dev = None
+        self.cloud_mixing_ratio_setting = None
+        self.cloud_vmr_file = None
+        self.cloud_vmr_file_header_lines = None
+        self.cloud_file_press_name = None
+        self.cloud_file_press_units = None
+        self.cloud_file_species_name = None
+        self.p_cloud_bot = None
+        self.f_cloud_bot = None
+        self.cloud_to_gas_scale_height = None
+        self.lamda_mie = None
+        self.abs_cross_one_cloud = None
+        self.scat_cross_one_cloud = None
+        self.g_0_one_cloud = None
+        self.f_one_cloud_lay = None
+        self.f_one_cloud_int = None
 
     @staticmethod
-    def onetoleft(array, limit):
-        """ small function to find the index of an array element whose value is closest to the left of a given limit """
+    def read_mie_file(mie_file):
+        """ reads an LX-Mie output file """
 
-        b = []
-        for a in array:
-            if a < limit:
-                b.append(a)
-        sloth = max(b)
-        left = b.index(sloth)
-        return left
+        lamda_mie = []
+        abs_cross_mie = []
+        scat_cross_mie = []
+        g_0_mie = []
 
-    def read_cloud_dat(self, quant):
-        """ reads the cloud file (courtesy of D. Kitzmann) """
+        with open(mie_file, "r") as mfile:
+            next(mfile)
+            for line in mfile:
+                column = line.split()
+                lamda_mie.append(float(column[0]) * 1e-4)  # conversion micron -> cm
+                scat_cross_mie.append(float(column[3]))
+                abs_cross_mie.append(float(column[4]))
+                g_0_mie.append(float(column[6]))
 
-        try:
-            with open(quant.cloud_path, "r") as cloud_file:
-                next(cloud_file)
-                for line in cloud_file:
-                    column = line.split()
-                    self.lamda_orig.append(quant.fl_prec(column[0]) * 1e-4)  # conversion um -> cm
-                    self.scat_cross_orig.append(quant.fl_prec(column[2]))
-                    self.abs_cross_orig.append(quant.fl_prec(column[3]))
-                    self.g_0_orig.append(quant.fl_prec(column[5]))
+        return lamda_mie, scat_cross_mie, abs_cross_mie, g_0_mie
 
-        except IOError:
-            print("ABORT - cloud file not found!")
-            raise SystemExit()
+    @staticmethod
+    def lognorm_pdf(r, r_mode, sigma):
 
+        r_median = r_mode / np.exp(-np.log(sigma) ** 2)
 
-    # converts fine spectra to coarser grid
-    def convert_to_new_grid(self, int_lambda, cent_lambda, orig_lambda, orig_value):
-        """ generic function to convert values from one grid to another """
+        norm_factor = 1 / (r * np.log(sigma) * (2 * np.pi) ** 0.5)
+        pdf = norm_factor * np.exp(-0.5 * (np.log(r / r_median) / np.log(sigma)) ** 2)
 
-        print("Conversion started...")
+        return pdf
 
-        percentage = 0
+    def calc_weighted_cross_sections_with_pdf_and_interpolate_wavelengths(self, nr, quant):
 
-        int_value = [0] * len(int_lambda)
-        cent_value = []
+        # reset for each cloud
+        weighted_abs_cross_mie = []
+        weighted_scat_cross_mie = []
+        weighted_g_0_mie = []
 
-        for i in range(len(int_lambda)):
+        r_values = 10 ** np.arange(-2, 3.1, 0.1)  # WARNING: hardcoded particle sizes, WARNING: micron units
 
-            percentage_before = percentage
-            percentage = int(i / len(int_lambda) * 100.0)
-            if percentage != percentage_before:
-                sys.stdout.write("pre-converting: %d%%   \r" % (percentage))
-                sys.stdout.flush()
+        delta_r = r_values * (10**0.05 - 10**-0.05)  # WARNING: micron units and hardcoded particle stepsize
 
-            if int_lambda[i] < orig_lambda[0]:
-                continue
-            if int_lambda[i] > orig_lambda[len(orig_lambda) - 1]:
-                break
-            else:
-                p_bot = self.onetoleft(orig_lambda, int_lambda[i])
-                interpol = orig_value[p_bot] * (orig_lambda[p_bot + 1] - int_lambda[i]) + orig_value[p_bot + 1] * (
-                int_lambda[i] - orig_lambda[p_bot])
-                interpol /= (orig_lambda[p_bot + 1] - orig_lambda[p_bot])
-                int_value[i] = interpol
+        # calc pdf for these r values
+        pdf = self.lognorm_pdf(r_values, self.cloud_r_mode[nr], self.cloud_r_std_dev[nr])
 
-        print("Preconversion done...")
+        # get lamda values
+        self.lamda_mie, _, _, _ = self.read_mie_file(self.mie_path[nr] + "r{:.6f}.dat".format(r_values[0]))
 
-        percentage = 0
+        abs_cross_per_r = np.zeros((len(r_values), len(self.lamda_mie)))
+        scat_cross_per_r = np.zeros((len(r_values), len(self.lamda_mie)))
+        g_0_per_r = np.zeros((len(r_values), len(self.lamda_mie)))
 
-        for i in range(len(cent_lambda)):
+        for r in range(len(r_values)):
 
-            percentage_before = percentage
-            percentage = int(i / len(cent_lambda) * 100.0)
-            if percentage != percentage_before:
-                sys.stdout.write("converting: %d%%   \r" % (percentage))
-                sys.stdout.flush()
+            _, scat_cross_per_r[r, :], abs_cross_per_r[r, :], g_0_per_r[r, :] = self.read_mie_file(self.mie_path[nr] + "r{:.6f}.dat".format(r_values[r]))
 
-            if int_lambda[i + 1] < orig_lambda[0] or int_lambda[i] > orig_lambda[len(orig_lambda) - 1]:
-                cent_value.append(0)
-            else:
-                if int_value[i] != 0:
-                    p_bot = self.onetoleft(orig_lambda, int_lambda[i])
-                    p_start = p_bot + 1
-                    for p in range(p_start, len(orig_lambda)):
-                        if p == p_start:
-                            if orig_lambda[p_start] < int_lambda[i + 1]:
-                                interpol = (int_value[i] + orig_value[p]) / 2.0 * (orig_lambda[p] - int_lambda[i])
-                                if p_start == len(orig_lambda) - 1:
-                                    interpol /= (orig_lambda[p] - int_lambda[i])
-                                    break
-                            else:
-                                interpol = (int_value[i] + int_value[i + 1]) / 2.0
-                                break
-                        else:
-                            if orig_lambda[p] < int_lambda[i + 1]:
-                                interpol += (orig_value[p - 1] + orig_value[p]) / 2.0 * (orig_lambda[p] - orig_lambda[p - 1])
-                                if p == len(orig_lambda) - 1:
-                                    interpol /= (orig_lambda[p] - int_lambda[i])
-                                    break
-                            else:
-                                interpol += (orig_value[p - 1] + int_value[i + 1]) / 2.0 * (int_lambda[i + 1] - orig_lambda[p - 1])
-                                interpol /= (int_lambda[i + 1] - int_lambda[i])
-                                break
-                if int_value[i] == 0:
-                    interpol = 0
-                    for p in range(0, len(orig_lambda) - 1):
-                        if orig_value[p + 1] < int_lambda[i + 1]:
-                            interpol += (orig_value[p] + orig_value[p + 1]) / 2.0 * (orig_lambda[p] - orig_lambda[p - 1])
-                        else:
-                            interpol += (orig_value[p] + int_value[i + 1]) / 2.0 * (int_lambda[i + 1] - orig_lambda[p])
-                            interpol /= (int_lambda[i + 1] - int_lambda[i])
-                            break
-                cent_value.append(interpol)
+        for l in range(len(self.lamda_mie)):
 
-        print("Conversion done!")
+            abs_cross = sum(abs_cross_per_r[:, l] * pdf * delta_r)
+            scat_cross = sum(scat_cross_per_r[:, l] * pdf * delta_r)
+            g_0 = sum(scat_cross_per_r[:, l] * pdf * delta_r)
 
-        return cent_value
+            weighted_abs_cross_mie.append(abs_cross)
+            weighted_scat_cross_mie.append(scat_cross)
+            weighted_g_0_mie.append(g_0)
 
-    def conversion_of_cloud_parameters(self, quant):
-        """ converts the cloud parameters to the HELIOS wavelength grid """
+        # interpolate to HELIOS wavelength grid
+        self.abs_cross_one_cloud = tls.convert_spectrum(self.lamda_mie, weighted_abs_cross_mie, quant.opac_wave, int_lambda=quant.opac_interwave, type='log')
+        self.scat_cross_one_cloud = tls.convert_spectrum(self.lamda_mie, weighted_scat_cross_mie, quant.opac_wave, int_lambda=quant.opac_interwave, type='log')
+        self.g_0_one_cloud = tls.convert_spectrum(self.lamda_mie, weighted_g_0_mie, quant.opac_wave, int_lambda=quant.opac_interwave, type='linear')
 
-        quant.scat_cross_cloud = self.convert_to_new_grid(quant.opac_interwave, quant.opac_wave, self.lamda_orig, self.scat_cross_orig)
-        quant.abs_cross_cloud = self.convert_to_new_grid(quant.opac_interwave, quant.opac_wave, self.lamda_orig, self.abs_cross_orig)
-        quant.g_0_cloud = self.convert_to_new_grid(quant.opac_interwave, quant.opac_wave, self.lamda_orig, self.g_0_orig)
+    def create_cloud_deck(self, nr, quant):
 
-    def write_cloud_h5(self, quant):
-        """ creates a h5 container with the interpolated cloud parameters"""
+        # reset for each cloud
+        self.f_one_cloud_lay = np.zeros(quant.nlayer)
+        self.f_one_cloud_int = np.zeros(quant.ninterface)
 
-        try:
-            with h5py.File("." + self.cloud_name + "_" + str(len(quant.opac_wave)) + ".h5", "w") as h5_file:
-                h5_file.create_dataset("scattering cross sections", data=quant.scat_cross_cloud)
-                h5_file.create_dataset("absorption cross sections", data=quant.abs_cross_cloud)
-                h5_file.create_dataset("asymmetry parameter", data=quant.g_0_cloud)
-                h5_file.create_dataset("center wavelengths", data=quant.opac_wave)
-                h5_file.create_dataset("interface wavelengths", data=quant.opac_interwave)
-        except:
-            print("ABORT - something wrong with writing the cloud.h5 file!")
-            raise SystemExit()
+        # layer index of cloud bottom
+        i_bot = 0
 
-    def read_cloud_h5(self, quant):
-        """ reads int the cloud .h5 file """
+        if self.cloud_mixing_ratio_setting == "manual":
 
-        try:
-            with h5py.File("." + self.cloud_name + ".h5", "r") as h5_file:
-                print("\nReading cloud parameters...")
-                for s in h5_file["scattering cross sections"][:]:
-                    quant.scat_cross_cloud.append(s)
-                for a in h5_file["absorption cross sections"][:]:
-                    quant.abs_cross_cloud.append(a)
-                for g in h5_file["asymmetry parameter"][:]:
-                    quant.g_0_cloud.append(g)
-        except:
-            print("ABORT - something wrong with reading the cloud.h5 file!")
-            raise SystemExit()
+            for i in range(quant.nlayer):
 
-    def main_cloud_method(self, quant):
-        """ main method to handle cloud input """
+                if quant.p_int[i] >= self.p_cloud_bot[nr] > quant.p_int[i + 1]:
+                    self.f_one_cloud_lay[i] = self.f_cloud_bot[nr]
+
+                    i_bot = i
+
+                    break
+
+            for i in range(i_bot + 1, quant.nlayer):
+                self.f_one_cloud_lay[i] = self.f_cloud_bot[nr] * (quant.p_lay[i] / quant.p_lay[i_bot]) ** (1 / self.cloud_to_gas_scale_height[nr] - 1)
+
+            if quant.iso == 0:
+
+                for i in range(i_bot + 1, quant.ninterface):
+                    self.f_one_cloud_int[i] = self.f_cloud_bot[nr] * (quant.p_int[i] / quant.p_lay[i_bot]) ** (1 / self.cloud_to_gas_scale_height[nr] - 1)
+
+        elif self.cloud_mixing_ratio_setting == "file":
+
+            cloud_file = np.genfromtxt(self.cloud_vmr_file, names=True, dtype=None, skip_header=self.cloud_vmr_file_header_lines)
+
+            press_orig = cloud_file[self.cloud_file_press_name]
+
+            if self.cloud_file_press_units == "Pa":
+
+                press_orig *= 10
+
+            elif self.cloud_file_press_units == "bar":
+
+                press_orig *= 1e6
+
+            f_cloud_orig = cloud_file[self.cloud_file_species_name[nr]]
+
+            log_press_orig = [np.log10(p) for p in press_orig]
+            log_p_lay = [np.log10(p) for p in quant.p_lay]
+
+            cloud_interpol_function = itp.interp1d(log_press_orig, f_cloud_orig, kind='linear', bounds_error=False, fill_value=(f_cloud_orig[-1], f_cloud_orig[0]))
+
+            self.f_one_cloud_lay = cloud_interpol_function(log_p_lay)
+
+            if quant.iso == 0:
+
+                log_p_int = [np.log10(p) for p in quant.p_int]
+
+                self.f_one_cloud_int = cloud_interpol_function(log_p_int)
+
+    def add_individual_cloud_decks_to_total(self, quant):
+
+        # combine all cloud densities (this is really just for the cloud output file)
+        for i in range(quant.nlayer):
+
+            quant.f_all_clouds_lay[i] += self.f_one_cloud_lay[i]
+
+            for x in range(quant.nbin):
+
+                quant.abs_cross_all_clouds_lay[x + quant.nbin * i] += self.f_one_cloud_lay[i] * self.abs_cross_one_cloud[x]
+                quant.scat_cross_all_clouds_lay[x + quant.nbin * i] += self.f_one_cloud_lay[i] * self.scat_cross_one_cloud[x]
+
+                quant.g_0_all_clouds_lay[x + quant.nbin * i] += self.g_0_one_cloud[x] * self.f_one_cloud_lay[i] * self.scat_cross_one_cloud[x]
+
+        if quant.iso == 0:
+
+            for i in range(quant.ninterface):
+
+                quant.f_all_clouds_int[i] += self.f_one_cloud_int[i]
+
+                for x in range(quant.nbin):
+
+                    quant.abs_cross_all_clouds_int[x + quant.nbin * i] += self.f_one_cloud_int[i] * self.abs_cross_one_cloud[x]
+                    quant.scat_cross_all_clouds_int[x + quant.nbin * i] += self.f_one_cloud_int[i] * self.scat_cross_one_cloud[x]
+
+                    quant.g_0_all_clouds_int[x + quant.nbin * i] += self.g_0_one_cloud[x] * self.f_one_cloud_int[i] * self.scat_cross_one_cloud[x]
+
+    @staticmethod
+    def normalize_g_0(quant):
+
+        # have to normalize g_0 again to become dimensionless
+        for i in range(quant.nlayer):
+
+            for x in range(quant.nbin):
+
+                if quant.scat_cross_all_clouds_lay[x + quant.nbin * i] > 0:
+
+                    quant.g_0_all_clouds_lay[x + quant.nbin * i] /= quant.scat_cross_all_clouds_lay[x + quant.nbin * i]
+
+        if quant.iso == 0:
+
+            for i in range(quant.ninterface):
+
+                for x in range(quant.nbin):
+
+                    if quant.scat_cross_all_clouds_int[x + quant.nbin * i] > 0:
+
+                        quant.g_0_all_clouds_int[x + quant.nbin * i] /= quant.scat_cross_all_clouds_int[x + quant.nbin * i]
+
+    def cloud_pre_processing(self, quant):
+        """ conducts the pre-processing of cloud data so it can be included in the RT calculation """
+
+        quant.f_all_clouds_lay = np.zeros(quant.nlayer)
+        quant.f_all_clouds_int = np.zeros(quant.ninterface)
+
+        quant.abs_cross_all_clouds_lay = np.zeros(quant.nlayer * quant.nbin)
+        quant.abs_cross_all_clouds_int = np.zeros(quant.ninterface * quant.nbin)
+
+        quant.scat_cross_all_clouds_lay = np.zeros(quant.nlayer * quant.nbin)
+        quant.scat_cross_all_clouds_int = np.zeros(quant.ninterface * quant.nbin)
+
+        quant.g_0_all_clouds_lay = np.zeros(quant.nlayer * quant.nbin)
+        quant.g_0_all_clouds_int = np.zeros(quant.ninterface * quant.nbin)
 
         if quant.clouds == 1:
 
-            suffix = quant.cloud_path.split('.')[-1:][0]
-            self.cloud_name = quant.cloud_path.split('.')[-2:-1][0]
+            for nr in range(self.nr_cloud_decks):
 
-            if suffix == "dat":
+                self.calc_weighted_cross_sections_with_pdf_and_interpolate_wavelengths(nr, quant)
 
-                self.read_cloud_dat(quant)
-                self.conversion_of_cloud_parameters(quant)
-                self.write_cloud_h5(quant)
+                self.create_cloud_deck(nr, quant)
 
-            elif suffix == "h5":
+                self.add_individual_cloud_decks_to_total(quant)
 
-                self.read_cloud_h5(quant)
-
-            else:
-                print("Unrecognized cloud file format. Aborting...")
-                raise SystemExit()
+            self.normalize_g_0(quant)
 
 
 if __name__ == "__main__":

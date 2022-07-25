@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tutorial &#8212; HELIOS 2.0 documentation</title>
+    <title>Tutorial &#8212; HELIOS 3.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -16,8 +16,8 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Parameter File" href="parameters.html" />
-    <link rel="prev" title="Software" href="software.html" />
+    <link rel="next" title="Input Parameters" href="parameters.html" />
+    <link rel="prev" title="Requirements" href="requirements.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -35,16 +35,17 @@
           <div class="body" role="main">
             
   <div class="section" id="tutorial">
-<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
-<p>Welcome! I assume this is the first time you are looking at HELIOS. Thus, I will guide you here in the most straightforward way towards the first run of the code on your machine. In order to keep the tutorial short and clear, in-depths explanations are omitted. Please refer to the appropriate sections in the in-depth documentation for more info.</p>
+<h1><strong>Tutorial</strong><a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<p>Welcome! I assume this is the first time you are looking at HELIOS. Below, I will guide you through the installation and the first successful run of HELIOS. I am providing some sample input files you can use for your initial attempts with HELIOS. I will then explain how to calculate chemistry files for varying abundances, get more opacities and stellar spectra to be used with HELIOS, how to run HELIOS with mixing opacities on–the–fly, how one can couple to a photochemical kinetics code, include clouds, etc.</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="setting-up">
+<h3>Setting Up<a class="headerlink" href="#setting-up" title="Permalink to this headline">¶</a></h3>
 <p>In the following I merely expect that you possess an NVIDIA GPU and are either on a Linux or Mac Os X system (sorry, Windows users. You are on your own).</p>
-<div class="section" id="step-by-step-installation">
-<h2>Step-by-step Installation<a class="headerlink" href="#step-by-step-installation" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple">
 <li><p>Install the newest version of the CUDA toolkit from <a class="reference external" href="https://developer.nvidia.com/cuda-downloads">NVIDIA</a>. To ascertain a successful installation, type <code class="docutils literal notranslate"><span class="pre">which</span> <span class="pre">nvcc</span></code>. This should provide you with the location of the nvcc compiler. If not, something went wrong with the installation.</p></li>
 </ol>
-<blockquote>
-<div><p>Make sure that the library and program paths are exported. On Mac Os x you should have the following entries in your .bash_profile file (shown for version 10.0 of CUDA)</p>
+<p>Make sure that the library and program paths are exported. On Mac Os x you should have the following entries in your .bash_profile file (shown for version 10.0 of CUDA)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export PATH=/Developer/NVIDIA/CUDA-10.0/bin:$PATH
 export DYLD_LIBRARY_PATH=/Developer/NVIDIA/CUDA-10.0/lib:$DYLD_LIBRARY_PATH
 </pre></div>
@@ -54,9 +55,8 @@ export DYLD_LIBRARY_PATH=/Developer/NVIDIA/CUDA-10.0/lib:$DYLD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=/usr/local/cuda-10.0/lib:$DYLD_LIBRARY_PATH
 </pre></div>
 </div>
-</div></blockquote>
 <ol class="arabic" start="2">
-<li><p>Now we set up Python. Most straightforward is to download and install the Anaconda package as it contains most of the required libraries already. Get it from <a class="reference external" href="https://www.anaconda.com/distribution/#download-section">here</a>. Pick Python version 3.x. Also, the command line installer is better if you are installing it on a remote server.</p></li>
+<li><p>Now, let us set up Python. Most straightforward is to download and install the Anaconda package as it contains most of the required libraries already. Get it from <a class="reference external" href="https://www.anaconda.com/distribution/#download-section">here</a>. Pick Python version 3.x. Also, the command line installer is better if you are installing it on a remote server (click ‘Get Additional Installers’). Alternatively, all of the Python libraries can be downloaded and installed manually with ‘pip’ as well. See <a class="reference internal" href="requirements.html"><span class="doc">Requirements</span></a> for more info on that.</p></li>
 <li><p>Now we set up a virtual environment for Python. In a terminal or shell window type</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">MyBubble</span>
 </pre></div>
@@ -68,7 +68,7 @@ export DYLD_LIBRARY_PATH=/usr/local/cuda-10.0/lib:$DYLD_LIBRARY_PATH
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">MyBubble</span>
 </pre></div>
 </div>
-<p>to activate the environment. Then we need to uninstall and reinstall pycuda package (the pre-installated version does not work usually). Type</p>
+<p>to activate the environment. Then we need to uninstall and reinstall pycuda package (the pre–installed version does not work usually). Type</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">uninstall</span> <span class="n">pycuda</span>
 </pre></div>
 </div>
@@ -77,17 +77,36 @@ export DYLD_LIBRARY_PATH=/usr/local/cuda-10.0/lib:$DYLD_LIBRARY_PATH
 </pre></div>
 </div>
 </div></blockquote>
-<ol class="arabic" start="4">
-<li><p>Now we get Helios from its Github repository by typing</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">exoclime</span><span class="o">/</span><span class="n">HELIOS</span><span class="o">.</span><span class="n">git</span> <span class="n">helios</span>
+</div>
+<div class="section" id="get-helios">
+<h3>Get HELIOS<a class="headerlink" href="#get-helios" title="Permalink to this headline">¶</a></h3>
+<p>For the installation of HELIOS there are two choices:</p>
+<ul>
+<li><p>Either, using the terminal, type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">exoclime</span><span class="o">/</span><span class="n">HELIOS</span><span class="o">.</span><span class="n">git</span> <span class="s2">&quot;insert_target_dir&quot;</span>
 </pre></div>
 </div>
+<p>to clone into the GitHub repository. In addition to downloading the required files, this gives you full Git functionality. In case you don’t have Git installed on your machine you can get it e.g. from <a class="reference external" href="https://git-scm.com/downloads">here</a>.</p>
 </li>
-</ol>
-<blockquote>
-<div><p>The last “helios” is the name of the directory to be created.</p>
-<p>Congratulations, you have successfully installed HELIOS!</p>
-</div></blockquote>
+<li><p>Or, if you’d like to bypass Git, simply download the <a class="reference external" href="https://github.com/exoclime/HELIOS/archive/refs/heads/master.zip">ZIP archive</a>, which contains all the necessary files. Unpack the ZIP to a local directory and you are ready to go!</p></li>
+</ul>
+</div>
+<div class="section" id="download-input-files">
+<h3>Download Input Files<a class="headerlink" href="#download-input-files" title="Permalink to this headline">¶</a></h3>
+<p>Many of the input files for HELIOS are too large to be stored on GitHub. They have to be downloaded from the University of Bern server. They are located <a class="reference external" href="https://chaldene.unibe.ch/data/helios/input_files/">here</a>. For convenience, the installation includes a bash script that automatically downloads all files and puts them where they belong. Just run the included script with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">install_input_files</span><span class="o">.</span><span class="n">bash</span>
+</pre></div>
+</div>
+<p>Once all files are downloaded (may take a while since opacity files are large), you are done. Congratulations, you have successfully installed HELIOS!</p>
+<p>Note that those downloaded files are often only example files. If using HELIOS for more than just a handful of initial models, a larger variety of input files will have to be produced. See below sections on how to do that.</p>
+<p>Here is a list of of the downloaded input files and what they are good for:</p>
+<p><code class="docutils literal notranslate"><span class="pre">r50_kdistr_solar_eq.h5</span></code>: A pre-mixed opacity table with the most common absorbers for a typical sub-Neptune atmosphere, weighted by solar equilibrium mixing ratios. A resolution of R = 50 and k-distribution format is used. This table can be used to calculate T–P profiles in radiative-convective equilibrium for aforementioned conditions. The opacity file is given in HDF5 format. See <a class="reference external" href="http://www.h5py.org/">h5py</a> or <a class="reference external" href="https://www.hdfgroup.org/solutions/hdf5">HDF5</a> for more info on this format and how to use it. Type <code class="docutils literal notranslate"><span class="pre">h5dump</span> <span class="pre">-d</span> <span class="pre">included\</span> <span class="pre">molecules</span> <span class="pre">r50_kdistr_solar_eq.h5</span></code> to see which species are included in this table. See <a class="reference internal" href="ktable.html"><span class="doc">ktable Program</span></a> on how to produce opacity tables.</p>
+<p><code class="docutils literal notranslate"><span class="pre">delad_example.dat</span></code>: Example file from which kappa/delad and c_p can be read and used in HELIOS. If you’re curious, this file is made for a 100% H2O atmosphere. See <cite>Using Pre-Tabulated kappa and c_p</cite> for more info.</p>
+<p><code class="docutils literal notranslate"><span class="pre">star_2022.h5</span></code>: Example file that contains a GJ1214 PHOENIX spectrum that can be used in HELIOS. See <cite>Creating a Stellar Spectrum File</cite> on how to add more stellar spectra to this file.</p>
+<p><code class="docutils literal notranslate"><span class="pre">chemistry</span></code>: Directory containing equilibrium chemistry files generated with FastChem for solar, 10x solar and 100x solar elemental abundances based on Lodders 2009. These files can be used with the ktable program or HELIOS in the on–the–fly mixing mode. See <cite>Use Different Chemistry</cite> on how to produce more chemistry files.</p>
+<p><code class="docutils literal notranslate"><span class="pre">opacity</span></code>: Directory that contains opacity files that can be used with HELIOS in the on–the–fly mixing mode. They have the resolution R=50 and k-distribution format. Included are the most relevant absorbers for sub-Neptune atmospheres. More opacity files can be produced with the included ktable program, see <a class="reference internal" href="ktable.html"><span class="doc">ktable Program</span></a> for more info.</p>
+<p><code class="docutils literal notranslate"><span class="pre">cloud_files</span></code>: Directory that contains extinction coefficient for a wealth of aerosol types, calculated using the <a class="reference external" href="https://github.com/exoclime/LX-MIE">LX–MIE code</a>. These files can be used when including clouds in HELIOS. See <cite>Including Clouds</cite> for more info.</p>
+</div>
 </div>
 <div class="section" id="first-run">
 <h2>First Run<a class="headerlink" href="#first-run" title="Permalink to this headline">¶</a></h2>
@@ -95,20 +114,114 @@ export DYLD_LIBRARY_PATH=/usr/local/cuda-10.0/lib:$DYLD_LIBRARY_PATH
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">helios</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-<p>HELIOS is pre-configured to conduct a generic run of the hot Jupiter HD 189733b. If HELIOS ran successfully, you should be now in possession of the dayside temperature profile in radiative-convective equilibrium and the corresponding emission and secondary eclipse spectra of this planet. Feel free to explore the <code class="docutils literal notranslate"><span class="pre">output</span></code> directory.</p>
-<p>For a first quick analysis of your output, the installation includes two plotting scripts <code class="docutils literal notranslate"><span class="pre">plot_tp.py</span></code> and <code class="docutils literal notranslate"><span class="pre">plot_spectrum.py</span></code>, located in the <code class="docutils literal notranslate"><span class="pre">tools</span></code> subdirectory. Those scripts allow you to inspect your very first generated temperature-profile profile and emission spectrum. Well done! You can now go on and modify the parameters in the <code class="docutils literal notranslate"><span class="pre">param.dat</span></code> file or simulate another planet. Please refer to the rest of the documentation for more info.</p>
+<p>HELIOS is pre–configured to execute a generic run of the sub–Neptune GJ 1214b. If HELIOS ran successfully, you should be now in possession of the dayside temperature profile in radiative–convective equilibrium and the corresponding emission and secondary eclipse spectra of this planet. Feel free to explore the <code class="docutils literal notranslate"><span class="pre">output</span></code> directory.</p>
+<p>For a first quick analysis of your output, the installation includes two plotting scripts <code class="docutils literal notranslate"><span class="pre">plot_tp.py</span></code> and <code class="docutils literal notranslate"><span class="pre">plot_spectrum.py</span></code>, located in the <code class="docutils literal notranslate"><span class="pre">plotting</span></code> subdirectory. Those scripts allow you to inspect your very first generated temperature–profile profile and emission spectrum.</p>
+<p>Well done! You can now go on and modify the parameters in the <code class="docutils literal notranslate"><span class="pre">param.dat</span></code> file or simulate another planet or model other atmospheric conditions, etc. The doors to the world of 1D RT modeling are open!</p>
 </div>
-<div class="section" id="sample-files">
-<h2>Sample Files<a class="headerlink" href="#sample-files" title="Permalink to this headline">¶</a></h2>
-<p>In the <code class="docutils literal notranslate"><span class="pre">input</span></code> subdirectory, three sample files are included to help with the first runs of HELIOS.</p>
-<p><code class="docutils literal notranslate"><span class="pre">opac_sample.dat</span></code></p>
-<p>This is a sample file for the opacity table. It contains pre-calculated opacities for the main typical hot Jupiter (or brown dwarf) absorbers, pre-mixed with solar elemental abundances according to Asplund et al. 2009. The included absorbers are H2O, CO2, CO, CH4, NH3, HCN, C2H2, PH3, H2S and the CIA H2-H2, H2-He opacities. It also contains the Rayleigh cross-sections for H2, H, He and H2O. To keep the size of the table manageable, the opacities are sampled at a resolution of R=50 between 0.3 and 200 micron.</p>
-<p>Note, this table is good for obtaining a <em>first order estimate</em> of hot Jupiter (or brown dwarf) atmospheric temperatures and their spectra. For accurate results, a higher resolution with more absorbing species is recommended. See <a class="reference internal" href="ktable.html"><span class="doc">k-Table Generator</span></a> how to generate an own, improved opacity table.</p>
-<p>See <a class="reference external" href="http://www.h5py.org/">h5py</a> or <a class="reference external" href="https://www.hdfgroup.org/">HDF5</a> for more info on this format and how to use it.</p>
-<p><code class="docutils literal notranslate"><span class="pre">stellar_sample.dat</span></code></p>
-<p>This is a sample file on how to include a realistic stellar spectrum. As the opacity, this is in HDF5 format. Pre-set is the PHOENIX stellar spectrum of HD 189733. If you wish to employ an own spectrum, create a new data set analogously to the existing one. In order for HELIOS to work, the wavelength grid of the stellar spectrum needs to be consistent with the wavelength grid of the opacities.</p>
-<p><code class="docutils literal notranslate"><span class="pre">planet_data.dat</span></code></p>
-<p>Here you can save planetary parameters for later use, which can be loaded in the parameter files under the entry <code class="docutils literal notranslate"><span class="pre">planet</span></code>. Two planets are pre-saved, HD 198733b and WASP-43b (no guarantee for the correctness of the parameters). See <a class="reference internal" href="structure.html"><span class="doc">Structure &amp; I/O</span></a>, section “planet parameters” for more info.</p>
+<div class="section" id="use-different-chemistry">
+<h2>Use Different Chemistry<a class="headerlink" href="#use-different-chemistry" title="Permalink to this headline">¶</a></h2>
+<p>To run a model with different chemical abundances, FastChem is the preferred choice to generate the chemistry files needed to combine molecular opacities and construct the final opacity table. It is <strong>recommended</strong> to install <a class="reference external" href="https://github.com/exoclime/FastChem">FastChem</a>. How to install and run FastChem is described in <code class="docutils literal notranslate"><span class="pre">manual/fastchem_manual.pdf</span></code> in the FastChem repository.</p>
+<p>Back in the HELIOS repository, in <code class="docutils literal notranslate"><span class="pre">input/chemistry</span></code> there are subdirectories that contain FastChem output files for a number of different solar metallicities. These files can be used to generate opacity tables or mix opacities on–the–fly with HELIOS and so their format acts as reference. These files can be generated with FastChem quite straightforwardly. Two chemistry files are needed because at low temperatures FastChem (at least in earlier versions) had to be run without ions, but at high temperatures ions are obviously important. That means for each elemental composition, FastChem is run twice, each using a different P–T grid and once without and once with ions. The two P–T grid files for that are provided in <code class="docutils literal notranslate"><span class="pre">input/chemistry/fastchem_input/</span></code> and named <code class="docutils literal notranslate"><span class="pre">pt_low.dat</span></code> and <code class="docutils literal notranslate"><span class="pre">pt_high.dat</span></code>. In the <code class="docutils literal notranslate"><span class="pre">config.input</span></code> file:</p>
+<ul class="simple">
+<li><p>As Atmospheric profile file pick the pt_low.dat or pt_high.dat, respectively</p></li>
+<li><p>Name the abundance output file chem_low.dat or chem_high.dat, respectively. Make sure the output directory exists or FastChem will simply not produce the files. (It is also useful to produce the monitor files and inspect them to see whether everything went OK.)</p></li>
+<li><p>Set the output to mixing ratios by setting the last option to’MR’</p></li>
+</ul>
+<p>In the <code class="docutils literal notranslate"><span class="pre">parameters.dat</span></code> file:</p>
+<ul class="simple">
+<li><p>Set the correct elemental abundance file</p></li>
+<li><p>The species data file should be <code class="docutils literal notranslate"><span class="pre">logK_wo_ions.dat</span></code> for the lower temperature grid and <code class="docutils literal notranslate"><span class="pre">logK.dat</span></code> for the higher temperature grid.</p></li>
+</ul>
+<p>Finally, we need to conduct two tiny source code tweaks. First, in <code class="docutils literal notranslate"><span class="pre">model_src/model_main.cpp</span></code>, check that line 91 is active and line 92 is commented out. If not, make it so. We need the order to be pressure first, temperature second. Second, in <code class="docutils literal notranslate"><span class="pre">model_src/save_output.h</span></code> between lines 49 and 53, remove <strong>all</strong> spaces in <strong>all</strong> of the header names. For example ‘#P (bar)’ should become ‘#P(bar)’. (Otherwise Python’s ‘numpy.genfromtxt’ function will complain.) After modifying the source code, <strong>FastChem needs to be compiled again.</strong></p>
+<p>With these settings FastChem should now generate the chemistry files exactly in the format that HELIOS and the ktable program require.</p>
+</div>
+<div class="section" id="include-more-opacities">
+<h2>Include More Opacities<a class="headerlink" href="#include-more-opacities" title="Permalink to this headline">¶</a></h2>
+<p>Almost all of the opacities that HELIOS uses have been calculated with <a class="reference external" href="https://github.com/exoclime/helios-k">HELIOS-K</a>. However, it is <strong>not necessary</strong> to install HELIOS-K in order to include more opacities in HELIOS. A vast number of pre–calculated opacities can be found in the <a class="reference external" href="https://dace.unige.ch/opacityDatabase/">online opacity database</a> at the University of Geneva.</p>
+<ul class="simple">
+<li><p>For a given species, download the files for the whole temperature and pressure ranges provided.</p></li>
+<li><p>Put the files of each species in a separate directory on your local machine.</p></li>
+<li><p>Include the paths to these directories in the ktable program parameter file (per default <code class="docutils literal notranslate"><span class="pre">param_ktable.dat</span></code>) and the ktable program will take over from here. See <a class="reference internal" href="ktable.html"><span class="doc">ktable Program</span></a> for more info on how to proceed from here.</p></li>
+</ul>
+<p>If you don’t find the species you need in the online database, or because you’d like to vary some opacity parameters, then you will probably have to run HELIOS–K yourself (or have a student do it for you). How to install and run HELIOS–K is described in the <a class="reference external" href="https://helios-k.readthedocs.io/en/latest/">online documentation</a> file.</p>
+<p>If running HELIOS–K yourself, note that the ktable program that generates the opacity table for HELIOS needs the HELIOS–K output files to have <strong>exactly the same format</strong> (i.e., file names and contents) as the files found in the <a class="reference external" href="https://dace.unige.ch/opacityDatabase/">online database</a>. Only leeway is that the files can be in ASCII instead of binary format. In this case the file should have two columns, with the wavenumber listed in the first one (in ascending order) and the opacity in the second one.</p>
+</div>
+<div class="section" id="creating-a-stellar-spectrum-file">
+<h2>Creating a Stellar Spectrum File<a class="headerlink" href="#creating-a-stellar-spectrum-file" title="Permalink to this headline">¶</a></h2>
+<p>In addition to using the blackbody with the stellar temperature for the external irradiation, one can read in a stellar spectrum. General requirements are: (i) The spectrum has to be on the same wavelength grid as the opacities. (ii) Spectrum has to be provided as flux measured on the stellar surface in cgs units, i.e., erg s <span class="math notranslate nohighlight">\(^{-1}\)</span> cm <span class="math notranslate nohighlight">\(^{-3}\)</span>. (iii) The spectrum has to be read from an HDF5 file.</p>
+<p>A reference file is provided with the installation. It contains the spectrum of GJ 1214 downloaded from the <a class="reference external" href="http://phoenix.astro.physik.uni-goettingen.de/">PHOENIX online database</a> interpolated to the stellar parameters given in <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2013A%2526A...549A..10H/">Harpsoe et al. (2013)</a> and sampled to R=50, same as the opacity files provided.</p>
+<p>In the directory <code class="docutils literal notranslate"><span class="pre">star_tool</span></code> a script is included that allows for the generation of more stellar spectra to be used in HELIOS. To run the script, go to <code class="docutils literal notranslate"><span class="pre">star_tool</span></code> and type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Everything is set up in the way to produce the <code class="docutils literal notranslate"><span class="pre">star_2022.h5</span></code> that comes with the installation. I use the naming structure /“wavelength_grid”/“database”/“star”, visible by typing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hfls</span> <span class="o">-</span><span class="n">r</span> <span class="n">star_2022</span><span class="o">.</span><span class="n">h5</span>
+</pre></div>
+</div>
+<p>All parameters and settings are found in <code class="docutils literal notranslate"><span class="pre">run.py</span></code> (it basically acts as the ‘config’ as well as ‘run’ file).</p>
+<p>In the top of <code class="docutils literal notranslate"><span class="pre">run.py</span></code>, one creates a star with the desired properties and in the bottom one runs the script, setting the star as first parameter.</p>
+<p>The further parameters of main_loop are:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">convert_to</span> <span class="pre">[data</span> <span class="pre">set</span> <span class="pre">name]</span></code></p>
+</div></blockquote>
+<p>This sets the data set name within the HDF5 file. I usually name the data set after the resolution I use, but this is not necessary.</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">opac_file_for_lambdagrid</span> <span class="pre">[path</span> <span class="pre">to</span> <span class="pre">opacity</span> <span class="pre">file]</span></code></p>
+</div></blockquote>
+<p>Access to an opacity file is needed which will be used to read the wavelength grid (in order to guarantee that the opacity and the star are on the same grid). It does not matter what kind of opacity file it is. It just needs to exhibit the correct wavelength grid.</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">output_file</span> <span class="pre">[file</span> <span class="pre">name]</span></code></p>
+</div></blockquote>
+<p>Name of the output file. It will appear in the <code class="docutils literal notranslate"><span class="pre">output</span></code> subdirectory. If the file already exists, a the new spectrum will be included in this file.</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">plot_and_tweak</span> <span class="pre">[automatic,</span> <span class="pre">yes,</span> <span class="pre">no]</span></code></p>
+</div></blockquote>
+<p>Here one sets how the spectrum should be extrapolated if necessary. The spectrum is extrapolated with a blackbody (BB) and the question is which temperature should be used for that. It is recommended to choose the ‘automatic’ feature, which will find the best extrapolation by applying the Newton–Raphson method. A pop–up window will open showing the spectrum with the extrapolation and ask whether one accepts it. If not, another temperature can be chosen by hand. Similarly, if one sets ‘yes’, one can choose the extrapolation temperature manually by looking at the pop–up window and choosing the best fitting value by eye. If one sets ‘no’, one has to define a BB temperature later with the ‘BB_temp’ option.</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">save_ascii</span> <span class="pre">[yes,</span> <span class="pre">no]</span></code></p>
+</div></blockquote>
+<p>This sets whether the spectrum is written to an ASCII (text) file. This is not exclusive to saving to an HDF5 file.</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">save_in_hdf5</span> <span class="pre">[yes,</span> <span class="pre">no]</span></code></p>
+</div></blockquote>
+<p>This sets whether to write the spectrum to the HDF5 file given earlier. If the file does not exist yet, it is created.</p>
+<p>Note there is a final optional paramater called <code class="docutils literal notranslate"><span class="pre">BB_temp</span></code>. If earlier one sets <code class="docutils literal notranslate"><span class="pre">plot_and_tweak=no</span></code>, the BB temperature can be defined here directly.</p>
+<p>There are three options on how to include a spectrum from an online library. For PHOENIX models, the script downloads all files automatically from the <a class="reference external" href="https://phoenix.astro.physik.uni-goettingen.de/?page_id=15">Göttingen library</a> and interpolates to the given stellar parameters. For MUSCLES one has to download the files manually from <a class="reference external" href="https://archive.stsci.edu/prepds/muscles/">their page</a> and convert wavelengths and fluxes to cgs units manually via included parameters. Lastly, an ASCII file can be used as well. Examples for each case are given in the top of <code class="docutils literal notranslate"><span class="pre">run.py</span></code>.</p>
+<p>The file “functions.py” contains the function definitions if one would like to modify the script.</p>
+</div>
+<div class="section" id="using-pre-tabulated-kappa-and-c-p">
+<span id="kappa-file-format"></span><h2>Using Pre-Tabulated kappa and c_p<a class="headerlink" href="#using-pre-tabulated-kappa-and-c-p" title="Permalink to this headline">¶</a></h2>
+<p>Instead of using a constant value for the adiabatic coefficient, kappa (or delad), it is also possible to read pre-tabulated values from a text file. With the HELIOS installation the example file <code class="docutils literal notranslate"><span class="pre">input/delad_example.dat</span></code> is included to show the necessary format of the file. This file format is hard-coded and a <strong>user–supplied file needs to match exactly the example file</strong> including providing the heat capacity c_p column because the c_p is needed by the convective adjustment scheme. The entropy <em>can</em> be provided as well but does not have to be, because it is not used in the RT calculation. The temperature and pressure grids may be different from the example file, but the <strong>temperature steps have to be constant in linear space and the pressure steps constant in log space</strong>. Note that the c_p is per unit mole and the entropy (if given) is per unit gram!</p>
+</div>
+<div class="section" id="using-vertical-chemistry-profiles-or-on-the-fly-opacity-mixing">
+<h2>Using Vertical Chemistry Profiles or On–the–fly Opacity Mixing<a class="headerlink" href="#using-vertical-chemistry-profiles-or-on-the-fly-opacity-mixing" title="Permalink to this headline">¶</a></h2>
+<p>Instead of using a single, premixed opacity table it is with version 3 now possible to mix the individual gaseous opacities on the fly. The advantage of that is twofold. First, the mixing can be made more accurate by using random overlap (RO) instead of assuming perfect correlation between species absorption bands. (In theory one could also use RO for premixed tables as well – that is a missing functionality in the ktable program that perhaps an avid user can implement in the future). Second, instead of being limited to equilibrium abundances, one can read in vertical chemical profiles and by doing so post–process non–equilibrium chemistry models with HELIOS, or even couple the RT with the chemistry self–consistently (see next section for the latter approach).</p>
+<p>To use on–the–fly opacity mixing, one needs to provide</p>
+<blockquote>
+<div><ol class="lowerroman simple">
+<li><p>chemical abundances for all included species</p></li>
+<li><p>opacities for all included species</p></li>
+</ol>
+</div></blockquote>
+<p>The chemical abundances can come (a) from a file listing the vertical mixing ratios, or (b) equilibrium abundances in FastChem format, or (c) a constant mixing ratio can be set as well. The chemistry source has to be specified for each included species in the species file. There is a reference species file called <code class="docutils literal notranslate"><span class="pre">species.dat</span></code> included in the <code class="docutils literal notranslate"><span class="pre">input</span></code> directory. Equilibrium abundances are given by the same FastChem output files as used by the ktable program and explained in <a class="reference internal" href="#use-different-chemistry">Use Different Chemistry</a>. The molecular opacity files are simply the individual opacity files that are produced as by–product when running the ktable program and constructing the premixed table.</p>
+<p>Note that <strong>each species in the species file has to exist in the species database</strong> <code class="docutils literal notranslate"><span class="pre">source/species_database.py</span></code> because the properties are pulled from there. Most of the common species should already be pre–defined. If an error is returned that there is no such entry in <code class="docutils literal notranslate"><span class="pre">species_database.py</span></code> a new one has to be manually created. When creating a new entry just follow the format of the existing ones. The FastChem name can be looked up in the FastChem output file. The weight parameter is the species’ molecular weight in AMU (or the molar weight in g). For CIA pairs, it is the weight of the secondly–listed molecule.</p>
+<p>In the parameter file (default <code class="docutils literal notranslate"><span class="pre">param.dat</span></code>) one then sets the according parameters in the ‘Opacity Mixing’ section. See <a class="reference internal" href="parameters.html"><span class="doc">Input Parameters</span></a> for more info on these parameters.</p>
+<div class="section" id="scattering-ions-and-cia">
+<h3>Scattering, Ions and CIA<a class="headerlink" href="#scattering-ions-and-cia" title="Permalink to this headline">¶</a></h3>
+<p>Analogously to the molecular opacities, the scattering cross–sections are pre–calculated with the ktable program. It is possible to include Rayleigh scattering cross–sections for H2, He, H, H2O, CO, CO2, O2, N2 and e– Thompson scattering. See <a class="reference internal" href="ktable.html#final-species-file"><span class="std std-ref">Final Species File</span></a> for further info. Apart from H2O the scattering cross–sections are provided by the file <code class="docutils literal notranslate"><span class="pre">scat_cross_sections.h5</span></code> that is generated with the ktable program. It is included with the HELIOS installation for R=50 (in <code class="docutils literal notranslate"><span class="pre">input/r50_kdistr</span></code> directory), but has to be generated with the ktable program for other resolutions. Including H2O Rayleigh scattering is special, because its cross–section is dependent on the atmospheric H2O abundance. It is thus not provided via file but directly calculated during the HELIOS run.</p>
+<p>The H– opacity is divided in bound–free and free–free contributions, each provided in a separate file. For He– only the free–free opacity can be included. These files are generated with the ktable program. Currently, using constant mixing ratios for H– and He– opacity is not possible (this mixing ratio can only be supplied via file or FastChem).</p>
+<p>Collision–induced absorption (CIA) is listed separately in the species file as CIA_H2H2 or CIA_CO2CO2, etc., and provided by own files too. When using constant mixing ratio for the CIA pairs, the mixing ratio for each pair has to be included, separated by a ‘&amp;’.</p>
+</div>
+</div>
+<div class="section" id="coupling-to-photochemical-kinetics">
+<h2>Coupling to Photochemical Kinetics<a class="headerlink" href="#coupling-to-photochemical-kinetics" title="Permalink to this headline">¶</a></h2>
+<p>HELIOS offers the interface for <em>sequential coupling</em> to a chemistry code. This means that HELIOS and the chemistry code alternately run in sequence until a converged solution in terms of radiative transfer and chemical composition is found. A standard procedure looks as follows. HELIOS is run first using equilibrium chemistry until an equilibrium T–P profile is obtained. This profile is inserted in the chemistry code which then calculates the corresponding vertical chemical abundances including the desired non–equilibrium processes. The vertical abundances are then used as input for HELIOS which in turn calculates the equilibrium T–P profile. This cycle continues until convergence is found. Currently the convergence is tested in HELIOS by comparing the last two T–P profiles and convergence is proclaimed if the relative difference in temperature in each atmospheric layer is &lt; 1e–4 (i.e. difference &lt; 0.1 K for T = 1000 K). This convergence limit can be changed in the HELIOS parameter file.</p>
+<p>A template bash script for the coupling called <code class="docutils literal notranslate"><span class="pre">coupling_template.bash</span></code> is included in the HELIOS installation. The relevant commands for the chemistry code are included as comments and just need to be replaced with the <em>real deal</em>. Obviously, the HELIOS part of the script can and probably has to be adjusted to one own’s needs. See also the ‘Photochemical Kinetics Coupling’ Section in the parameter file for further options.</p>
+</div>
+<div class="section" id="including-clouds">
+<h2>Including Clouds<a class="headerlink" href="#including-clouds" title="Permalink to this headline">¶</a></h2>
+<p>HELIOS offers the option to include multiple cloud decks. If setting the vertical cloud distribution manually, each cloud can be parameterized by the pressure at the bottom of the cloud, the volume mixing ratio at that location and and the cloud–to–gas scale height. This gives the cloud a simple shape that exponentially decays with altitude – faster, slower or as much as the surrounding gas. Alternatively, the vertical cloud distributions can be read from a file. See section ‘clouds’ in the parameter file for more info on the settings.</p>
+<p>The extinction coefficients for a large number of aerosol types are included with the HELIOS installation. These have been calculated with the <a class="reference external" href="https://github.com/exoclime/LX-MIE">LX–MIE code</a>, and the Mie data provided therein. Other cloud files can be calculated, but the format of the files needs to be the same. Also, each file corresponds to a certain particle radius and currently these radii <strong>are hardcoded</strong>. That means when including other clouds the supplied files also have to be for radii from –2 to 3 with 0.1 stepsize in log10(r[micron]) space.</p>
 </div>
 </div>
 
@@ -144,21 +257,32 @@ export DYLD_LIBRARY_PATH=/usr/local/cuda-10.0/lib:$DYLD_LIBRARY_PATH
 
 <h3>Navigation</h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
-<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="software.html">Software</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#step-by-step-installation">Step-by-step Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#first-run">First Run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#sample-files">Sample Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html"><strong>About</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html"><strong>Requirements</strong></a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><strong>Tutorial</strong></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#setting-up">Setting Up</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-helios">Get HELIOS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#download-input-files">Download Input Files</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter File</a></li>
-<li class="toctree-l1"><a class="reference internal" href="structure.html">Structure &amp; I/O</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ktable.html">k-Table Generator</a></li>
-<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
-<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code.html">Code Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#first-run">First Run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#use-different-chemistry">Use Different Chemistry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#include-more-opacities">Include More Opacities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-stellar-spectrum-file">Creating a Stellar Spectrum File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-pre-tabulated-kappa-and-c-p">Using Pre-Tabulated kappa and c_p</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-vertical-chemistry-profiles-or-on-the-fly-opacity-mixing">Using Vertical Chemistry Profiles or On–the–fly Opacity Mixing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#scattering-ions-and-cia">Scattering, Ions and CIA</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#coupling-to-photochemical-kinetics">Coupling to Photochemical Kinetics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#including-clouds">Including Clouds</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html"><strong>Input Parameters</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html"><strong>Code Structure</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="ktable.html"><strong>ktable Program</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html"><strong>License</strong></a></li>
 </ul>
 
 
@@ -177,7 +301,7 @@ export DYLD_LIBRARY_PATH=/usr/local/cuda-10.0/lib:$DYLD_LIBRARY_PATH
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2018, Matej Malik.
+      &copy;2018-2022, Matej Malik.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>

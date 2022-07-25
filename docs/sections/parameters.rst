@@ -1,176 +1,390 @@
+====================
+**Input Parameters**
+====================
+
+General Info
+============
+
+All input parameters and settings are given in the file ``param.dat``. Next to each setting, the parameter format, typical values and units are given in square brackets. Furthermore, if (CL: Y) the setting exists as command-line option. If (CL: N) it does not. The command-line option has the **same name** as the respective parameter given in ``param.dat`` with the following limitations:
+
+- small letters only
+- all spaces and dash symbols are replaced by an underscore
+- without the square brackets and their content
+- no dependency information (parameter name starts after the arrow) 
+
+Examples:
+
+   - ``TOA pressure [10^-6 bar]`` becomes ``-toa_pressure``
+
+   - ``manual --> surface gravity [cm s^-2]`` becomes ``-surface_gravity``
+
+Note that the command-line options **overwrite** the values in the parameter file. The parameter file can be given an own name and loaded with the command-line option ``-parameter_file``. In this way, settings can be saved to be reused or for reference.
+
 Parameter File
 ==============
 
-The input parameters are set in the file ``param.dat``. The individual parameters are the following, with additional info given in round brackets. The respective units are also given.
+**IMPORTANT:** The parameter file has been extensively revised for version 3 of HELIOS. Old parameter files, saved from earlier versions, **are not compatible anymore** and will lead to errors.
 
-**GENERAL**
+Below each of the settings in the parameter file is explained in detail.
 
-   ``name``
+General
+-------
 
-The name of the output. The output directory is given this name and the files begin with this string.
+   ``name   [any string]   (CL: Y)``
 
-   ``output directory``
+The name of the output. The output directory is given this name and all output files begin with this prefix.
 
-The root output directory. This is useful for chain runs or when running multiple instances of the code in parallel.
+   ``output directory   [directory path]   (CL: Y)``
 
-   ``precision (double, single)``
+The main output directory that contains all sub-directories with the output. This is useful for chain runs or when running multiple instances of the code in parallel.
 
-Under all normal conditions double precision should be used. Single precision should make the code run faster, but somehow does not. Hence, single precision does not provide any advantage at the moment. 
+   ``realtime plotting   [yes, no, number > 0]   (CL: Y)``
 
-   ``realtime plotting (yes, no, number)``
+If set to 'yes', a pop-up window with the real-time T-P profile is shown during the run. During the convective adjustment loop it additionally shows the next flux. Per default the window is updated every 100th iteration step. The plotting interval can be changed by providing a number instead of 'yes'.
 
-Determines wether realtime plotting is shown during the iterative run. The output interval can be manually specified.
+   ``planet type   [rocky, gas, no_atmosphere]   (CL: Y)``
 
-**GRID** 
+This setting this determines the zero altitude location. For 'rocky' it is simply the surface of the planet. For 'gas' zero is set at 10 bar. This is really only relevant when using the azimuth angle correction. Because the code in general uses pressure as vertical grid unit. The setting 'no_atmosphere' is special. In this case the code runs a bare-rock scenario with a negligibly thin atmosphere. The surface temperature and the spectrum are then the output quantities of interest. (You will want to use a non-gray surface in that case, otherwise the spectrum will not be that interesting.)
 
-   ``isothermal layers (yes, no)``
+Grid
+----
 
-Determines whether the model uses a constant temperature across each layer (=isothermal layers) or expands the Planck function to first order (=non-isothermal layers). Usually for the temperature iteration non-isothermal layers are recommended, whereas for pure post-processing purposes isothermal layers are sufficient.
+   ``TOA pressure [10^-6 bar]   [number > 0]   (CL: Y)``
 
-   ``number of layers (typically 50 - 200)``
+The Top-of-atmosphere pressure in cgs units. Specifically this is the value in the center of the uppermost atmospheric layer. Typically this is 1e-1 for most applications.
 
-Sets the number of vertical layers in the grid. Usually having 10 layers per magnitude in pressure provides a reasonable compromise between accuracy and computational effort. 
+   ``BOA pressure [10^-6 bar]   [number > 0]   (CL: Y)``
 
-   ``TOA pressure [10^-6 bar] (typically 1)``
+The Bottom-of-atmosphere pressure in cgs units. Specifically this is the value at the lowest interface of the numerical grid. For rocky planets this coincides with the surface. For gas planets typical values are 1e8 or 1e9.
 
-The pressure value at the topmost simulated atmospheric layer.
+Iteration
+---------
 
-   ``BOA pressure [10^-6 bar] (typically 1e9)``
+   ``run type   [iterative, post-processing]   (CL: Y)``
 
-The pressure value at the bottommost simulated atmospheric layer. The model construct a grid between the BOA and TOA pressures equidistant in log10 P.
+This sets the run type. In 'iterative' mode the code starts from an isothermal T-P profile and runs until radiative-convective equilibrium is found. In 'post-processing' mode the code starts from a given T-P profile (a file is required as input) and only runs once through the atmosphere. This mode is used to produce a higher resolution spectrum than would be feasible with the 'iterative' mode.
 
-   ``planet type (gas, rocky)``
+   ``path to temperature file   [file path]   (CL: Y)``
 
-Sets the type of the planet to either rocky or gaseous. This choice impacts the calculation of the vertical altitude in the model.
+This sets the path to the file with T-P profile, needed for the post-processing mode. *This parameter is only used if 'post-processing' is set previously.*
 
-**ITERATION** 
+   ``temperature file format   [helios, TP (bar), PT (bar)]   (CL: N)``
 
-   ``post-processing only (yes, no)``
+This sets the format of the T-P profile file. Choose 'helios' for a file generated by HELIOS. Otherwise a text file with two columns is possible too. The column order is then set via 'PT' or 'TP'. Per default, cgs units are expected, but bar is possible if 'bar' is added as second parameter on this line. *This parameter is only used if 'post-processing' is set for the run type.*
 
-Sets whether the model proceeds with the temperature iteration routine ("no") or just propagates the fluxes once through the layers ("yes"). In the latter case, there is no iteration happening and the TP-profile needs to be provided. Setting this option to “yes” is typically used to produce a high resolution spectrum from a given TP-profile. If this value is set to "no", the effective irradiated temperature of the planet is used initially. 
+Radiation
+---------
 
-   ``path to temperature file``
+   ``scattering   [yes, no]   (CL: Y)``
 
-Sets the path to the temperature file. This parameter is irrelevant if the option "restart temperatures" is set to "no". 
+Enables or disables scattering. This setting affects both, gaseous as well as scattering due to aerosols (if clouds are switched on).
 
-   ``temperature file format & P unit (helios, TP, PT, TP bar, PT bar)``
+   ``direct irradiation beam   [yes, no]   (CL: Y)``
 
-Sets the format of the temperature file. See :doc:`structure` for more info.
+If 'yes', star is treated as a point source the location of which is set by the zenith angle setting. If 'no', the stellar irradiation is represented by the downward flux at TOA. The direct beam approach is usually used if the irradiation angle is important or a specific location on the planet is to be modeled. To simulate averaged conditions of the irradiated hemisphere (i.e., the dayside of a tidally-locked planet), the direct beam is not required.
 
-   ``adaptive interval (6, 20)``
+   ``f factor   [number: 0.25 -- 1]   (CL: Y)``
 
-Sets the interval in numerical forward steps which is used between consequent adaptive adjustments of the stepping length. A value of 20 is the conservative safe choice for a stable algorithm. Smaller values may result in convergence issues, but also speed up the iteration. 
+Determines the overall heat content (and brightness) of the planetary dayside by modifying the amount of incoming stellar radiation. This parameter is usually used as a proxy to describe how much heat is transported from the dayside to the nightside of a planet via horizontal advection. For no day-to-night heat transport choose f = 2/3 (e.g., see `Hansen 2008 <https://ui.adsabs.harvard.edu/abs/2008ApJS..179..484H/>`_) and for efficient global redistribution choose f = 1/4. Substellar point conditions can be simulated with f = 1. *This parameter is only used if 'no' is set for the direct irradiation beam.*
 
-   ``TP-profile smoothing (yes, no)``
+   ``stellar zenith angle [deg]   [number: 0 -- 89]   (CL: Y)``
 
-Determines whether a TP-profile smoothing is applied during the iteration. This option should be deactivated by default. Only if unrealistic kinks in the temperature profile appear can this option be used to smooth those. However, note that smoothing is an artificial intervention at the cost of local radiative balance.
+The stellar zenith angle in degrees, measured from the vertical. Vertical irradiation (= substellar point): 0. Horizontal irradiation (= terminator): 90. The code will take min[chosen angle, 89] for numerical stability and since exactly horizontal irradiation is not possible anyway. *This parameter is only used if 'yes' is set for the direct irradiation beam.*
 
-**RADIATION** 
+   ``internal temperature [K]   [number > 0]   (CL: Y)``
 
-   ``direct irradiation beam (yes, no)``
+The internal heat flux at the BOA is given by blackbody radiation of this temperature. For older, fully evolved planets: hot Jupiters T_int 50 -- 100 K, sub-Neptunes/terrestrial planets T_int ~ 0 -- 50 K. Young planets T_int >~ 100 K.
 
-Includes a separate irradiation beam for the stellar flux at a certain zenith angle (set later). Otherwise, the stellar flux is isotropic and treated by the diffuse flux equations. For the description of average hemispheric conditions this can be switched off. 
+   ``surface albedo   [file, number: 0 -- 1]   (CL: Y)``
 
-   ``scattering (yes, no)``
+The surface albedo value can be set as constant value (= gray, wavelength-independent albedo) or read from a file. For gas planets this should be left at 0.
 
-Determines whether gas (Rayleigh) scattering is used. 
+   ``path to albedo file   [path to file]   (CL: Y)``
 
-   ``improved two-stream correction (yes, no)``
+This sets the path to the file with the surface albedo. *This parameter is only used if 'file' is set for the surface albedo.*
 
-Activates the two-stream correction of `Heng et al. (2018) <http://adsabs.harvard.edu/abs/2018ApJS..237...29H>`_. This correction makes the two-stream formalism more accurate and should be on in general circumstances.
+   ``albedo file format   [# skip lines, wavelength column, wavelength unit [micron, cm, m]]   (CL: N)``
 
-    ``asymmetry factor g_0 (in range [-1, 1])``
+This sets the albedo file format via three parameters. First parameter determines how many lines are skipped at the beginning of the file. The second sets the name (header) of the column with the wavelength values. The third sets the wavelength unit with possible options being 'micron', 'cm' and 'm'. *This parameter is only used if 'file' is set for the surface albedo.*
 
-Determines the scattering orientation. As Rayleigh scattering is mostly isotropic, it is recommended to choose zero. A positive value implies forward scattering and a negative value backward scattering. 
+   ``surface name   [header for column with surface data]   (CL: Y)``
 
-   ``path to opacity file``
+This sets the name (header) of the column with the albedo data. *This parameter is only used if 'file' is set for the surface albedo.*
 
-Sets the path to the opacity table file. For more info on the format of this file see :doc:`structure`. 
+   ``use f approximation formula   [yes, no]   (CL: Y)``
 
-   ``diffusivity factor (typically 1.5 - 2)``
+If enabled, calculates the f factor with Eq. (10) of Koll (2021) based on the longwave optical depth of the atmosphere.  As the optical depth depends on atmospheric properties, please run the model ~ 4 times in sequence to have a converged solution. This overwrites the manual f factor setting. *This parameter is only used if the planet type is set to 'rocky'.*
 
-Sets the value of the diffusivity factor. If you are not sure, pick 2. 
+Opacity Mixing
+--------------
 
-   ``second Eddington coefficient (typically 0.5 - 1)``
+   ``opacity mixing   [premixed, on-the-fly]   (CL: Y)``
 
-Sets the value of the second Eddington coefficient. This coefficient modulates the scattering of the direct irradiation beam. See `Heng et al. (2018) <http://adsabs.harvard.edu/abs/2018ApJS..237...29H>`_ for a discussion on this parameter.
+If set to 'premixed', a single, premixed opacity table is used. Otherwise, with 'on-the-fly' an individual opacity file is read for each species and the opacities are then mixed during the iteration.
 
-   ``f factor (typically 0.25 - 1)``
+   ``path to opacity file   [file path]   (CL: Y)``
 
-The f factor determines the heat redistribution efficiency in the atmosphere. For day-side emission spectra one typically assumes f = 2/3 = 0.6667 or 0.5. For no redistribution (substellar point) f = 1 and for a full/global redistribution f = 0.25. This option is irrelevant if a direct irradiation beam is used. 
+This sets the path to the HDF5 file with the premixed opacity. *This parameter is only used if 'premixed' is set for the opacity mixing.*
 
-   ``stellar zenith angle [deg] (values: 0 - 89)`` 
+   ``path to species file   [file path]   (CL: Y)``
 
-The zenith angle of the star with 0 here being vertical irradiation. This parameter is exclusive with the f factor, because the latter is only used for hemispherically averaged condition.
+This sets the path to the file that defines the species and the source of their mixing ratios. *This parameter is only used if 'on-the-fly' is set for the opacity mixing.*
 
-   ``geometric zenith angle correction (yes, no)``
+   ``file with vertical mixing ratios   [file path]   (CL: Y)``
 
-Switches the geometric correction of the zenith angle on/off. For zenith angles > 70 the correction is recommended. For smaller angles it is negligible and can be left switched off (The correction makes the code run slightly slower).
+This sets the path to the file with the vertical volume mixing ratios. This file is only needed if it is used for at least one species, as defined in the species file. *This parameter is only used if 'on-the-fly' is set for the opacity mixing.*
 
-   ``internal temperature [K] (typically 0 - 300 for irrad. planets)``
+   ``vertical VMR file format   [# header lines, pressure column, pressure unit [cgs, Pa, bar]]   (CL: N)``
 
-The internal temperature determines the strength of the internal heating. In this case the internal heat is modeled as blackbody ration with the internal temperature. If internal heating is negligible on the resulting spectrum (e.g. strongly irradiated planets) it is safe to assume this parameter as zero. 
+This sets the format of the file with the vertical volume mixing ratios. First parameter determines how many lines are skipped at the beginning of the file. The second sets the name (header) of the column with the pressure grid. The third sets the pressure unit with possible options being 'cgs', 'Pa' and 'bar'. *This parameter is only used if 'on-the-fly' is set for the opacity mixing.*
 
-   ``surface/BOA temperature [K]``
+   ``directory with FastChem files   [directory path]   (CL: Y)``
 
-Sets the surface temperature (or BOA temperature for a gas planet) manually. This is only relevant for post-processing a given TP profile. In normal circumstances the surface temperature is self-consistently calculated during the iterative run. Even for post-processing purposes, if the standard Helios TP-profile file is used, the value is already included and will be read in from there. So usually this entry can be ignored.
+This sets the path to the directory where the FastChem files, the two files named ``chem_low.dat`` and ``chem_high.dat``, are located. This is only needed if FastChem is set as mixing ratio source for at least one species in the species file. *This parameter is only used if 'on-the-fly' is set for the opacity mixing.*
 
-   ``surface/BOA albedo (0-0.999)``
+   ``directory with opacity files   [directory path]   (CL: Y)``
 
-Sets the albedo of the surface (or the BOA for a gas planet). Numerically it sets the reflectivity at the BOA. If set to "1", all radiation is perfectly reflected at the bottom boundary. If set to "0", all radiation is absorbed and re-emitted. For numerical stability reasons, the maximum value is 0.999. For gas planets without any surface the recommended value is "0". In that case the atmosphere below the modeled grid is assumed to possess BOA conditions.
+This sets the path to the directory where the individual opacity files are located. *This parameter is only used if 'on-the-fly' is set for the opacity mixing.*
 
-   ``energy budget correction (yes, no)``
+Convective Adjustment
+---------------------
 
-Corrects for cut-off wavelengths in the total incoming flux. Due to the lower bound of the wavelength range at 0.3 micron, the fraction of the external radiation at smaller wavelengths is not accounted for. This correction shifts all flux values to give the correct wavelength-integrated flux according to the Stefan-Boltzmann law. As a rule of thumb, this should be switched on for iterative runs and switched off for post-processing purposes.
+   ``convective adjustment   [yes, no]   (CL: Y)``
 
-**CONVECTIVE ADJUSTMENT** 
+Switches convective adjustment on or off. If switched off, only radiative equilibrium is determined by the code and convective adjustment is not performed. If switched on, the solution is in radiative-convective equilibrium (which is usually the desired goal).
 
-   ``convective adjustment (yes, no)``
+   ``kappa value   [file, number > 0]   (CL: Y)``
 
-Switches convective adjustment on or off. If set to off, only radiative equilibrium is sought during the temperature iteration. If this option is activated, convective adjustment is applied after a radiative solution has been found. In this way the temperature profile in radiative-convective equilibrium is obtained.
+This sets the value of the adiabatic coefficient kappa, also called 'delad'. If set to 'file', a file with pre-tabulated kappa values is read, otherwise a constant value can be set too. For a diatomic gas, one can approximate kappa via the ideal gas law with 2/7 = 0.285714 (for a diatomic gas) or with 2/8 = 0.25 (for a tri-atomic gas).
 
-   ``kappa value (value, file)``
+   ``kappa file path   [file path]   (CL: Y)``
 
-Sets manually a constant value to the adiabatic coefficient. For an ideal gas, the value is given by 2 / (2 + n), where n is the number of degrees of freedom for the gas particles. For diatomic particles n = 5. If "file" is set, pre-tabulated values are to be read from a file. See :doc:`structure` for more info on the format of this file. 
+This sets the path to the file with the pre-tabulated kappa and c_p values. Note that the format of this file is not user-defined but follows strict rules. See :ref:`kappa-file-format` for more info. *This parameter is only used if 'file' is set for the kappa value.*
 
-   ``entropy/kappa file path``
+Stellar and Planetary Parameters
+--------------------------------
 
-Sets the path to the file with the tabulated adiabatic coefficient (and optionally the entropy).
+   ``stellar spectral model   [blackbody, file]   (CL: Y)``
 
-   ``damping parameter (auto, adaptive, number [1 - 1000])``
+With 'blackbody' the star is treated as a blackbody of given temperature (set further below) and the stellar spectrum is calculated within HELIOS. With 'file' the stellar spectrum is read from a file.
+ 
+   ``path to stellar spectrum file   [file path]   (CL: Y)``
 
-Sets the damping strength of the convective adjustment shift to match the global radiative equilibrium. In almost all cases, this should be set to "auto". If convergence fails, one should try with the "adaptive" setting in that particular case. This setting makes the model much slower, but also more stable. As ultima ratio also a fixed number can be set. Something between 1 and 1000 is a good starting point. The larger the number the more stable the model. However, it is also harder to achieve global equilibrium.
+This sets the path to the HDF5 file containing the stellar spectrum. *This parameter is only used if 'file' is set for the stellar spectral model.*
 
-**ASTRONOMICAL PARAMETERS**
+   ``dataset in stellar spectrum file   [dataset]   (CL: Y)``
 
-   ``stellar spectral model (blackbody, HDF5 data set)``
+This sets the dataset in the stellar spectrum file where the desired stellar spectrum is stored. *This parameter is only used if 'file' is set for the stellar spectral model.*
 
-Sets the model for the stellar irradiation. Simplest approach is to use a blackbody spectrum with the stellar temperature. For this choice no additional input is required. If a realistic stellar spectrum is desired, the spectrum needs to be provided in a HDF5 file with the correct format. A sample file is provided with the installation. See :doc:`structure` for more info.
+   ``planet   [manual, name of planet]   (CL: Y)``
 
-   ``path to stellar spectrum file``
+With 'manual', the system parameters are set manually below. Otherwise, the parameters are looked up in the file ``planet_database.py`` using the name of the planet. Please feel free to add any new planets to this file.
 
-Sets the path to the HDF5 file containing the stellar spectrum. If "blackbody" is chosen above, this parameter is irrelevant.
+   ``surface gravity [cm s^-2]   [number > 0]   (CL: Y)``
 
-   ``planet (manual, pre-defined name)``
+This sets the surface gravity value in cgs units. Although called 'surface' gravity, this constant value is used throughout the atmospheric grid. If the entered value < 10, it is assumed that it is the log10 of the gravity, i.e., g = 10^(input value). *This parameter is only used if 'manual' is set for the planet.*
 
-The planetary parameters can be either specified manually or read in from a file. A sample file is provided with the installation. See :doc:`structure` for more info.
+   ``orbital distance [AU]   [number > 0]   (CL: Y)``
 
-   ``path to planet data file``
+This sets the orbital distance between planet and host star in AU. *This parameter is only used if 'manual' is set for the planet.*
 
-Sets the path to the file with the planetary parameters. If the data are read in from a file the below stated manual parameters are ignored.
+   ``radius planet [R_Jup]   [number > 0]   (CL: Y)``
 
-   ``surface gravity [cm s^-2] or [log10 (cm s^-2)]``
+This sets the radius of the planet in Jupiter radii. *This parameter is only used if 'manual' is set for the planet.*
 
-   ``orbital distance [AU]``
+   ``radius star [R_Sun]   [number > 0]   (CL: Y)``
 
-   ``radius planet [R_Jup]``
+This sets the radius of the star in solar radii. *This parameter is only used if 'manual' is set for the planet.*
 
-   ``radius star [R_Sun]``
+   ``temperature star [K]   [number >= 0]   (CL: Y)``
 
-   ``temperature star [K]``
+This sets the temperature of the star in Kelvin. The stellar temperature is used if treating the star as a blackbody and for the energy budget correction (see below). *This parameter is only used if 'manual' is set for the planet.*
 
-Manual entry for the planetary, stellar and orbital parameters. These are only read if the "planet" option is set to "manual". The stellar temperature is not only used to calculate the correct blackbody emission. It may also be used together with a realistic stellar spectrum (see "stellar spectral model" option) to shift the stellar spectrum to give the correct bolometric flux (see "energy budget correction" option).
+Clouds
+------
 
-**EXPERIMENTAL / DANGER ZONE**
+   ``number of cloud decks   [number >= 0]   (CL: Y)``
 
-There are several experimental options, which are under testing for functionality. For the moment these parameters should be left alone. *Beware of the danger zone!*
+This sets the number of clouds decks in the model. With '0' the atmosphere is cloud-free. 
+
+   ``path to Mie files   [directory path(s)]   (CL: Y, only 1 cloud)``
+
+This sets the path to the directory with the Mie files that are used for the cloud extinction. A path has to be defined for each cloud deck. This parameter can be set via command-line but only for the case with a single cloud.
+
+   ``aerosol radius mode [micron]   [number(s) > 0]   (CL: Y, only 1 cloud)``
+
+This sets the mode of the lognormal distribution that describes the aerosol radii. A mode has to be defined for each cloud deck. This parameter can be set via command-line but only for the case with a single cloud.
+
+   ``aerosol radius geometric std dev   [number(s) > 1]   (CL: Y, only 1 cloud)``
+
+This sets the geometric standard deviation of the lognormal distribution that describes the aerosol radii. Recall that this value > 1, as a standard deviation of unity would mean that the distribution is infinitesimally thin. A standard deviation has to be defined for each cloud deck. This parameter can be set via command-line but only for the case with a single cloud.
+
+   ``cloud mixing ratio   [manual, file]   (CL: Y)``
+
+The vertical volume mixing ratio of the cloud can be set either manually below or read from a file. with the 'manual' setting the cloud is parameterized by the pressure at the bottom of the cloud, the mixing ratio at the bottom of the cloud and the cloud-to-gas scale height.
+
+   ``path to file with cloud data   [file path]   (CL: Y)``
+
+This sets the path to the file with the vertical cloud mixing ratio. *This parameter is only used if 'file' is set for the cloud mixing ratio.*
+
+   ``cloud file format   [# header lines, pressure column, pressure unit [cgs, Pa, bar]]   (CL: N)``
+
+This sets the format of the file with the cloud mixing ratio. First parameter determines the number of lines skipped at the beginning of the file. Second one the name of the pressure column. Third one the pressure unit with 'cgs', 'Pa' and 'bar' being the options. *This parameter is only used if 'file' is set for the cloud mixing ratio.*
+
+   ``aerosol name   [name(s) of column(s) with cloud data]   (CL: Y, only 1 cloud)``
+
+This sets the name of the column with the aerosol mixing ratio. A column name has to be set for each cloud deck. This parameter can be set via command-line but only for the case with a single cloud. *This parameter is only used if 'file' is set for the cloud mixing ratio.*
+
+   ``cloud bottom pressure [10^-6 bar]   [number(s) > 0]   (CL: Y, only 1 cloud)``
+
+This sets the pressure at the bottom of the cloud, in cgs units. A pressure has to be set for each cloud deck. This parameter can be set via command-line but only for the case with a single cloud. *This parameter is only used if 'manual' is set for the cloud mixing ratio.*
+
+   ``cloud bottom mixing ratio   [number(s): 0 -- 1]   (CL: Y, only 1 cloud)``
+
+This sets the volume mixing ratio for the cloud aerosols at the bottom of the cloud. A mixing ratio has to be set for each cloud deck. This parameter can be set via command-line but only for the case with a single cloud. *This parameter is only used if 'manual' is set for the cloud mixing ratio.*
+
+   ``cloud to gas scale height ratio   [number(s) > 0]   (CL: Y, only 1 cloud)``
+
+This sets the cloud-to-gas scale height ratio. E.g., if the scale height ratio is set to unity the cloud mixing ratio is constant with respect to the background gas. A scale height ratio has to be set for each cloud deck. This parameter can be set via command-line but only for the case with a single cloud. *This parameter is only used if 'manual' is set for the cloud mixing ratio.*
+
+Photochemical Kinetics Coupling
+-------------------------------
+
+   ``coupling mode   [yes, no]   (CL: Y)``
+
+If enabled, activates the coupling mode which allows for additional coupling features. Also, the code generates additional output files that are useful for the coupling with a chemistry code. These files contain the coupling T-P profile and the coupling convergence criterion. See :doc:`structure` for more info.
+
+   ``full output each iteration step   [yes, no]   (CL: Y)``
+
+If enabled, all HELIOS output files are stored for each coupling iteration step. In order to avoid the files being overwritten the iteration step is appended to the name of the HELIOS run. Otherwise, only the coupling T-P profile and the convergence criterion are kept for each iteration step and everything else is being overwritten. *This parameter is only used if 'yes' is set for the coupling mode.*
+
+   ``force eq chem for first iteration   [yes, no]   (CL: Y)``
+
+If enabled, the mixing ratio setting 'file' in the species file is overridden and FastChem is used instead for the very first coupling iteration step. The idea behind this is that for the first iteration the vertical chemistry has not beed calculated yet and thus equilibrium chemistry has to be assumed. And with this setting one does not manually have to modify the species file to do that. This does not affect the the constant mixing ratios set in the species file. *This parameter is only used if 'yes' is set for the coupling mode.*
+
+   ``coupling speed up   [yes, no]   (CL: Y)``
+
+If enabled, instead of feeding the newest T-P profile to the chemistry code, HELIOS takes the average from the newest and previous T-P profiles. From experience this reduces the number of iterations until convergence because what usually happens is that the iteration oscillates around the equilibrium state. Taking the average thus progresses the iteration faster to the equilibrium state. Note that this has not been thoroughly tested, so use cautiously. *This parameter is only used if 'yes' is set for the coupling mode.*
+
+   ``coupling iteration step   [number >= 0]   (CL: Y)``
+
+This sets the coupling iteration step. In practically all circumstances this will be set via command-line. *This parameter is only used if 'yes' is set for the coupling mode.*
+
+Advanced Settings
+-----------------
+
+   ``debugging feedback   [yes, no]   (CL: Y)``
+
+This activates some additional warnings during the RT calculation, e.g., if a flux becomes negative and similar. This *may* indicate that there is an issue with the calculation (or it could simply be a limitation of numerical precision). If you don't know what do to with these warnings, you might as well keep them switched off -- and sleep better.
+
+   ``precision   [double, single]   (CL: Y)``
+
+This changes the numerical precision used for the GPU calculations. However, I have never found any difference in terms of accuracy or speed when switching between single and double precision. (Perhaps I did something wrong). It is probably the best to leave it at 'double'.
+
+   ``number of layers   [automatic, number > 0]   (CL: Y)``
+
+This sets the number of layers in the vertical grid between BOA and TOA. Either a constant number can be set manually or with 'automatic' the number of layers is 10 per order of magnitude in pressure. The latter has been found a good compromise between vertical resolution, computational speed and numerical stability.
+
+   ``isothermal layers   [automatic, yes, no]   (CL: Y)``
+
+Using a single temperature ('yes') or a blackbody gradient ('no') over the width of each layer. Recommended: 'yes' for spectral post-processing and 'no' for iterative mode. With 'automatic' the recommended settings are taken depending on the run type.
+
+   ``adaptive interval   [number]   (CL: Y)``
+
+Number of iterative steps over which oscillations are analyzed (see Sect. 2.2.4. in `Malik et al. 2017 <http://adsabs.harvard.edu/abs/2017AJ....153...56M>`_). The smaller the number the faster the convergence. However, a too small number may be numerically unstable. Tested range of values: 6 -- 20.
+
+   ``TP profile smoothing   [yes, no]   (CL: Y)``
+
+This functionality smoothes sharp kinks in the T-P profile at the cost of local energy balance in the smoothed regions (see App. C in `Malik et al. 2019 <https://ui.adsabs.harvard.edu/abs/2019AJ....157..170M/>`_). This should be switched off per default and only activated if kinks are detected.
+
+   ``improved two stream correction   [yes, no]   (CL: Y)``
+
+Activates the improved two-stream scattering correction (I2S) from `Heng et al. (2018) <https://ui.adsabs.harvard.edu/abs/2018ApJS..237...29H>`_. In theory, this makes the scattering more accurate. Unfortunately, the I2S breaks down in the deep, optically thick atmosphere when scattering becomes negligible. Thus to avoid using the I2S in this regime a switch is implemented that turns off the I2S (using regular two-stream instead) beyond the transition point (see next parameter). Per default the I2S is switched off and should only be used when the limitations of this method are understood. 
+
+   ``I2S transition point   [number between 0 and 1]   (CL: Y)``
+
+This sets the value of the single scattering albedo w_0 that is used for the transition between I2S and regular two-stream. In the atmosphere whenever w_0 > transition point I2S is used, otherwise regular two-stream formalism is used. *This parameter is only used if 'yes' is set for the improved two stream correction.*
+
+   ``asymmetry factor g_0   [number between -1 and 1]   (CL: Y)``
+
+This sets the orientation of the scattering. Setting g_0 = 1 means all scattering is purely forward, g_0 = -1 leads to pure backward scattering and g_0 = 0 means isotropic scattering. When modeling cloud-free conditions with only gaseous Rayleigh scattering, it is recommended to set g_0 = 0.
+
+   ``diffusivity factor   [number between 1 and 2]   (CL: Y)``
+
+This factor determines how diffuse radiation is. It is also the inverse of the first Eddington coefficient that the ratio between the total flux and the total intensity (see `Heng et al. 2014 <https://ui.adsabs.harvard.edu/abs/2014ApJS..215....4H>`_). Setting D = 2 means that the radiation is isotropic. This value recovers the correct fluxes in the deep, opaque atmosphere where the fluxes consists of isotropic blackbody radiation. However, around the photosphere and adjacent optically thinner atmosphere the radiation will be non-isotropic because the extinction of radiation is dependent on the angle of propagation and the diffusivity factor should be < 2. For instance, `Amundsen et al. (2016) <https://ui.adsabs.harvard.edu/abs/2014A%2526A...564A..59A>`_ recommend D = 1.66. However, in `Malik et al. (2017) <http://adsabs.harvard.edu/abs/2017AJ....153...56M>`_ we found that D = 2 most closely reproduces the "exact" fluxes in the pure absorption limit (see Fig. 11 in that paper) and so per default D = 2 is set.
+
+   ``second Eddington coefficient   [number]   (CL: Y)``
+
+The second Eddington coefficient (e2) sets the strength of the coupling between the direct irradiation beam and the diffuse fluxes via scattering. Per default, this coefficient is set to 0.5 which is consistent with the flux solutions in `Malik et al. 2019 <https://ui.adsabs.harvard.edu/abs/2019AJ....157..170M/>`_. Another possibility is setting e2 = 2/3, consistent with the Eddington closure, or e2 = 1/sqrt(3), consistent with the quadrature closure (see discussion in Sect. 4.3. of `Heng et al. 2018 <https://ui.adsabs.harvard.edu/abs/2018ApJS..237...29H>`_).
+
+   ``geometric zenith angle correction   [automatic, yes, no]   (CL: Y)``
+
+If disabled, the zenith angle is assumed to be constant throughout the atmosphere. However, due to the planet's spherical geometry, the angle is in fact dependent on the altitude. The correction is only important for large zenith angles in regions close to the terminator (see Sect. 4.4. in `Malik et al. 2019 <https://ui.adsabs.harvard.edu/abs/2019AJ....157..170M/>`_). Hence, when set to 'automatic' the correction is applied to zenith angles >= 70 deg, but switched off otherwise to keep the computational costs lower.
+
+   ``flux calculation method   [iteration, matrix]   (CL: Y)``
+
+The radiative fluxes are coupled via scattering and thus to solve for the coupled fluxes that are converged (i.e., after an infinite number of scattering processes occured) two methods can be used. The first method is a simple iteration, multiple times through the vertical grid. Each iteration populates the fluxes and brings them closer to their final and converged values. Currently, HELIOS iterates 3 times for each time step during the iterative mode and 1000 times during post-processing to reach a converged state. Alternatively, the flux problem can be written as tridiagonal matrix and solved via the standard `Thomas algorithm <https://en.wikipedia.org/wiki/Tridiagonal_matrix_algorithm>`_. In theory, the matrix algorithm would be the preferred way to calculate the fluxes as it is somewhat faster than the flux iteration method (for post-processing only though) and, as the final fluxes are obtained instantaneously, is expected to be the more accurate method. Unfortunately, after extensive testing the matrix method has been found numerically unstable in a number of cases: (i) if the scattering contribution is very minor, (ii) if the the atmospheric optical depth is large or (iii) if the BOA has a vanishing albedo. In all of these cases the fluxes become uncoupled, creating singularities in the matrix algorithm. This deficit is well known in the literature and discussed, e.g., on page 16,291 of `Toon et al. (1989) <https://ui.adsabs.harvard.edu/abs/1989JGR....9416287T>`_. For this reason, it is recommended to use the iterative solver for the fluxes.
+
+   ``k coefficients mixing method   [correlated-k, RO]   (CL: Y)``
+
+When the k-distribution method is used, approximations have to be made in order to mix the k-coefficient of multiple gas species. The correlated-k method assumes that the absorption bands of different gas species are perfectly correlated so that their k-coefficients at given abscissa coordinate can straightforwardly be summed up (as we did in `Malik et al. 2017 <http://adsabs.harvard.edu/abs/2017AJ....153...56M>`_). A more accurate albeit much slower numerical scheme is to assume a random correlation (also called random overlap, RO) between the absorption bands of different gas species (see `Lacis & Oinas 1991 <https://ui.adsabs.harvard.edu/abs/1991JGR....96.9027L>`_). In HELIOS the RORR (RO with resorting and rebinning) scheme from `Amundsen et al. (2016) <https://ui.adsabs.harvard.edu/abs/2017A%2526A...598A..97A>`__) is incorporated. Strictly speaking, RO still assumes a certain correlation between absorption bands, not between different species, but by assuming that the absorption bands remain at the same wavelengths when moving vertically through the atmosphere. It is recommended to use RO per default.
+
+   ``energy budget correction   [automatic, yes, no]   (CL: Y)``
+
+This correction shifts the incoming stellar flux to produce the correct Stefan-Boltzmann value when integrating over all wavelengths. This is necessary because due to limits on the wavelength range of the model some fraction of the external radiation may not be accounted for. As a rule of thumb, this should be switched on for iterative runs (where the total energy budget of the atmosphere is important) and switched off for post-processing purposes (where the exact flux value at a given wavelength is important), and that is what happens when 'automatic' is set.
+
+   ``convective damping parameter   [automatic, number > 0]   (CL: Y)``
+
+Parameter that damps the shift of the temperatures in the convective zone, as described in App. D of `Malik et al. (2019) <https://ui.adsabs.harvard.edu/abs/2019AJ....157..170M/>`_. It should be left as 'automatic', but can also be set to a constant number if the code becomes stuck at the convective adjustment stage. If global energy equilibrium cannot be reached but the net flux is constant throughout the vertical grid, the damping needs to be made weaker by choosing a small parameter. If the model is unstable with the net fluxes not converging to a constant value the damping needs to be made stronger by choosing a smaller parameter. Typical values of this parameter are 0.5 -- 8.
+
+   ``plancktable dimension and stepsize   [two numbers > 0]   (CL: N)``
+
+In order to speed up iteration, the code pre-calculates blackbody flux values for a temperature grid at the beginning of each run. The first parameter here sets the number of temperature points and the second parameter the linear step size. Per default these numbers are 8000 and 2, creating a grid starting at 1 K and going to 15999 K with a step size of 2 K. To save memory a viable smaller grid could be 800 and 5, creating a grid over 1 K -- 3996 K. **Important(!)**: the temperature grid must encompass the whole range of temperatures that are encountered during the model run, otherwise the code breaks down.
+
+   ``maximum number of iterations   [number > 0]   (CL: Y)``
+
+Maximum number of iterations after which the code stops even if equilibrium is not reached. This is simply to prevent a 'hung' job from running indefinitely.
+
+   ``radiative equilibrium criterion   [number > 0]   (CL: Y)``
+
+The relative flux limit below which radiative equilibrium is assumed. This limit is compared to the ratio abs(F_net[i+1] -- F_int) / (F_down[TOA] + F_int) for each layer i. This criterion needs to be satisfied in all radiative layers. Global equilibrium is naturally included once all radiative layers are in local equilibrium.
+
+   ``relax radiative criterion at   [two numbers > 0]   (CL: N)``
+
+After these numbers of iteration the radiative equilibrium criterion is multiplied by a factor of 10. Once the criterion has been relaxed the model outcome is less accurate, but the relaxation helps to converge 'stubborn' models. If the criterion has been relaxed the additional file '_convergence_warning.dat' is written which lists the final criterion used. Using default values (and initial criterion of 1e-8), even when relaxing twice, the final criterion is still 1e-6 and the results sufficiently accurate in the vast majority of cases.
+
+   ``number of prerun timesteps   [number >= 0]   (CL: Y)``
+
+Number of iterations before the temperature starts evolving. This is really only useful for movie-making purposes.
+
+   ``physical timestep [s]   [no, number > 0]   (CL: Y)``
+
+Under normal circumstances this is set to 'no' and a numerical forward stepping is used in order to quickly reach radiative-convective equilibrium. However, HELIOS can also use a constant, physical time stepping which is activated when setting this parameter to a number, which is the value of the constant time step.
+
+   ``runtime limit [s]   [number > timestep]   (CL: Y)``
+
+If physical time stepping is active, this sets the runtime limit in seconds. The code runs either until rad.-conv. equilibrium or the time limit is reached. *This parameter is only used if a number is set for the physical timestep and physical timestepping is thus activated.*
+
+   ``start from provided TP profile   [yes, no]   (CL: Y)``
+
+If enabled, it forces the code to start from a provided T-P profile. This is used to continue a previous run. Since normal runs with numerical forward stepping should always converge, this is really only relevant when using physical time stepping, and so --> *This parameter is only used if a number is set for the physical timestep and physical timestepping is thus activated.*
+
+   ``include additional heating   [yes, no]   (CL: Y)``
+
+This enables the use of additional heating terms that are provided via file. 
+
+   ``path to heating file   [file path]   (CL: Y)``
+
+This sets the path to the file with the heating terms as a function of pressure. *This parameter is only used if 'include additional heating' is set to 'yes'.*
+
+   ``heating file format   [# header lines, pressure column, pressure unit [cgs, SI, bar], data column, conversion factor to cgs]   (CL: N)``
+
+This sets the format of the file with the heating terms. First parameter determines the number of lines skipped at the beginning of the file. Second one the name of the pressure column. Third one the pressure unit with 'cgs', 'Pa' and 'bar' being the options. Next, the name of the column with the heating data. The heating must be given as power density (i.e., energy / unit time / unit volume). The last parameter is the factor that converts the heating terms to cgs units, i.e., to erg s^-1 cm^-3. *This parameter is only used if 'include additional heating' is set to 'yes'.*
+
+   ``write TP profile during run   [no, number > 0]   (CL: Y)``
+
+This enables the writing of the current T-P profile during the forward iteration. If set to 'no', the write-out is disabled. Otherwise the step interval at which the T-P profile is written can be set here. This functionality is used to speed up the coupling because for the first few iterations the T-P profile fed to the chemistry code does not need to be in full equilibrium. *This parameter is only used if coupling mode is set to 'yes'.*
+
+   ``convergence criterion   [number > 0]   (CL: Y)``
+
+This sets the relative limit on the temperature difference between successive coupling iterations below which a convergence is assumed. This limit is compared T_previous[i] -- T_current[i] / T_current[i] for each layer i. *This parameter is only used if coupling mode is set to 'yes'.*

@@ -1,6 +1,6 @@
 # ==============================================================================
 # Module to plot quantities in realtime during the iteration
-# Copyright (C) 2018 Matej Malik
+# Copyright (C) 2018 - 2022 Matej Malik
 # ==============================================================================
 # This file is part of HELIOS.
 #
