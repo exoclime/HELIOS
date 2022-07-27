@@ -477,9 +477,10 @@ class Production(object):
 
                                 opac_helios_within_bin = list(npy.ones(len(self.y_gauss)) * opac_hk_within_bin[0])
 
-                            else:
+                            else: # case that n_ppb = 0
 
-                                if l_end == len(self.lamda_hk) - 1:
+                                # if HELIOS grid starts before HK grid or if HELIOS grid extends further than HK grid, just fill with minimum opacity value
+                                if (l_start == 0) or l_end == len(self.lamda_hk) - 1:
 
                                     opac_helios_within_bin = list(npy.ones(len(self.y_gauss)) * 1e-15)
 
