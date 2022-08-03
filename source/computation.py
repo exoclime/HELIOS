@@ -682,6 +682,8 @@ class Compute(object):
                          quant.dev_w_0_lower,
                          quant.dev_delta_tau_wg_upper,
                          quant.dev_delta_tau_wg_lower,
+                         quant.dev_delta_tau_all_clouds_upper,
+                         quant.dev_delta_tau_all_clouds_lower,
                          quant.dev_M_upper,
                          quant.dev_M_lower,
                          quant.dev_N_upper,
@@ -774,6 +776,7 @@ class Compute(object):
                     quant.dev_F_smooth,
                     quant.dev_F_smooth_sum,
                     quant.dev_c_p_lay,
+                    quant.dev_meanmolmass_lay,
                     quant.iter_value,
                     quant.f_factor,
                     quant.foreplay,
@@ -1029,12 +1032,16 @@ class Compute(object):
                     print("\nWe are running \"" + quant.name + "\" at iteration step nr. : "+str(quant.iter_value))
                     if quant.iter_value > 99:
                         print("Time for the last 100 steps [s]: {:.2f}".format(time_loop * 1e-3))
-                # start with the convective adjustment and then recalculate the rad. fluxes, go back to conv. adjustment, then rad. fluxes, etc.
+
+                # GENERAL PROCEDURE:
+                # start with the convective adjustment and then calculate the rad. fluxes, then forwardstep temperatures radiatively,
+                # then go back to conv. adjustment, then rad. fluxes, then radiative forwardstep, etc.
                 self.interpolate_temperatures(quant)
 
-                if quant.iter_value % 10 == 0:
+                # interpolating and updating quantities needed for convective adjustment
+                if quant.iter_value % 10 == 0: # TODO can this chunk be executed only once at timestep 0?
                     if quant.opacity_mixing == "premixed":
-                        self.interpolate_meanmolmass(quant)  # needed by convective adjustment
+                        self.interpolate_meanmolmass(quant)
                     elif quant.opacity_mixing == "on-the-fly":
                         hsfunc.calculate_vmr_for_all_species(quant)
                         hsfunc.calculate_meanmolecularmass(quant)
@@ -1050,11 +1057,11 @@ class Compute(object):
                 hsfunc.convective_adjustment(quant)
                 quant.dev_T_lay = gpuarray.to_gpu(quant.T_lay)
 
-                self.interpolate_temperatures(quant)  # second time in the loop to obtain the correct interface temperatures
+                self.interpolate_temperatures(quant)  # second time in the loop to obtain the correct interface temperatures needed for the flux calculation
                 self.interpolate_planck(quant)
 
+                # interpolating and updating quantities needed for flux calculation
                 if quant.iter_value % 10 == 0:
-
                     if quant.opacity_mixing == "premixed":
                         self.interpolate_opacities_and_scattering_cross_sections(quant)
                         self.interpolate_meanmolmass(quant)

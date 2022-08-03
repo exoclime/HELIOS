@@ -101,22 +101,49 @@ Well done! You can now go on and modify the parameters in the ``param.dat`` file
 Use Different Chemistry
 =======================
 
+New Method
+----------
+
 To run a model with different chemical abundances, FastChem is the preferred choice to generate the chemistry files needed to combine molecular opacities and construct the final opacity table. It is **recommended** to install `FastChem <https://github.com/exoclime/FastChem>`_. How to install and run FastChem is described in ``manual/fastchem_manual.pdf`` in the FastChem repository. 
 
-Back in the HELIOS repository, in ``input/chemistry`` there are subdirectories that contain FastChem output files for a number of different solar metallicities. These files can be used to generate opacity tables or mix opacities on--the--fly with HELIOS and so their format acts as reference. These files can be generated with FastChem quite straightforwardly. Two chemistry files are needed because at low temperatures FastChem (at least in earlier versions) had to be run without ions, but at high temperatures ions are obviously important. That means for each elemental composition, FastChem is run twice, each using a different P--T grid and once without and once with ions. The two P--T grid files for that are provided in ``input/chemistry/fastchem_input/`` and named ``pt_low.dat`` and ``pt_high.dat``. In the ``config.input`` file:
+Back in the HELIOS repository, in ``input/chemistry`` there are subdirectories that contain FastChem output files for a number of different solar metallicities. These files can be used to generate opacity tables or mix opacities on--the--fly with HELIOS and so their format acts as reference. These files can be generated with FastChem quite straightforwardly. The P--T grid file that I use to produce the chemistry files is provided in ``input/chemistry/fastchem_input/`` and named ``pt.dat``. A different P--T grid can be used too, provided it is over a large temperature and pressure range with sufficiently small step sizes. Step in temperature has to be linear and step in pressure has to be constant in logarithm--space.
 
-- As Atmospheric profile file pick the pt_low.dat or pt_high.dat, respectively
-- Name the abundance output file chem_low.dat or chem_high.dat, respectively. Make sure the output directory exists or FastChem will simply not produce the files. (It is also useful to produce the monitor files and inspect them to see whether everything went OK.)
-- Set the output to mixing ratios by setting the last option to'MR'
+Going back to FastChem, in the ``config.input`` file:
+
+- As Atmospheric profile, pick the ``pt.dat`` file.
+- Name the abundance output file ``chem.dat``. Make sure the output directory exists or FastChem will simply not produce the file. It is also useful to produce a monitor file and inspect it to see whether everything went OK. (There should be no 'fail' entry.)
+- Set the output to mixing ratios by setting the last option to 'MR'.
+
+In the ``parameters.dat`` file:
+
+- Set the correct elemental abundance file.
+- The species data file should be ``logK.dat``.
+
+Finally, we need to conduct two tiny source code tweaks. First, in ``model_src/model_main.cpp``, check that line 91 is active and line 92 is commented out. If not, make it so. We need the order to be pressure first, temperature second (because this is the format of ``pt.dat``). Second, in ``model_src/save_output.h`` between lines 49 and 53, remove **all** spaces in **all** of the header names. For example '#P (bar)' should become '#P(bar)'. (Otherwise Python's 'numpy.genfromtxt' function will complain that the number of headers is not equal the number of columns.) After modifying the source code, **FastChem needs to be compiled again.**
+
+With these settings FastChem should now generate the chemistry files exactly in the format that HELIOS and the ktable program require.
+
+
+Old Method (still compatible)
+-----------------------------
+
+**Choose this method if including ions leads to issues for very low temperatures.**
+
+Previously, two chemistry files were needed because at low temperatures FastChem (at least in earlier versions) had to be run without ions, but at high temperatures ions are obviously important. That means for each elemental composition, FastChem had to be run twice, each using a different P--T grid, once without and once with ions. The two P--T grid files for that are provided in ``input/chemistry/fastchem_input/`` too and named ``pt_low.dat`` and ``pt_high.dat``. In this case, in the ``config.input`` file:
+
+- As Atmospheric profile file pick the ``pt_low.dat`` or ``pt_high.dat``, respectively.
+- Name the abundance output file ``chem_low.dat`` or ``chem_high.dat``, respectively. Make sure the output directory exists or FastChem will simply not produce the files. It is also useful to produce the monitor files and inspect them to see whether everything went OK. (There should be no 'fail' entry.)
+- Set the output to mixing ratios by setting the last option to 'MR'
 
 In the ``parameters.dat`` file:
 
 - Set the correct elemental abundance file
 - The species data file should be ``logK_wo_ions.dat`` for the lower temperature grid and ``logK.dat`` for the higher temperature grid.
 
-Finally, we need to conduct two tiny source code tweaks. First, in ``model_src/model_main.cpp``, check that line 91 is active and line 92 is commented out. If not, make it so. We need the order to be pressure first, temperature second. Second, in ``model_src/save_output.h`` between lines 49 and 53, remove **all** spaces in **all** of the header names. For example '#P (bar)' should become '#P(bar)'. (Otherwise Python's 'numpy.genfromtxt' function will complain.) After modifying the source code, **FastChem needs to be compiled again.**
+Finally, we need to conduct two tiny source code tweaks. First, in ``model_src/model_main.cpp``, check that line 91 is active and line 92 is commented out. If not, make it so. We need the order to be pressure first, temperature second (because this is the format of ``pt.dat``). Second, in ``model_src/save_output.h`` between lines 49 and 53, remove **all** spaces in **all** of the header names. For example '#P (bar)' should become '#P(bar)'. (Otherwise Python's 'numpy.genfromtxt' function will complain that the number of headers is not equal the number of columns.) After modifying the source code, **FastChem needs to be compiled again.**
 
 With these settings FastChem should now generate the chemistry files exactly in the format that HELIOS and the ktable program require.
+
 
 Include More Opacities
 ======================

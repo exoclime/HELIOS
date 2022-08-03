@@ -120,20 +120,41 @@ export DYLD_LIBRARY_PATH=/usr/local/cuda-10.0/lib:$DYLD_LIBRARY_PATH
 </div>
 <div class="section" id="use-different-chemistry">
 <h2>Use Different Chemistry<a class="headerlink" href="#use-different-chemistry" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="new-method">
+<h3>New Method<a class="headerlink" href="#new-method" title="Permalink to this headline">¶</a></h3>
 <p>To run a model with different chemical abundances, FastChem is the preferred choice to generate the chemistry files needed to combine molecular opacities and construct the final opacity table. It is <strong>recommended</strong> to install <a class="reference external" href="https://github.com/exoclime/FastChem">FastChem</a>. How to install and run FastChem is described in <code class="docutils literal notranslate"><span class="pre">manual/fastchem_manual.pdf</span></code> in the FastChem repository.</p>
-<p>Back in the HELIOS repository, in <code class="docutils literal notranslate"><span class="pre">input/chemistry</span></code> there are subdirectories that contain FastChem output files for a number of different solar metallicities. These files can be used to generate opacity tables or mix opacities on–the–fly with HELIOS and so their format acts as reference. These files can be generated with FastChem quite straightforwardly. Two chemistry files are needed because at low temperatures FastChem (at least in earlier versions) had to be run without ions, but at high temperatures ions are obviously important. That means for each elemental composition, FastChem is run twice, each using a different P–T grid and once without and once with ions. The two P–T grid files for that are provided in <code class="docutils literal notranslate"><span class="pre">input/chemistry/fastchem_input/</span></code> and named <code class="docutils literal notranslate"><span class="pre">pt_low.dat</span></code> and <code class="docutils literal notranslate"><span class="pre">pt_high.dat</span></code>. In the <code class="docutils literal notranslate"><span class="pre">config.input</span></code> file:</p>
+<p>Back in the HELIOS repository, in <code class="docutils literal notranslate"><span class="pre">input/chemistry</span></code> there are subdirectories that contain FastChem output files for a number of different solar metallicities. These files can be used to generate opacity tables or mix opacities on–the–fly with HELIOS and so their format acts as reference. These files can be generated with FastChem quite straightforwardly. The P–T grid file that I use to produce the chemistry files is provided in <code class="docutils literal notranslate"><span class="pre">input/chemistry/fastchem_input/</span></code> and named <code class="docutils literal notranslate"><span class="pre">pt.dat</span></code>. A different P–T grid can be used too, provided it is over a large temperature and pressure range with sufficiently small step sizes. Step in temperature has to be linear and step in pressure has to be constant in logarithm–space.</p>
+<p>Going back to FastChem, in the <code class="docutils literal notranslate"><span class="pre">config.input</span></code> file:</p>
 <ul class="simple">
-<li><p>As Atmospheric profile file pick the pt_low.dat or pt_high.dat, respectively</p></li>
-<li><p>Name the abundance output file chem_low.dat or chem_high.dat, respectively. Make sure the output directory exists or FastChem will simply not produce the files. (It is also useful to produce the monitor files and inspect them to see whether everything went OK.)</p></li>
-<li><p>Set the output to mixing ratios by setting the last option to’MR’</p></li>
+<li><p>As Atmospheric profile, pick the <code class="docutils literal notranslate"><span class="pre">pt.dat</span></code> file.</p></li>
+<li><p>Name the abundance output file <code class="docutils literal notranslate"><span class="pre">chem.dat</span></code>. Make sure the output directory exists or FastChem will simply not produce the file. It is also useful to produce a monitor file and inspect it to see whether everything went OK. (There should be no ‘fail’ entry.)</p></li>
+<li><p>Set the output to mixing ratios by setting the last option to ‘MR’.</p></li>
+</ul>
+<p>In the <code class="docutils literal notranslate"><span class="pre">parameters.dat</span></code> file:</p>
+<ul class="simple">
+<li><p>Set the correct elemental abundance file.</p></li>
+<li><p>The species data file should be <code class="docutils literal notranslate"><span class="pre">logK.dat</span></code>.</p></li>
+</ul>
+<p>Finally, we need to conduct two tiny source code tweaks. First, in <code class="docutils literal notranslate"><span class="pre">model_src/model_main.cpp</span></code>, check that line 91 is active and line 92 is commented out. If not, make it so. We need the order to be pressure first, temperature second (because this is the format of <code class="docutils literal notranslate"><span class="pre">pt.dat</span></code>). Second, in <code class="docutils literal notranslate"><span class="pre">model_src/save_output.h</span></code> between lines 49 and 53, remove <strong>all</strong> spaces in <strong>all</strong> of the header names. For example ‘#P (bar)’ should become ‘#P(bar)’. (Otherwise Python’s ‘numpy.genfromtxt’ function will complain that the number of headers is not equal the number of columns.) After modifying the source code, <strong>FastChem needs to be compiled again.</strong></p>
+<p>With these settings FastChem should now generate the chemistry files exactly in the format that HELIOS and the ktable program require.</p>
+</div>
+<div class="section" id="old-method-still-compatible">
+<h3>Old Method (still compatible)<a class="headerlink" href="#old-method-still-compatible" title="Permalink to this headline">¶</a></h3>
+<p><strong>Choose this method if including ions leads to issues for very low temperatures.</strong></p>
+<p>Previously, two chemistry files were needed because at low temperatures FastChem (at least in earlier versions) had to be run without ions, but at high temperatures ions are obviously important. That means for each elemental composition, FastChem had to be run twice, each using a different P–T grid, once without and once with ions. The two P–T grid files for that are provided in <code class="docutils literal notranslate"><span class="pre">input/chemistry/fastchem_input/</span></code> too and named <code class="docutils literal notranslate"><span class="pre">pt_low.dat</span></code> and <code class="docutils literal notranslate"><span class="pre">pt_high.dat</span></code>. In this case, in the <code class="docutils literal notranslate"><span class="pre">config.input</span></code> file:</p>
+<ul class="simple">
+<li><p>As Atmospheric profile file pick the <code class="docutils literal notranslate"><span class="pre">pt_low.dat</span></code> or <code class="docutils literal notranslate"><span class="pre">pt_high.dat</span></code>, respectively.</p></li>
+<li><p>Name the abundance output file <code class="docutils literal notranslate"><span class="pre">chem_low.dat</span></code> or <code class="docutils literal notranslate"><span class="pre">chem_high.dat</span></code>, respectively. Make sure the output directory exists or FastChem will simply not produce the files. It is also useful to produce the monitor files and inspect them to see whether everything went OK. (There should be no ‘fail’ entry.)</p></li>
+<li><p>Set the output to mixing ratios by setting the last option to ‘MR’</p></li>
 </ul>
 <p>In the <code class="docutils literal notranslate"><span class="pre">parameters.dat</span></code> file:</p>
 <ul class="simple">
 <li><p>Set the correct elemental abundance file</p></li>
 <li><p>The species data file should be <code class="docutils literal notranslate"><span class="pre">logK_wo_ions.dat</span></code> for the lower temperature grid and <code class="docutils literal notranslate"><span class="pre">logK.dat</span></code> for the higher temperature grid.</p></li>
 </ul>
-<p>Finally, we need to conduct two tiny source code tweaks. First, in <code class="docutils literal notranslate"><span class="pre">model_src/model_main.cpp</span></code>, check that line 91 is active and line 92 is commented out. If not, make it so. We need the order to be pressure first, temperature second. Second, in <code class="docutils literal notranslate"><span class="pre">model_src/save_output.h</span></code> between lines 49 and 53, remove <strong>all</strong> spaces in <strong>all</strong> of the header names. For example ‘#P (bar)’ should become ‘#P(bar)’. (Otherwise Python’s ‘numpy.genfromtxt’ function will complain.) After modifying the source code, <strong>FastChem needs to be compiled again.</strong></p>
+<p>Finally, we need to conduct two tiny source code tweaks. First, in <code class="docutils literal notranslate"><span class="pre">model_src/model_main.cpp</span></code>, check that line 91 is active and line 92 is commented out. If not, make it so. We need the order to be pressure first, temperature second (because this is the format of <code class="docutils literal notranslate"><span class="pre">pt.dat</span></code>). Second, in <code class="docutils literal notranslate"><span class="pre">model_src/save_output.h</span></code> between lines 49 and 53, remove <strong>all</strong> spaces in <strong>all</strong> of the header names. For example ‘#P (bar)’ should become ‘#P(bar)’. (Otherwise Python’s ‘numpy.genfromtxt’ function will complain that the number of headers is not equal the number of columns.) After modifying the source code, <strong>FastChem needs to be compiled again.</strong></p>
 <p>With these settings FastChem should now generate the chemistry files exactly in the format that HELIOS and the ktable program require.</p>
+</div>
 </div>
 <div class="section" id="include-more-opacities">
 <h2>Include More Opacities<a class="headerlink" href="#include-more-opacities" title="Permalink to this headline">¶</a></h2>
@@ -267,7 +288,11 @@ export DYLD_LIBRARY_PATH=/usr/local/cuda-10.0/lib:$DYLD_LIBRARY_PATH
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#first-run">First Run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#use-different-chemistry">Use Different Chemistry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#use-different-chemistry">Use Different Chemistry</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#new-method">New Method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#old-method-still-compatible">Old Method (still compatible)</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#include-more-opacities">Include More Opacities</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#creating-a-stellar-spectrum-file">Creating a Stellar Spectrum File</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-pre-tabulated-kappa-and-c-p">Using Pre-Tabulated kappa and c_p</a></li>

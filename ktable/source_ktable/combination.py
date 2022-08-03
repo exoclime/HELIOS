@@ -56,6 +56,7 @@ class Comb(object):
         self.k_i = None
         self.k_x = None
         self.molname_list = []
+        self.fastchem_data = None
         self.fastchem_data_low = None
         self.fastchem_data_high = None
         self.nx = None
@@ -359,15 +360,27 @@ class Comb(object):
     def load_fastchem_data(self, param):
         """ read in the fastchem mixing ratios"""
 
-        self.fastchem_data_low = npy.genfromtxt(param.fastchem_path + 'chem_low.dat',
-                                  names=True, dtype=None, skip_header=0, deletechars=" !#$%&'()*,./:;<=>?@[\]^{|}~")
+        try:
 
-        self.fastchem_data_high = npy.genfromtxt(param.fastchem_path + 'chem_high.dat',
-                                   names=True, dtype=None, skip_header=0, deletechars=" !#$%&'()*,./:;<=>?@[\]^{|}~")
+            self.fastchem_data = npy.genfromtxt(param.fastchem_path + 'chem.dat',
+                                                    names=True, dtype=None, skip_header=0, deletechars=" !#$%&'()*,./:;<=>?@[\]^{|}~")
+        except OSError:
+
+            self.fastchem_data_low = npy.genfromtxt(param.fastchem_path + 'chem_low.dat',
+                                                    names=True, dtype=None, skip_header=0, deletechars=" !#$%&'()*,./:;<=>?@[\]^{|}~")
+
+            self.fastchem_data_high = npy.genfromtxt(param.fastchem_path + 'chem_high.dat',
+                                                     names=True, dtype=None, skip_header=0, deletechars=" !#$%&'()*,./:;<=>?@[\]^{|}~")
 
         # temperature and pressure from the chemical grid
-        read_press = npy.concatenate((self.fastchem_data_low['Pbar'], self.fastchem_data_high['Pbar']))
-        read_temp = npy.concatenate((self.fastchem_data_low['Tk'], self.fastchem_data_high['Tk']))
+        if self.fastchem_data is not None:
+            read_press = self.fastchem_data['Pbar']
+            read_temp = self.fastchem_data['Tk']
+            chem_mu = self.fastchem_data['mu']
+        else:
+            read_press = npy.concatenate((self.fastchem_data_low['Pbar'], self.fastchem_data_high['Pbar']))
+            read_temp = npy.concatenate((self.fastchem_data_low['Tk'], self.fastchem_data_high['Tk']))
+            chem_mu = npy.concatenate((self.fastchem_data_low['mu'], self.fastchem_data_high['mu']))
 
         read_press = self.delete_duplicates(read_press)
         self.chem_temp = self.delete_duplicates(read_temp)
@@ -377,7 +390,6 @@ class Comb(object):
         self.chem_np = len(self.chem_press)
 
         # mean molecular weight
-        chem_mu = npy.concatenate((self.fastchem_data_low['mu'], self.fastchem_data_high['mu']))
         self.mu = self.interpolate_vmr_to_final_grid(chem_mu)
 
     @staticmethod
@@ -846,14 +858,18 @@ class Comb(object):
         self.final_np = len(self.final_press)
 
         mu = 0
+        mixing_ratio_tot = 0
 
         for n in range(len(species_list)):
 
             if self.is_number(species_list[n].mixing_ratio):  # checks if all characters are numeric. this excludes FastChem entries, CIA species, and H-
 
                 mu += float(species_list[n].mixing_ratio) * species_list[n].weight
+                mixing_ratio_tot += float(species_list[n].mixing_ratio)
 
-        self.mu = npy.ones(self.final_np * self.final_nt) * mu  # this mu calculation is overwritten if FastChem is used for the mixing ratios
+        if mixing_ratio_tot > 0:
+            self.mu = npy.ones(self.final_np * self.final_nt) * mu / mixing_ratio_tot  # normalizing with respect to the total VMR of all included species
+            # Note that this mu calculation is overwritten if FastChem is used for the mixing ratios
 
     def add_one_species(self, param, ray, conti, species, iter):
 
@@ -898,9 +914,12 @@ class Comb(object):
 
             if species.mixing_ratio == "FastChem":
 
+                if self.fastchem_data is not None:
+                    chem_vmr = self.fastchem_data[species.fc_name]
+                else:
                     chem_vmr = npy.concatenate((self.fastchem_data_low[species.fc_name], self.fastchem_data_high[species.fc_name]))
 
-                    final_vmr = self.interpolate_vmr_to_final_grid(chem_vmr)
+                final_vmr = self.interpolate_vmr_to_final_grid(chem_vmr)
 
             else:
                 final_vmr = npy.ones(self.final_np * self.final_nt) * float(species.mixing_ratio)
@@ -914,8 +933,12 @@ class Comb(object):
 
                 two_fc_names = species.fc_name.split('&')
 
-                chem_vmr = npy.concatenate((self.fastchem_data_low[two_fc_names[0]], self.fastchem_data_high[two_fc_names[0]]))
-                chem_vmr_2 = npy.concatenate((self.fastchem_data_low[two_fc_names[1]], self.fastchem_data_high[two_fc_names[1]]))
+                if self.fastchem_data is not None:
+                    chem_vmr = self.fastchem_data[two_fc_names[0]]
+                    chem_vmr_2 = self.fastchem_data[two_fc_names[1]]
+                else:
+                    chem_vmr = npy.concatenate((self.fastchem_data_low[two_fc_names[0]], self.fastchem_data_high[two_fc_names[0]]))
+                    chem_vmr_2 = npy.concatenate((self.fastchem_data_low[two_fc_names[1]], self.fastchem_data_high[two_fc_names[1]]))
 
                 final_vmr = self.interpolate_vmr_to_final_grid(chem_vmr)
                 final_vmr_2 = self.interpolate_vmr_to_final_grid(chem_vmr_2)

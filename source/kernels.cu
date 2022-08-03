@@ -38,7 +38,7 @@ const utype HCONST = 6.62607004e-27;
 const utype CSPEED = 29979245800.0;
 const utype KBOLTZMANN = 1.38064852e-16;
 const utype STEFANBOLTZMANN = 5.6703669999999995e-5; // yes, it needs to have this exact value to be consistent with astropy
-
+const utype AMU = 1.6605390666e-24; // atomic mass unit (1/12 of mass of a C-12 atom)
 
 // calculates the normal distribution
 __device__ utype norm_pdf(
@@ -1428,14 +1428,15 @@ __global__ void fband_iso(
                 G_min = G_minus[y+ny*x + ny*nbin*i];
                 g0 = g_0;
                 
-                // improved scattering correction factor E
-                E = 1.0;
-                if(scat_corr==1){
-                    E = E_parameter(w0, g0, i2s_transition);
-                }
-                
                 if(clouds == 1){
                     g0 = g_0_tot_lay[x + nbin * i];
+                }
+                
+                // improved scattering correction factor E
+                E = 1.0;
+                
+                if(scat_corr==1){
+                    E = E_parameter(w0, g0, i2s_transition);
                 }
 
                 // isothermal solution
@@ -1481,14 +1482,15 @@ __global__ void fband_iso(
                 G_min = G_minus[y+ny*x + ny*nbin*(i-1)];
                 g0 = g_0;
                 
-                // improved scattering correction factor E
-                E = 1.0;
-                if(scat_corr==1){
-                    E = E_parameter(w0, g0, i2s_transition);
-                }
-                
                 if(clouds == 1){
                     g0 = g_0_tot_lay[x + nbin * (i-1)];
+                }
+                
+                // improved scattering correction factor E
+                E = 1.0;
+                
+                if(scat_corr==1){
+                    E = E_parameter(w0, g0, i2s_transition);
                 }
 
                 // isothermal solution
@@ -1619,6 +1621,11 @@ __global__ void fband_noniso(
                 G_min_low = G_minus_lower[y+ny*x + ny*nbin*i];
                 g0_low = g_0;
         
+                if(clouds == 1){
+                    g0_up = (g_0_tot_lay[x + nbin * i] + g_0_tot_int[x + nbin * (i+1)]) / 2.0;
+                    g0_low = (g_0_tot_int[x + nbin * i] + g_0_tot_lay[x + nbin * i]) / 2.0;
+                }
+                
                 // improved scattering correction factor E
                 E_up = 1.0;
                 E_low = 1.0;
@@ -1627,11 +1634,6 @@ __global__ void fband_noniso(
                 if(scat_corr==1){
                     E_up = E_parameter(w0_up, g0_up, i2s_transition);
                     E_low = E_parameter(w0_low, g0_low, i2s_transition);
-                }
-                
-                if(clouds == 1){
-                    g0_up = (g_0_tot_lay[x + nbin * i] + g_0_tot_int[x + nbin * (i+1)]) / 2.0;
-                    g0_low = (g_0_tot_int[x + nbin * i] + g_0_tot_lay[x + nbin * i]) / 2.0;
                 }
 
                 // upper part of layer calculations
@@ -1724,19 +1726,18 @@ __global__ void fband_noniso(
                 G_min_up = G_minus_upper[y+ny*x + ny*nbin*(i-1)];
                 g0_up = g_0;
                 
-                // improved scattering correction factor E
-                E_low = 1.0;
-                E_up = 1.0;
-                    
-             // improved scattering correction disabled for the following terms -- at least for the moment   
-                if(scat_corr==1){
-                    E_up = E_parameter(w0_up, g0_up, i2s_transition);
-                    E_low = E_parameter(w0_low, g0_low, i2s_transition);
-                }
-                
                 if(clouds == 1){
                     g0_low = (g_0_tot_int[x + nbin * (i-1)] + g_0_tot_lay[x + nbin * (i-1)]) / 2.0;
                     g0_up = (g_0_tot_lay[x + nbin * (i-1)] + g_0_tot_int[x + nbin * i]) / 2.0;
+                }
+                
+                // improved scattering correction factor E
+                E_low = 1.0;
+                E_up = 1.0;
+                       
+                if(scat_corr==1){
+                    E_up = E_parameter(w0_up, g0_up, i2s_transition);
+                    E_low = E_parameter(w0_low, g0_low, i2s_transition);
                 }
                 
                 // lower part of layer calculations
@@ -2037,6 +2038,8 @@ __global__ void fband_matrix_noniso(
     utype*  w_0_lower,
     utype*  delta_tau_wg_upper,
     utype*  delta_tau_wg_lower,
+    utype*  delta_tau_all_clouds_upper,
+    utype*  delta_tau_all_clouds_lower,
     utype*  M_upper,
     utype*  M_lower,
     utype*  N_upper,
@@ -2110,10 +2113,11 @@ __global__ void fband_matrix_noniso(
                     M = M_lower[y+ny*x + ny*nbin*(j/2)];
                     N = N_lower[y+ny*x + ny*nbin*(j/2)];
                     P = P_lower[y+ny*x + ny*nbin*(j/2)];
+
                     w0 = w_0_lower[y+ny*x + ny*nbin*(j/2)];
                     G_min = G_minus_lower[y+ny*x + ny*nbin*(j/2)];
                     G_pl = G_plus_lower[y+ny*x + ny*nbin*(j/2)];
-                    del_tau = delta_tau_wg_lower[y+ny*x + ny*nbin*(j/2)];
+                    del_tau = delta_tau_wg_lower[y+ny*x + ny*nbin*(j/2)] + delta_tau_all_clouds_lower[x + nbin*(j/2)];
                     
                     if(clouds == 1){
                         g0 = (g_0_tot_int[x + nbin * (j/2)] + g_0_tot_lay[x + nbin * (j/2)]) / 2.0;
@@ -2151,7 +2155,7 @@ __global__ void fband_matrix_noniso(
                     w0 = w_0_upper[y+ny*x + ny*nbin*((j-1)/2)];
                     G_min = G_minus_upper[y+ny*x + ny*nbin*((j-1)/2)];
                     G_pl = G_plus_upper[y+ny*x + ny*nbin*((j-1)/2)];
-                    del_tau = delta_tau_wg_upper[y+ny*x + ny*nbin*((j-1)/2)];
+                    del_tau = delta_tau_wg_upper[y+ny*x + ny*nbin*((j-1)/2)] + delta_tau_all_clouds_upper[x + nbin*((j-1)/2)];
                     
                     if(clouds == 1){
                         g0 = (g_0_tot_int[x + nbin * ((j+1)/2)] + g_0_tot_lay[x + nbin * ((j-1)/2)]) / 2.0;
@@ -2255,7 +2259,7 @@ __global__ void fband_matrix_noniso(
             for (int i = n_matrix-2; i >= 0; i--){ // index i for matrix
                 
                 x_i = d_prime[y+ny*x+ny*nbin*i] - c_prime[y+ny*x+ny*nbin*i] * x_i;
-                
+
                 // remove tiny negative fluxes caused by limited numerical precision
                 if(x_i < 1e-100) x_i = abs(x_i);
                 
@@ -2297,11 +2301,11 @@ __global__ void fband_matrix_noniso(
                 else {
                     // upper part of layer quantities
                     trans_up = trans_wg_upper[y+ny*x + ny*nbin*i];
-                    del_tau_up = delta_tau_wg_upper[y+ny*x + ny*nbin*i];
+                    del_tau_up = delta_tau_wg_upper[y+ny*x + ny*nbin*i] + delta_tau_all_clouds_upper[x + nbin*i];
                     
                     // lower part of layer quantities
                     trans_low = trans_wg_lower[y+ny*x + ny*nbin*i];
-                    del_tau_low = delta_tau_wg_lower[y+ny*x + ny*nbin*i];
+                    del_tau_low = delta_tau_wg_lower[y+ny*x + ny*nbin*i] + delta_tau_all_clouds_lower[x + nbin*i];
                     
                     // upper part of layer calculations
                     if(del_tau_up < delta_tau_limit){
@@ -2366,11 +2370,11 @@ __global__ void fband_matrix_noniso(
                     
                     // upper part of layer quantities
                     trans_up = trans_wg_upper[y+ny*x + ny*nbin*(i-1)];
-                    del_tau_up = delta_tau_wg_upper[y+ny*x + ny*nbin*(i-1)];
+                    del_tau_up = delta_tau_wg_upper[y+ny*x + ny*nbin*(i-1)] + delta_tau_all_clouds_upper[x + nbin*(i-1)];
                     
                     // lower part of layer quantities
                     trans_low = trans_wg_lower[y+ny*x + ny*nbin*(i-1)];
-                    del_tau_low = delta_tau_wg_lower[y+ny*x + ny*nbin*(i-1)];
+                    del_tau_low = delta_tau_wg_lower[y+ny*x + ny*nbin*(i-1)] + delta_tau_all_clouds_lower[x + nbin*(i-1)];
                     
                     // lower part of layer calculations
                     if(del_tau_low < delta_tau_limit){
@@ -2616,6 +2620,7 @@ __global__ void rad_temp_iter(
         utype*  F_smooth,
         utype*  F_smooth_sum,
         utype*  c_p_lay,
+        utype*  meanmolmass_lay,
         int 	itervalue, 
         utype 	f_factor, 
         int 	foreplay,
@@ -2722,10 +2727,10 @@ __global__ void rad_temp_iter(
         else{
             delta_t = physical_tstep;
             if(i < numlayers){
-                delta_T = g / c_p_lay[i] * combined_F_net_diff / (pint[i] - pint[i+1]) * delta_t;
+                delta_T = g / (c_p_lay[i] / (meanmolmass_lay[i]/AMU)) * combined_F_net_diff / (pint[i] - pint[i+1]) * delta_t;
             }
-            else{ // i = numlayers, i.e., surface/BOA "ghost layer" case. Taking parameters of the bottommost atmospheric layer for simplicity. Warning: This is obviously wrong when modeling a solid surface.
-                delta_T = g / c_p_lay[0] * combined_F_net_diff / (pint[0] - pint[1]) * delta_t;
+            else{ // i = numlayers, i.e., surface/BOA "ghost layer" case. Taking parameters of the bottommost atmospheric layer for simplicity. WARNING: This is obviously wrong when modeling a solid surface.
+                delta_T = g / (c_p_lay[0] / (meanmolmass_lay[0]/AMU)) * combined_F_net_diff / (pint[0] - pint[1]) * delta_t;
             }
         }
         

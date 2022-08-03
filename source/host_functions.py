@@ -481,6 +481,8 @@ def conv_correct(quant, fudging):
             denom += denom_element
 
         mean_pot_temp = num / denom
+        # Note that strictly speaking, the mean molecular mass has to be divided by AMU in the above expressions to obtain the correct g/mol units.
+        # However, since the same factor is both in the numerator and denominator it cancels out and that's why it is not present in above expressions.
 
         mean_pot_temp *= fudge_factor[n]
 
@@ -914,14 +916,10 @@ def calculate_meanmolecularmass(quant):
     # calculating mean molecular mass for each layer
     quant.meanmolmass_lay = calc_meanmolmass(quant, type='layer')
 
-    quant.meanmolmass_lay = np.array([m * pc.AMU for m in quant.meanmolmass_lay], quant.fl_prec)
-
     quant.dev_meanmolmass_lay = gpuarray.to_gpu(quant.meanmolmass_lay)
 
     if quant.iso == 0:
         quant.meanmolmass_int = calc_meanmolmass(quant, type='interface')
-
-        quant.meanmolmass_int = np.array([m * pc.AMU for m in quant.meanmolmass_int], quant.fl_prec)
 
         quant.dev_meanmolmass_int = gpuarray.to_gpu(quant.meanmolmass_int)
 
@@ -954,7 +952,9 @@ def calc_meanmolmass(quant, type='layer'):
 
                 vmr_lay_or_int_total += vmr_lay_or_int[i]
 
-        meanmolmass_lay_or_int[i] /= vmr_lay_or_int_total
+        meanmolmass_lay_or_int[i] /= vmr_lay_or_int_total  # normalizing with respect to total VMR of all species
+
+    meanmolmass_lay_or_int = np.array(meanmolmass_lay_or_int * pc.AMU, quant.fl_prec)  # converting weight (or molar mass) to molecular mass
 
     return meanmolmass_lay_or_int
 

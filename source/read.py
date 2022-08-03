@@ -80,6 +80,7 @@ class Read(object):
         self.opacity_path = None
         self.fastchem_path = None
         self.force_eq_chem = None
+        self.fastchem_data = None
         self.fastchem_data_low = None
         self.fastchem_data_high = None
         self.fastchem_temp = None
@@ -1351,7 +1352,7 @@ class Read(object):
 
                         quant.species_list.append(species)
 
-                        species2 = quant.Species()
+                        species2 = Species()
                         species2.name = "H-_ff"
                         species2.absorbing = column[1]
                         species2.scattering = column[2]
@@ -1409,15 +1410,25 @@ class Read(object):
     def load_fastchem_data(self):
         """ read in the fastchem mixing ratios"""
 
-        self.fastchem_data_low = npy.genfromtxt(self.fastchem_path + 'chem_low.dat',
-                                                names=True, dtype=None, skip_header=0, deletechars=" !#$%&'()*,./:;<=>?@[\]^{|}~")
+        try:
 
-        self.fastchem_data_high = npy.genfromtxt(self.fastchem_path + 'chem_high.dat',
-                                                 names=True, dtype=None, skip_header=0, deletechars=" !#$%&'()*,./:;<=>?@[\]^{|}~")
+            self.fastchem_data = npy.genfromtxt(self.fastchem_path + 'chem.dat',
+                                                names=True, dtype=None, skip_header=0, deletechars=" !#$%&'()*,./:;<=>?@[\]^{|}~")
+        except OSError:
+
+            self.fastchem_data_low = npy.genfromtxt(self.fastchem_path + 'chem_low.dat',
+                                                    names=True, dtype=None, skip_header=0, deletechars=" !#$%&'()*,./:;<=>?@[\]^{|}~")
+
+            self.fastchem_data_high = npy.genfromtxt(self.fastchem_path + 'chem_high.dat',
+                                                     names=True, dtype=None, skip_header=0, deletechars=" !#$%&'()*,./:;<=>?@[\]^{|}~")
 
         # temperature and pressure from the chemical grid
-        read_press = npy.concatenate((self.fastchem_data_low['Pbar'], self.fastchem_data_high['Pbar']))
-        read_temp = npy.concatenate((self.fastchem_data_low['Tk'], self.fastchem_data_high['Tk']))
+        if self.fastchem_data is not None:
+            read_press = self.fastchem_data['Pbar']
+            read_temp = self.fastchem_data['Tk']
+        else:
+            read_press = npy.concatenate((self.fastchem_data_low['Pbar'], self.fastchem_data_high['Pbar']))
+            read_temp = npy.concatenate((self.fastchem_data_low['Tk'], self.fastchem_data_high['Tk']))
 
         read_press = list(set(read_press))
         read_press.sort()
@@ -1562,14 +1573,21 @@ class Read(object):
         # get abundances
         if ("CIA" not in species.name) and (species.name != "H-_ff") and (species.name != "He-"):
 
-            chem_vmr = npy.concatenate((self.fastchem_data_low[species.fc_name], self.fastchem_data_high[species.fc_name]))
+            if self.fastchem_data is not None:
+                chem_vmr = self.fastchem_data[species.fc_name]
+            else:
+                chem_vmr = npy.concatenate((self.fastchem_data_low[species.fc_name], self.fastchem_data_high[species.fc_name]))
 
         elif ("CIA" in species.name) or (species.name == "H-_ff") or (species.name == "He-"):
 
             two_fc_names = species.fc_name.split('&')
 
-            chem_vmr_1 = npy.concatenate((self.fastchem_data_low[two_fc_names[0]], self.fastchem_data_high[two_fc_names[0]]))
-            chem_vmr_2 = npy.concatenate((self.fastchem_data_low[two_fc_names[1]], self.fastchem_data_high[two_fc_names[1]]))
+            if self.fastchem_data is not None:
+                chem_vmr_1 = self.fastchem_data[two_fc_names[0]]
+                chem_vmr_2 = self.fastchem_data[two_fc_names[1]]
+            else:
+                chem_vmr_1 = npy.concatenate((self.fastchem_data_low[two_fc_names[0]], self.fastchem_data_high[two_fc_names[0]]))
+                chem_vmr_2 = npy.concatenate((self.fastchem_data_low[two_fc_names[1]], self.fastchem_data_high[two_fc_names[1]]))
 
             chem_vmr = [chem_vmr_1[c] * chem_vmr_2[c] for c in range(len(chem_vmr_1))]
 
