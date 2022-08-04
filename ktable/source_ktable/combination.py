@@ -23,7 +23,7 @@ import os
 import h5py
 import numpy as npy
 import time
-from numba import jit
+import numba as nb
 from source import tools as tls
 from source import phys_const as pc
 from source import species_database as sd
@@ -187,7 +187,7 @@ class Comb(object):
         return vmr_new
 
     @staticmethod
-    @jit(nopython=True)
+    @nb.njit
     def interpolate_opacity_to_final_grid(press_old, temp_old, k_old, temp_new, press_new, final_nt, final_np, nx, ny):
 
         k_new = npy.zeros(ny * nx * final_np * final_nt)
@@ -435,7 +435,15 @@ class Comb(object):
             print("old np:", len(k_press))
             print("old nt:", len(k_temp))
 
-            interpolated_opacities = self.interpolate_opacity_to_final_grid(k_press, k_temp, kpoints, self.final_temp, self.final_press, self.final_nt, self.final_np, self.nx, self.ny)
+            interpolated_opacities = self.interpolate_opacity_to_final_grid(nb.typed.List(k_press),
+                                                                            nb.typed.List(k_temp),
+                                                                            nb.typed.List(kpoints),
+                                                                            self.final_temp,
+                                                                            self.final_press,
+                                                                            self.final_nt,
+                                                                            self.final_np,
+                                                                            self.nx,
+                                                                            self.ny)
 
             end = time.time()
             print("Time for interpolating = {} sec.".format(end - start))
@@ -644,7 +652,7 @@ class Comb(object):
             print("WARNING WARNING WARNING: Rayleigh scattering cross sections for species", species.name, "not found. Please double-check! Continuing without those... ")
 
     @staticmethod
-    @jit(nopython=True)
+    @nb.njit
     def weight_and_include_opacity(vol_mix_ratio, vol_mix_ratio2, weight, mu, opac, final_nt, final_np, nx, ny, combined_opacity):
         """ weights opacity and adds to total, combined opacity array """
 
