@@ -843,6 +843,9 @@ class Compute(object):
         # start_test = cuda.Event()
         # end_test = cuda.Event()
 
+        if quant.realtime_plot == 1:
+            rt_plot.create_canvas_for_realtime_plotting()
+
         start_total.record()
 
         while condition1 and condition2 and condition3:
@@ -952,7 +955,8 @@ class Compute(object):
                 quant.iter_value = np.int32(quant.iter_value)
 
                 if quant.iter_value % quant.n_plot == 0 and quant.realtime_plot == 1:
-                    rt_plot.plot_tp(quant)
+                    quant.F_net = quant.dev_F_net.get()
+                    rt_plot.plot_tp_and_flux(quant)
 
                 # records the time needed for 100 loops
                 if quant.iter_value % 100 == 99:
@@ -1118,7 +1122,7 @@ class Compute(object):
 
                     # realtime plotting every 10th step
                     if quant.iter_value % quant.n_plot == 0 and quant.realtime_plot == 1:
-                        rt_plot.plot_convective_feedback(quant)
+                        rt_plot.plot_tp_and_flux(quant)
 
                     # adding add heat flux
                     if quant.add_heating == 1:
