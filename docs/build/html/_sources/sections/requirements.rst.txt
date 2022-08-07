@@ -29,6 +29,7 @@ The following Python packages are required to run HELIOS.
 * matplotlib
 * h5py
 * PyCUDA
+* numba (for ktable program)
 * wget (to prepare stellar spectra yourself)
 
 Some of them may be already included in the python distribution (e.g., Anaconda). Otherwise they can be installed with the Python package manager pip. To install, e.g., PyCUDA type::
@@ -36,5 +37,7 @@ Some of them may be already included in the python distribution (e.g., Anaconda)
    pip install pycuda
 
 This may fail, if you don't have admin permissions on the machine you are trying to install software. For this case, so-called *virtual environments* exist which embed your Python installation in a user-manageable 'bubble'. See, e.g., `here <https://docs.python.org/3/tutorial/venv.html>`_, `here <https://realpython.com/python-virtual-environments-a-primer/>`__ or `there <https://docs.python-guide.org/dev/virtualenvs/>`_ for tutorials on virtual environments.
+
+If HELIOS or the ktable program return an error caused by a Python package, it may be that this package is outdated. Try to update the package first before proceeding to other debugging steps.
 
 Note that HELIOS has been tested with Python versions 3.5.x -- 3.8.x. It should be compatible with newer versions but may not be compatible with earlier versions. **HELIOS does not run with Python 2.**

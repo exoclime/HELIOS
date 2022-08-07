@@ -57,6 +57,7 @@
 <li><p>matplotlib</p></li>
 <li><p>h5py</p></li>
 <li><p>PyCUDA</p></li>
+<li><p>numba (for ktable program)</p></li>
 <li><p>wget (to prepare stellar spectra yourself)</p></li>
 </ul>
 <p>Some of them may be already included in the python distribution (e.g., Anaconda). Otherwise they can be installed with the Python package manager pip. To install, e.g., PyCUDA type:</p>
@@ -64,6 +65,7 @@
 </pre></div>
 </div>
 <p>This may fail, if you don’t have admin permissions on the machine you are trying to install software. For this case, so-called <em>virtual environments</em> exist which embed your Python installation in a user-manageable ‘bubble’. See, e.g., <a class="reference external" href="https://docs.python.org/3/tutorial/venv.html">here</a>, <a class="reference external" href="https://realpython.com/python-virtual-environments-a-primer/">here</a> or <a class="reference external" href="https://docs.python-guide.org/dev/virtualenvs/">there</a> for tutorials on virtual environments.</p>
+<p>If HELIOS or the ktable program return an error caused by a Python package, it may be that this package is outdated. Try to update the package first before proceeding to other debugging steps.</p>
 <p>Note that HELIOS has been tested with Python versions 3.5.x – 3.8.x. It should be compatible with newer versions but may not be compatible with earlier versions. <strong>HELIOS does not run with Python 2.</strong></p>
 </div>
 </div>

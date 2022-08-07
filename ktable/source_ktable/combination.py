@@ -964,7 +964,16 @@ class Comb(object):
             print("\nWeighting by mass mixing ratio...")
 
             # weight opacity by mixing ratio
-            self.weight_and_include_opacity(final_vmr, final_vmr_2, species.weight, self.mu, interpol_opac, self.final_nt, self.final_np, self.nx, self.ny, self.combined_opacities)
+            self.weight_and_include_opacity(final_vmr,
+                                            final_vmr_2,
+                                            species.weight,
+                                            self.mu,
+                                            nb.typed.List(interpol_opac),
+                                            self.final_nt,
+                                            self.final_np,
+                                            self.nx,
+                                            self.ny,
+                                            self.combined_opacities)
 
             end = time.time()
             print("Time for weighting = {} sec.".format(end - start))

@@ -119,7 +119,7 @@ In the ``parameters.dat`` file:
 - Set the correct elemental abundance file.
 - The species data file should be ``logK.dat``.
 
-Finally, we need to conduct two tiny source code tweaks. First, in ``model_src/model_main.cpp``, check that line 91 is active and line 92 is commented out. If not, make it so. We need the order to be pressure first, temperature second (because this is the format of ``pt.dat``). Second, in ``model_src/save_output.h`` between lines 49 and 53, remove **all** spaces in **all** of the header names. For example '#P (bar)' should become '#P(bar)'. (Otherwise Python's 'numpy.genfromtxt' function will complain that the number of headers is not equal the number of columns.) After modifying the source code, **FastChem needs to be compiled again.**
+Finally, we need to conduct two tiny source code tweaks. First, in ``model_src/model_main.cpp``, check that line 91 is active and line 92 is commented out. If not, make it so. We need the order to be pressure first, temperature second (because this is the format of ``pt.dat``). Second, in ``model_src/save_output.h`` between lines 49 and 53, remove **all** spaces in **all** of the header names. For example '#P (bar)' should become '#P(bar)'. (Otherwise Python's 'numpy.genfromtxt' function will complain that the number of headers is not equal to the number of columns.) After modifying the source code, **FastChem needs to be compiled again.**
 
 With these settings FastChem should now generate the chemistry files exactly in the format that HELIOS and the ktable program require.
 
@@ -140,7 +140,7 @@ In the ``parameters.dat`` file:
 - Set the correct elemental abundance file
 - The species data file should be ``logK_wo_ions.dat`` for the lower temperature grid and ``logK.dat`` for the higher temperature grid.
 
-Finally, we need to conduct two tiny source code tweaks. First, in ``model_src/model_main.cpp``, check that line 91 is active and line 92 is commented out. If not, make it so. We need the order to be pressure first, temperature second (because this is the format of ``pt.dat``). Second, in ``model_src/save_output.h`` between lines 49 and 53, remove **all** spaces in **all** of the header names. For example '#P (bar)' should become '#P(bar)'. (Otherwise Python's 'numpy.genfromtxt' function will complain that the number of headers is not equal the number of columns.) After modifying the source code, **FastChem needs to be compiled again.**
+Finally, we need to conduct two tiny source code tweaks. First, in ``model_src/model_main.cpp``, check that line 91 is active and line 92 is commented out. If not, make it so. We need the order to be pressure first, temperature second (because this is the format of ``pt.dat``). Second, in ``model_src/save_output.h`` between lines 49 and 53, remove **all** spaces in **all** of the header names. For example '#P (bar)' should become '#P(bar)'. (Otherwise Python's 'numpy.genfromtxt' function will complain that the number of headers is not equal to the number of columns.) After modifying the source code, **FastChem needs to be compiled again.**
 
 With these settings FastChem should now generate the chemistry files exactly in the format that HELIOS and the ktable program require.
 
