@@ -3182,7 +3182,7 @@ __device__ utype calc_index_h2o(
     utype dens = f_h2o * press * mass_h2o / (KBOLTZMANN * temp);
 
     utype lamda = wave / 0.589e-4;
-    utype delta = max(1.0, dens) / 1.0; // limiting to valid range, otherwise index may return NaN (this only affects atmospheric regions with at least around 1000 bar)
+    utype delta = min(1.0, dens) / 1.0; // limiting to valid range, otherwise index may return NaN (this only affects atmospheric regions with at least around 1000 bar)
     utype theta = temp / 273.15;
 
     utype lamda_UV = 0.229202;
