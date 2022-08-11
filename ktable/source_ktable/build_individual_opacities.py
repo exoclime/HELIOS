@@ -493,8 +493,6 @@ class Production(object):
 
                             opac_helios_for_one_TP.extend(opac_helios_within_bin)
 
-                        opac_helios_for_one_TP.reverse()
-
                     opac_helios_total.extend(opac_helios_for_one_TP)
 
             try:  # create directory if necessary
