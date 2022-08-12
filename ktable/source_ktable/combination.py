@@ -651,24 +651,27 @@ class Comb(object):
         else:
             print("WARNING WARNING WARNING: Rayleigh scattering cross sections for species", species.name, "not found. Please double-check! Continuing without those... ")
 
+
     @staticmethod
-    @nb.njit
     def weight_and_include_opacity(vol_mix_ratio, vol_mix_ratio2, weight, mu, opac, final_nt, final_np, nx, ny, combined_opacity):
         """ weights opacity and adds to total, combined opacity array """
+
+        opac = npy.array(opac)
+
+        weighted_opac = []
+
+        mass_mix_ratio = vol_mix_ratio * vol_mix_ratio2 * weight / mu
 
         for t in range(final_nt):
 
             for p in range(final_np):
 
-                mass_mix_ratio = vol_mix_ratio[p + final_np * t] * vol_mix_ratio2[p + final_np * t] * weight / mu[p + final_np * t]
+                weighted_opac.extend(mass_mix_ratio[p + final_np * t] * opac[ny*nx*(p + t*final_np):ny*nx*((p+1) + t*final_np)])
 
-                for x in range(nx):
+        weighted_opac = npy.array(weighted_opac)
 
-                    for y in range(ny):
+        combined_opacity += weighted_opac
 
-                        weighted_opac = mass_mix_ratio * opac[y + ny*x + ny*nx*p + ny*nx*final_np*t]
-
-                        combined_opacity[y + ny*x + ny*nx*p + ny*nx*final_np*t] += weighted_opac
 
     def calc_h_minus_bf(self, conti, param):
         """ calculates the H- bound-free continuum opacity """
@@ -968,7 +971,7 @@ class Comb(object):
                                             final_vmr_2,
                                             species.weight,
                                             self.mu,
-                                            nb.typed.List(interpol_opac),
+                                            interpol_opac,
                                             self.final_nt,
                                             self.final_np,
                                             self.nx,
