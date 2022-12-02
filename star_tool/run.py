@@ -1,3 +1,13 @@
+"""
+Documentation for this file is at https://heliosexo.readthedocs.io/en/latest/sections/tutorial.html#creating-a-stellar-spectrum-file
+
+But in brief, to download & interpolate PHOENIX spectra for ~any star:
+1) Create an entry for your desired star, following the example of gj1214 below.
+2) change the first input argument of fc.main_loop() to be the new star dict you created.
+3) Set the output file, as desired.
+4) At the terminal, run:  `python3 run.py`
+
+"""
 import sys
 sys.path.append("..")
 import functions as fc
@@ -36,7 +46,7 @@ star_of_interest = {
 
 fc.main_loop(gj1214,
              convert_to='r50_kdistr',
-             opac_file_for_lambdagrid="../input/opacity/r50_kdistr/H2O_opac_kdistr.h5",
+             opac_file_for_lambdagrid="../input/opacity/r50_kdistr/H2O_opac_ip_kdistr.h5",
              output_file="star_2022.h5",
              plot_and_tweak='automatic',
              save_ascii='no',
