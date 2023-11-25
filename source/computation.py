@@ -918,7 +918,7 @@ class Compute(object):
                             quant.dev_F_add_heat_sum = gpuarray.to_gpu(quant.F_add_heat_sum)
 
                     # cp is required for temp. iteration, but only for physical timestepping
-                    if quant.physical_tstep != 0:
+                    if quant.physical_tstep != 0 and quant.input_kappa_value != "vertical_file":
                         if quant.iter_value % 10 == 0:
                             self.interpolate_kappa_and_cp(quant)
 
@@ -1000,7 +1000,17 @@ class Compute(object):
             quant.T_lay = quant.dev_T_lay.get()
             quant.p_lay = quant.dev_p_lay.get()
             quant.p_int = quant.dev_p_int.get()
-            quant.kappa_lay = quant.dev_kappa_lay.get()
+            #quant.kappa_lay = quant.dev_kappa_lay.get()
+            
+            
+            if quant.input_kappa_value == "vertical_file":
+                quant.dev_kappa_lay = gpuarray.to_gpu(quant.kappa_lay)
+                quant.dev_c_p_lay = gpuarray.to_gpu(quant.c_p_lay)
+
+            else:
+                quant.kappa_lay = quant.dev_kappa_lay.ge
+            
+
             if quant.iso == 0:
                 quant.kappa_int = quant.dev_kappa_int.get()
                 hsfunc.conv_check(quant)
@@ -1049,12 +1059,16 @@ class Compute(object):
                     elif quant.opacity_mixing == "on-the-fly":
                         hsfunc.calculate_vmr_for_all_species(quant)
                         hsfunc.calculate_meanmolecularmass(quant)
-
-                self.interpolate_kappa_and_cp(quant)
-                quant.kappa_lay = quant.dev_kappa_lay.get()
-                if quant.iso == 0:
+                
+                if quant.input_kappa_value != "vertical_file": # no mesh-grid interpolation #shami added 2023
+                    self.interpolate_kappa_and_cp(quant)
+                    quant.kappa_lay = quant.dev_kappa_lay.get()
+                if quant.iso == 0 and quant.input_kappa_value != "vertical_file":
                     quant.kappa_int = quant.dev_kappa_int.get()
-                quant.c_p_lay = quant.dev_c_p_lay.get()  # needed by convective adjustment
+                
+                if quant.input_kappa_value != "vertical_file":
+                    quant.c_p_lay = quant.dev_c_p_lay.get()  # needed by convective adjustment
+                
                 quant.meanmolmass_lay = quant.dev_meanmolmass_lay.get()
                 quant.T_lay = quant.dev_T_lay.get()
                 quant.F_smooth_sum = quant.dev_F_smooth_sum.get()
@@ -1096,8 +1110,13 @@ class Compute(object):
                 quant.F_net_diff = quant.dev_F_net_diff.get()
 
                 # required to mark convective zones
-                self.interpolate_kappa_and_cp(quant)
-                quant.kappa_lay = quant.dev_kappa_lay.get()
+                # required to mark convective zones
+                if quant.input_kappa_value != "vertical_file": # no mesh-grid interpolation #shami added 2023
+                    self.interpolate_kappa_and_cp(quant)
+                    quant.kappa_lay = quant.dev_kappa_lay.get()
+                    
+                # self.interpolate_kappa_and_cp(quant)
+                # quant.kappa_lay = quant.dev_kappa_lay.get()
                 if quant.iso == 0:
                     quant.kappa_int = quant.dev_kappa_int.get()
                 quant.T_lay = quant.dev_T_lay.get()

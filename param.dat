@@ -55,7 +55,7 @@ opacity mixing =                                      premixed                  
 === === CONVECTIVE ADJUSTMENT === ===
 
 convective adjustment =                               yes                             [yes, no]                                    (CL: Y)
-kappa value =                                         0.285714                        [file, number > 0]                           (CL: Y) 
+kappa value =                                         0.285714                        [file, vertical_file, number > 0]                           (CL: Y) 
   file --> kappa file path =                          ./input/delad_example.dat       [file path]                                  (CL: Y)
 
 === === STELLAR AND PLANETARY PARAMETERS === ===
