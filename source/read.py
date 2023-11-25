@@ -1118,7 +1118,7 @@ class Read(object):
             if quant.input_kappa_value == str(quant.input_kappa_value):
 
                 # kappa/delad is being read from file
-                if quant.input_kappa_value == "file":
+                if quant.input_kappa_value == "file" or quant.input_kappa_value == "vertical_file":
 
                     print("\nReading kappa/delad values from file (standard format).")
 
