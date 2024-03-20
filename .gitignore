@@ -2,7 +2,7 @@
 /output/
 /input/
 /source/__pycache__/
-/__pycache__/
+**__pycache__**
 /.idea/
 
 /star_tool/input/
