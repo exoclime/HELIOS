@@ -26,7 +26,7 @@ import os
 import h5py
 from scipy import interpolate as itp
 from numpy.polynomial.legendre import leggauss as G
-from source import tools as tls
+from helios import tools as tls
 
 
 class Production(object):

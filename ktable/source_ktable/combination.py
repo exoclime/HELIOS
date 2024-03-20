@@ -24,9 +24,9 @@ import h5py
 import numpy as npy
 import time
 import numba as nb
-from source import tools as tls
-from source import phys_const as pc
-from source import species_database as sd
+from helios import tools as tls
+from helios import phys_const as pc
+from helios import species_database as sd
 
 
 class Species(object):

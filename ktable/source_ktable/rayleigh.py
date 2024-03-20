@@ -20,8 +20,8 @@
 # =============================================================================
 
 import numpy as np
-from source import phys_const as pc
-from source import species_database as sd
+from helios import phys_const as pc
+from helios import species_database as sd
 
 class Rayleigh_scat(object):
     """ class providing the Rayleigh scattering calculation"""

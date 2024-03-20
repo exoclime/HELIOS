@@ -22,14 +22,14 @@
 # ==============================================================================
 
 
-from source import read
-from source import quantities as quant
-from source import host_functions as hsfunc
-from source import write
-from source import computation as comp
-from source import realtime_plotting as rt_plot
-from source import clouds
-from source import additional_heating as add_heat
+from helios import read
+from helios import quantities as quant
+from helios import host_functions as hsfunc
+from helios import write
+from helios import computation as comp
+from helios import realtime_plotting as rt_plot
+from helios import clouds
+from helios import additional_heating as add_heat
 
 
 def run_helios():
@@ -43,7 +43,7 @@ def run_helios():
     fogger = clouds.Cloud()
 
     # read input files and do preliminary calculations, like setting up the grid, etc.
-    reader.read_param_file_and_command_line(keeper, fogger)
+    reader.read_param_file_and_command_line("param.dat", keeper, fogger)
 
     if keeper.opacity_mixing == "premixed":
         reader.load_premixed_opacity_table(keeper)

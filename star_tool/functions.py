@@ -6,8 +6,8 @@ import h5py
 import matplotlib.pyplot as plt
 import wget
 import os
-from source import tools as tls
-from source import phys_const as pc
+from helios import tools as tls
+from helios import phys_const as pc
 
 
 def save_to_dat(name, lamda, flux):
@@ -19,7 +19,7 @@ def save_to_dat(name, lamda, flux):
             file.writelines("\n{:<15.7e}{:<25.7e}".format(lamda[i], flux[i]))
 
 
-def read_ascii_file(star):
+def read_ascii_file(star, skiprows=0):
     """ reads in a stellar_tool spectrum from an ascii file """
 
     lamda = []
@@ -27,14 +27,8 @@ def read_ascii_file(star):
 
     with open(star["source_file"], 'r') as file:
 
-        next(file)
-        next(file)
-        next(file)
-        next(file)
-        next(file)
-        next(file)
-        next(file)
-        next(file)
+        for _ in range(skiprows):
+            next(file)
 
         for line in file:
 
@@ -289,7 +283,7 @@ def gen_int_lambda_values(lamda):
     return int_lambda
 
 
-def main_loop(star, convert_to, opac_file_for_lambdagrid, output_file, plot_and_tweak='no', save_ascii='no', save_in_hdf5='no', BB_temp=None):
+def main_loop(star, convert_to, opac_file_for_lambdagrid, output_file, plot_and_tweak='no', save_ascii='no', save_in_hdf5='no', BB_temp=None, skiprows=0):
 
     with h5py.File(opac_file_for_lambdagrid, "r") as file:
 
@@ -312,7 +306,7 @@ def main_loop(star, convert_to, opac_file_for_lambdagrid, output_file, plot_and_
     if not os.path.exists("output"):
         os.makedirs("output")
 
-    with h5py.File("./output/"+output_file, "a") as f:
+    with h5py.File(output_file, "a") as f:
 
         if star["data_format"] == "phoenix":
 
@@ -334,7 +328,7 @@ def main_loop(star, convert_to, opac_file_for_lambdagrid, output_file, plot_and_
 
         elif star["data_format"] == "ascii":
 
-            orig_lambda, orig_flux = read_ascii_file(star)
+            orig_lambda, orig_flux = read_ascii_file(star, skiprows=skiprows)
 
         elif star["data_format"] == "muscles":
 
@@ -484,3 +478,5 @@ def main_loop(star, convert_to, opac_file_for_lambdagrid, output_file, plot_and_
             h5_rm_create(f, "/" + convert_to + "/lambda", new_lambda)
 
     print("Done :)")
+
+    return orig_lambda, orig_flux, new_lambda, converted_flux
