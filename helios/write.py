@@ -71,7 +71,7 @@ class Write(object):
                 raise
 
         try:
-            with open(read.output_path + quant.name + "/" + quant.name + "_ABORT.dat", "w") as file:
+            with open(read.output_path + quant.name + "/" + "ABORT.dat", "w") as file:
                 file.writelines("The run exceeded the maximum number of iteration steps and was aborted. Sorry.")
         except TypeError:
             print("ABORT file generation corrupted. You might want to look into it!")
@@ -89,7 +89,7 @@ class Write(object):
                 if not os.path.isdir(read.output_path + quant.name):
                     raise
 
-            with open(read.output_path + quant.name + "/" + quant.name + "_convergence_warning.dat", "w") as file:
+            with open(read.output_path + quant.name + "/" + "convergence_warning.dat", "w") as file:
                 file.writelines("WARNING: Due to exceeding runtime the convergence criterion has been made more loose over time.\n")
                 file.writelines("The final relative criterion used is: {:.1e} \n".format(quant.rad_convergence_limit))
                 file.writelines("Even with a looser (not loser) criterion, the model results may still be accurate enough. Use at your own discretion!")
@@ -106,7 +106,7 @@ class Write(object):
         cwd = os.getcwd()
 
         source = cwd + "/" + read.param_file
-        destination = read.output_path +quant.name+"/" + quant.name + "_" + read.param_file
+        destination = read.output_path +quant.name+"/" + "" + read.param_file
 
         shutil.copyfile(source, destination)
 
@@ -117,7 +117,7 @@ class Write(object):
         _, _, _, _, T_bright = hsfunc.temp_calcs(quant)
 
         try:
-            with open(read.output_path +quant.name+"/" + quant.name + "_tp.dat", "w") as file:
+            with open(read.output_path +quant.name+"/" + "tp.dat", "w") as file:
                 file.writelines("This file contains the corresponding layer temperatures and pressures, and the altitude and the height of each layer.")
 
                 file.writelines(
@@ -155,7 +155,7 @@ class Write(object):
         """ writes the TP-profile up to a height of P = 1e-6 bar to a file """
 
         try:
-            with open(read.output_path + quant.name+"/" + quant.name + "_tp_cut.dat", "w") as file:
+            with open(read.output_path + quant.name+"/" + "tp_cut.dat", "w") as file:
                 file.writelines(
                     "This file contains the corresponding layer temperatures and pressures.")
 
@@ -178,7 +178,7 @@ class Write(object):
     def write_colmass_mu_cp_entropy(quant, read):
         """ writes the layer column mass, mean molecular weight and specific heat capacity to a file """
 
-        with open(read.output_path + quant.name + "/" + quant.name + "_colmass_mu_cp_kappa_entropy.dat", "w") as file:
+        with open(read.output_path + quant.name + "/" + "colmass_mu_cp_kappa_entropy.dat", "w") as file:
             file.writelines(
                 "This file contains the total pressure and the column mass difference, mean molecular weight and specific heat capacity of each layer.")
             file.writelines(
@@ -212,7 +212,7 @@ class Write(object):
         # only executed for "water_atmo" file format
         if quant.input_kappa_value == "water_atmo":
 
-            with open(read.output_path + quant.name + "/" + quant.name + "_state.dat", "w") as file:
+            with open(read.output_path + quant.name + "/" + "state.dat", "w") as file:
 
                 file.writelines(
                     "Checks the phase state of the water atmosphere. If '1' the water in the atmosphere is vaporous or supercritical. "
@@ -235,7 +235,7 @@ class Write(object):
     def write_integrated_flux(quant, read):
         """ writes the integrated total and net fluxes to a file """
         try:
-            with open(read.output_path + quant.name+"/" + quant.name + "_integrated_flux.dat", "w") as file:
+            with open(read.output_path + quant.name+"/" + "integrated_flux.dat", "w") as file:
                 file.writelines("This file contains the integrated total and net fluxes at each interface resp. "
                                 "layer. \nFluxes given in [erg s^-1 cm^-2].")
                 file.writelines(
@@ -269,7 +269,7 @@ class Write(object):
     def write_upward_spectral_flux(quant, read):
         """ writes the upward spectral flux to a file """
         try:
-            with open(read.output_path + quant.name+"/" + quant.name + "_spec_upflux.dat", "w") as file:
+            with open(read.output_path + quant.name+"/" + "spec_upflux.dat", "w") as file:
                 file.writelines("This file contains the upward spectral flux (per wavelength) at each interface. "
                                 "\nSpectral fluxes given in [erg s^-1 cm^-3].")
                 file.writelines(
@@ -292,7 +292,7 @@ class Write(object):
     def write_downward_spectral_flux(quant, read):
         """ writes the downward spectral flux to a file """
         try:
-            with open(read.output_path + quant.name+"/" + quant.name + "_spec_downflux.dat", "w", encoding='utf-8') as file:
+            with open(read.output_path + quant.name+"/" + "spec_downflux.dat", "w", encoding='utf-8') as file:
                 file.writelines("This file contains the downward spectral flux (per wavelength) at each interface. "
                                 "\nSpectral fluxes given in [erg s^-1 cm^-3].")
                 file.writelines(
@@ -315,7 +315,7 @@ class Write(object):
     def write_TOA_flux_eclipse_depth(quant, read):
         """ writes the TOA fluxes to a file """
         try:
-            with open(read.output_path + quant.name+"/" + quant.name + "_TOA_flux_eclipse.dat", "w") as file:
+            with open(read.output_path + quant.name+"/" + "TOA_flux_eclipse.dat", "w") as file:
                 file.writelines("This file contains the downward and upward spectral flux (per wavelength) at TOA "
                                 "and the secondary eclipse depth (= planet to star flux ratio)."
                                 "\nSpectral fluxes given in [erg s^-1 cm^-3].")
@@ -342,7 +342,7 @@ class Write(object):
     def write_flux_ratio_only(quant, read):
         """ writes only the planetary and stellar flux ratio to a file, e.g., to be readable by Pandexo """
         try:
-            with open(read.output_path + quant.name + "/" + quant.name + "_flux_ratio.dat", "w") as file:
+            with open(read.output_path + quant.name + "/" + "flux_ratio.dat", "w") as file:
                 for x in range(quant.nbin):
                     file.writelines("{:<18.9g}".format(quant.opac_wave[x] * 1e4))
                     if quant.T_star > 10:
@@ -356,7 +356,7 @@ class Write(object):
     def write_surface_albedo(quant, read):
         """ writes the surface albedo per wavelength """
 
-        with open(read.output_path + quant.name + "/" + quant.name + "_surf_albedo.dat", "w") as file:
+        with open(read.output_path + quant.name + "/" + "surf_albedo.dat", "w") as file:
             file.writelines("This file contains the surface albedo per wavelength.")
             if read.input_surf_albedo == "file":
                 file.writelines("\nThe surface material used is: " + read.albedo_file_surface_name)
@@ -376,7 +376,7 @@ class Write(object):
     def write_direct_spectral_beam_flux(quant, read):
         """ writes the direct irradiation beam flux to a file """
         try:
-            with open(read.output_path + quant.name+"/" + quant.name + "_direct_beamflux.dat", "w") as file:
+            with open(read.output_path + quant.name+"/" + "direct_beamflux.dat", "w") as file:
                 file.writelines("This file contains the direct irradiation flux (per wavelength) at each interface. "
                                 "\nSpectral fluxes given in [erg s^-1 cm^-3].")
                 file.writelines(
@@ -400,7 +400,7 @@ class Write(object):
         """ writes the Planck function at interfaces to a file """
         if quant.iso == 0:
             try:
-                with open(read.output_path + quant.name+"/" + quant.name + "_planck_int.dat", "w") as file:
+                with open(read.output_path + quant.name+"/" + "planck_int.dat", "w") as file:
                     file.writelines("This file contains the Planck (blackbody) function at each interface. "
                                     "\nPlanck function given in [erg s^-1 cm^-3 sr^-1].")
                     file.writelines(
@@ -423,7 +423,7 @@ class Write(object):
     def write_planck_center(quant, read):
         """ writes the Planck function at layer centers (+ stellar temp. and internal temp.) to a file. """
         try:
-            with open(read.output_path + quant.name + "/" + quant.name + "_planck_cent.dat", "w") as file:
+            with open(read.output_path + quant.name + "/" + "planck_cent.dat", "w") as file:
                 file.writelines("This file contains the Planck (blackbody) function at each layer center and "
                                 "from the stellar (2nd last column) and internal (last column) temperatures. "
                                 "\nPlanck function given in [erg s^-1 cm^-3 sr^-1].")
@@ -449,7 +449,7 @@ class Write(object):
     def write_opacities(quant, read):
         """ writes the bin integrated opacities to a file. """
 
-        with open(read.output_path + quant.name + "/" + quant.name + "_opacities.dat", "w") as file:
+        with open(read.output_path + quant.name + "/" + "opacities.dat", "w") as file:
             file.writelines("This file contains the bin integrated opacities at each layer center "
                             "\nOpacity given in [cm^2 g^-1].")
             file.writelines(
@@ -470,7 +470,7 @@ class Write(object):
     def write_cloud_mixing_ratio(quant, read):
         """ writes the vertical cloud mixing ratio to a file """
 
-        with open(read.output_path + quant.name+"/" + quant.name + "_cloud_mixing_ratio.dat", "w") as file:
+        with open(read.output_path + quant.name+"/" + "cloud_mixing_ratio.dat", "w") as file:
             file.writelines(
                 "This file contains the cloud volume mixing ratio (= n_cloud/n_gas) at each vertical layer.")
 
@@ -488,7 +488,7 @@ class Write(object):
     def write_cloud_opacities(quant, read):
         """ writes the cloud opacity per bin to a file"""
 
-        with open(read.output_path + quant.name + "/" + quant.name + "_cloud_opacities.dat", "w") as file:
+        with open(read.output_path + quant.name + "/" + "cloud_opacities.dat", "w") as file:
             file.writelines("This file contains the cloud opacities at each layer center "
                             "\nOpacity given in [cm^2 g^-1].")
             file.writelines(
@@ -509,7 +509,7 @@ class Write(object):
     def write_Rayleigh_cross_sections(quant, read):
         """ writes the scattering cross sections to a file. """
 
-        with open(read.output_path + quant.name + "/" + quant.name + "_Rayleigh_cross_sect.dat", "w") as file:
+        with open(read.output_path + quant.name + "/" + "Rayleigh_cross_sect.dat", "w") as file:
             file.writelines("This file contains Rayleigh scattering cross sections "
                             "per wavelength at each layer center. "
                             "\nCross sections given in [cm^2].")
@@ -531,7 +531,7 @@ class Write(object):
     def write_cloud_scat_cross_sections(quant, read):
         """ writes the scattering cross sections of the cloud to a file. """
 
-        with open(read.output_path + quant.name + "/" + quant.name + "_cloud_scat_cross_sect.dat", "w") as file:
+        with open(read.output_path + quant.name + "/" + "cloud_scat_cross_sect.dat", "w") as file:
             file.writelines("This file contains the cloud scattering cross sections "
                             "per wavelength at each layer center. "
                             "\nCross sections given in [cm^2].")
@@ -553,7 +553,7 @@ class Write(object):
     def write_g_0(quant, read):
         """ writes the scattering asymmetry paramater values to a file. """
         try:
-            with open(read.output_path + quant.name + "/" + quant.name + "_g_0.dat", "w") as file:
+            with open(read.output_path + quant.name + "/" + "g_0.dat", "w") as file:
                 file.writelines("This file contains the scattering asymmetry parameter values per wavelength at each layer center."
                                 "\nValues are between -1 and 1.")
                 file.writelines(
@@ -576,7 +576,7 @@ class Write(object):
     def write_transmission(quant, read):
         """ writes the transmission function for each layer to a file. """
         try:
-            with open(read.output_path + quant.name + "/" + quant.name + "_transmission.dat", "w") as file:
+            with open(read.output_path + quant.name + "/" + "transmission.dat", "w") as file:
                 file.writelines("This file contains the transmission function for each layer and waveband.")
                 file.writelines(
                     "\n{:<8}{:<18}{:21}{:19}".format("bin", "cent_lambda[um]","low_int_lambda[um]","delta_lambda[um]")
@@ -598,7 +598,7 @@ class Write(object):
     def write_opt_depth(quant, read):
         """ writes the optical depth for each layer to a file. """
         try:
-            with open(read.output_path + quant.name + "/" + quant.name + "_optdepth.dat", "w") as file:
+            with open(read.output_path + quant.name + "/" + "optdepth.dat", "w") as file:
                 file.writelines("This file contains the optical depth for each layer and waveband.")
                 file.writelines(
                     "\n{:<8}{:<18}{:21}{:19}".format("bin", "cent_lambda[um]", "low_int_lambda[um]", "delta_lambda[um]")
@@ -620,7 +620,7 @@ class Write(object):
     def write_cloud_opt_depth(quant, read):
         """ writes the cloud optical depth for each layer to a file. """
 
-        with open(read.output_path + quant.name + "/" + quant.name + "_cloud_optdepth.dat", "w") as file:
+        with open(read.output_path + quant.name + "/" + "cloud_optdepth.dat", "w") as file:
             file.writelines("This file contains the cloud optical depth for each layer and waveband.")
             file.writelines(
                 "\n{:<8}{:<18}{:21}{:19}".format("bin", "cent_lambda[um]", "low_int_lambda[um]", "delta_lambda[um]")
@@ -640,7 +640,7 @@ class Write(object):
     def write_contribution_function(quant, read):
         """ writes the contribution function for each layer and waveband to a file. """
         try:
-            with open(read.output_path + quant.name + "/" + quant.name + "_contribution.dat", "w") as file:
+            with open(read.output_path + quant.name + "/" + "contribution.dat", "w") as file:
                 file.writelines("This file contains the contribution function for each layer and waveband.")
                 file.writelines(
                     "\n{:<8}{:<18}{:21}{:19}".format("bin", "cent_lambda[um]","low_int_lambda[um]","delta_lambda[um]")
@@ -662,7 +662,7 @@ class Write(object):
     def write_trans_weight_function(quant, read):
         """ writes the transmission weighting function for each layer and waveband to a file. """
         try:
-            with open(read.output_path + quant.name + "/" + quant.name + "_transweight.dat", "w") as file:
+            with open(read.output_path + quant.name + "/" + "transweight.dat", "w") as file:
                 file.writelines("This file contains the transmission weighting function for each layer and waveband. "
                                 "The units are [erg s^-1 cm^-3 sr^-1]")
                 file.writelines(
@@ -684,7 +684,7 @@ class Write(object):
     def write_mean_extinction(self, quant, read):
         """ writes the Planck and Rosseland mean opacities & optical depths to a file. """
         try:
-            with open(read.output_path + quant.name + "/" + quant.name + "_mean_extinct.dat", "w") as file:
+            with open(read.output_path + quant.name + "/" + "mean_extinct.dat", "w") as file:
                 file.writelines("This file contains the Rosseland and Planck mean opacities of layers & optical depths "
                                 "summed up to a certain layer, weighted either by the blackbody function "
                                 "with the stellar or the planetary atmospheric temperature."
@@ -743,7 +743,7 @@ class Write(object):
 
             else:
 
-                file_path_previous = read.output_path + quant.name + "/" + quant.name + "_tp_coupling_" + str(quant.coupling_iter_nr - 1) + ".dat"
+                file_path_previous = read.output_path + quant.name + "/" + "tp_coupling_" + str(quant.coupling_iter_nr - 1) + ".dat"
 
             with open(file_path_previous, "r") as previous_file:
                 next(previous_file)
@@ -757,7 +757,7 @@ class Write(object):
 
             T_new = T_average
 
-        with open(read.output_path + quant.name + "/" + quant.name + "_tp_coupling_" + str(quant.coupling_iter_nr) + ".dat", "w") as file:
+        with open(read.output_path + quant.name + "/" + "tp_coupling_" + str(quant.coupling_iter_nr) + ".dat", "w") as file:
             file.writelines(
                 "{:<24}{:<18}".format("press.[10^-6bar]", "temp.[K]")
             )

@@ -1415,19 +1415,19 @@ class Read(object):
         try:
 
             self.fastchem_data = npy.genfromtxt(self.fastchem_path + 'chem.dat',
-                                                names=True, dtype=None, skip_header=0, deletechars=" !#$%&'()*,./:;<=>?@[\]^{|}~")
+                                                names=True, dtype=None, skip_header=0, deletechars=" !#$%&'*,./:;<=>?@[\]^{|}~")
         except OSError:
 
             self.fastchem_data_low = npy.genfromtxt(self.fastchem_path + 'chem_low.dat',
-                                                    names=True, dtype=None, skip_header=0, deletechars=" !#$%&'()*,./:;<=>?@[\]^{|}~")
+                                                    names=True, dtype=None, skip_header=0, deletechars=" !#$%&'*,./:;<=>?@[\]^{|}~")
 
             self.fastchem_data_high = npy.genfromtxt(self.fastchem_path + 'chem_high.dat',
-                                                     names=True, dtype=None, skip_header=0, deletechars=" !#$%&'()*,./:;<=>?@[\]^{|}~")
+                                                     names=True, dtype=None, skip_header=0, deletechars=" !#$%&'*,./:;<=>?@[\]^{|}~")
 
         # temperature and pressure from the chemical grid
         if self.fastchem_data is not None:
-            read_press = self.fastchem_data['Pbar']
-            read_temp = self.fastchem_data['Tk']
+            read_press = self.fastchem_data['p(bar)']
+            read_temp = self.fastchem_data['T(K)']
         else:
             read_press = npy.concatenate((self.fastchem_data_low['Pbar'], self.fastchem_data_high['Pbar']))
             read_temp = npy.concatenate((self.fastchem_data_low['Tk'], self.fastchem_data_high['Tk']))

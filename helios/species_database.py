@@ -73,18 +73,31 @@ species_lib["HNO3"] = Species_db(name="HNO3", fc_name="H1N1O3", weight=63.01)
 species_lib["SO3"] = Species_db(name="SO3", fc_name="O3S1", weight=80.066)
 species_lib["H2SO4"] = Species_db(name="H2SO4", fc_name="H2O4S1", weight=98.0785)
 species_lib["TiO"] = Species_db(name="TiO", fc_name="O1Ti1", weight=63.866)
-species_lib["TiH"] = Species_db(name="TiH", fc_name="TiH is not included in FastChem...sorry!", weight=48.87)
 species_lib["VO"] = Species_db(name="VO", fc_name="O1V1", weight=66.9409)
 species_lib["SiO"] = Species_db(name="SiO", fc_name="O1Si1", weight=44.08)
+species_lib["SiO2"] = Species_db(name="SiO2", fc_name="O2Si1", weight=60.083)
 species_lib["AlO"] = Species_db(name="AlO", fc_name="Al1O1", weight=42.98)
 species_lib["CaO"] = Species_db(name="CaO", fc_name="Ca1O1", weight=56.0774)
+species_lib["MgO"] = Species_db(name="MgO", fc_name="Mg1O1", weight=40.304)
 species_lib["PO"] = Species_db(name="PO", fc_name="O1P1", weight=46.97316)
+species_lib["NaO"] = Species_db(name="NaO", fc_name="Na1O1", weight=38.9892)
+species_lib["FeO"] = Species_db(name="FeO", fc_name="Fe1O1", weight=71.8444)
+
+# metal hydrites
+species_lib["TiH"] = Species_db(name="TiH", fc_name="TiH is not included in FastChem...sorry!", weight=48.87)
+species_lib["FeH"] = Species_db(name="FeH", fc_name="Fe1H1", weight=56.8529)
 species_lib["SiH"] = Species_db(name="SiH", fc_name="H1Si1", weight=29.09344)
 species_lib["CaH"] = Species_db(name="CaH", fc_name="Ca1H1", weight=41.085899)
 species_lib["AlH"] = Species_db(name="AlH", fc_name="Al1H1", weight=27.9889)
 species_lib["MgH"] = Species_db(name="MgH", fc_name="H1Mg1", weight=25.3129)
 species_lib["CrH"] = Species_db(name="CrH", fc_name="Cr1H1", weight=53.0040)
 species_lib["NaH"] = Species_db(name="NaH", fc_name="H1Na1", weight=23.99771)
+
+# triatomic molecules
+species_lib["SiH2"] = Species_db(name="SiH2", fc_name="H2Si1", weight=30.10138)
+
+# complex molecules
+species_lib["SiH4"] = Species_db(name="SiH4", fc_name="H4Si1", weight=32.11726)
 
 # neutral atoms
 species_lib["H"] = Species_db(name="H", fc_name="H", weight=1.007825)
@@ -122,6 +135,10 @@ species_lib["H3+"] = Species_db(name="H3+", fc_name="H3+ is not included in Fast
 species_lib["HeH+"] = Species_db(name="HeH+", fc_name="HeH+ is not included in FastChem...sorry!", weight=5.01054)
 species_lib["Fe+"] = Species_db(name="Fe+", fc_name="Fe1+", weight=55.845)
 species_lib["Ti+"] = Species_db(name="Ti+", fc_name="Ti1+", weight=47.867)
+species_lib["Si+"] = Species_db(name="Si+", fc_name="Si1+", weight=28.085)
+species_lib["Mg+"] = Species_db(name="Mg+", fc_name="Mg1+", weight=24.305)
+species_lib["Na+"] = Species_db(name="Na+", fc_name="Na1+", weight=22.989769)
+species_lib["O+"] = Species_db(name="O+", fc_name="O1+", weight=15.999)
 
 # don't forget the electrons! (they may be tiny but they are important)
 species_lib["e-"] = Species_db(name="e-", fc_name="e-", weight=5.4858e-4)
