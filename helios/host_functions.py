@@ -726,6 +726,11 @@ def calculate_pressure_levels(quant):
 
 def construct_grid(quant):
 
+    # reset arrays
+    quant.delta_colmass = []
+    quant.delta_col_upper = []
+    quant.delta_col_lower = []
+
     quant.p_lay, quant.p_int = calculate_pressure_levels(quant)
 
     for i in range(quant.nlayer):
