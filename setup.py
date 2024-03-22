@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='HELIOS',
-    version='',
+    version='0.1.0',
     author='Matej Malik',
     author_email='',
     description='1D radiatrive transfer in (exo-)planet atmospheres',
