@@ -1,0 +1,9 @@
+name_of_species_to_include  path_to_files
+
+H2O                         /server/home/opacities/h2o/
+
+CO2                         /server/home/opacities/co2/
+
+CO                          /server/home/opacities/co/
+
+CH4                         /server/home/opacities/ch4/
