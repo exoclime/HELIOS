@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "HELIOS"
+version = "0.1.0"
+description = "1D radiative transfer in (exo-)planet atmospheres"
+authors = ["Matej Malik"]
+readme = "README.md"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/exoclime/HELIOS"
+include = ["helios/kernels.cu"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "*"
+pandas = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
