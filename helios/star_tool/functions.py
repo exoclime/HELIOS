@@ -432,7 +432,7 @@ def main_loop(star, convert_to, opac_file_for_lambdagrid, output_file, plot_and_
                     ax.set(xscale='log', yscale='log', xlim=[0.2, 30], xlabel='wavelength ($\mu$m)', ylabel='flux (erg s$^{-1}$ cm$^{-3}$)')
 
                     leg = ax.legend(loc='best', frameon=True, labelspacing=0.1, framealpha=0.8, fancybox=True, handlelength=1.5, handletextpad=0.2)
-                    for line in leg.legendHandles:
+                    for line in leg.legend_handles:
                         line.set_linewidth(4)
 
                     plt.show()
