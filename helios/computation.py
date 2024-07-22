@@ -19,7 +19,7 @@
 #     <http://www.gnu.org/licenses/>.
 # ==============================================================================
 
-import pkg_resources
+import importlib
 import numpy as np
 import pycuda.driver as cuda
 import pycuda.autoinit
@@ -29,7 +29,7 @@ from helios import host_functions as hsfunc
 from helios import phys_const as pc
 
 
-KERNEL_PATH = pkg_resources.resource_filename(__name__, "kernels.cu")
+KERNEL_PATH = importlib.resources.files("helios") / "kernels.cu"
 
 class Compute(object):
     """ class incorporating the computational core of HELIOS """
