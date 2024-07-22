@@ -16,3 +16,5 @@
 /ktable/fastchem/
 /ktable/testing/
 /ktable/source_ktable/__pycache__/
+
+poetry.lock
