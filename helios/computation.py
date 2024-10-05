@@ -19,7 +19,7 @@
 #     <http://www.gnu.org/licenses/>.
 # ==============================================================================
 
-import importlib
+from importlib import resources
 import numpy as np
 import pycuda.driver as cuda
 import pycuda.autoinit
@@ -29,15 +29,15 @@ from helios import host_functions as hsfunc
 from helios import phys_const as pc
 
 
-KERNEL_PATH = importlib.resources.files("helios") / "kernels.cu"
+KERNEL_PATH = resources.files("helios") / "kernels.cu"
 
 class Compute(object):
     """ class incorporating the computational core of HELIOS """
 
-    def __init__(self):
+    def __init__(self, cuda_kws: dict={}):
         self.kernel_file = open(KERNEL_PATH)
         self.kernels = self.kernel_file.read()
-        self.mod = SourceModule(self.kernels)
+        self.mod = SourceModule(self.kernels, **cuda_kws)
 
     def construct_planck_table(self, quant):
         """ constructs the Planck table """

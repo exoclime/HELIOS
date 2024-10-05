@@ -31,13 +31,18 @@ from helios import realtime_plotting as rt_plot
 from helios import clouds
 from helios import additional_heating as add_heat
 
+# Depending on your CUDA installation, passing custom compiler
+# flags might be necessary; the following was necessary to make
+# it work on my laptop, but this might be totally different on
+# your system!
+CUDA_KWS: dict = {"arch":"sm_86"}
 
 def run_helios():
     """ a full HELIOS run """
 
     reader = read.Read()
     keeper = quant.Store()
-    computer = comp.Compute()
+    computer = comp.Compute(cuda_kws=CUDA_KWS)
     writer = write.Write()
     plotter = rt_plot.Plot()
     fogger = clouds.Cloud()

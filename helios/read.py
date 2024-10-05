@@ -21,7 +21,7 @@
 
 import os
 import datetime
-import importlib
+from importlib import resources
 import h5py
 import numpy as npy
 from scipy import interpolate
@@ -31,7 +31,7 @@ from helios import planet_database as pd
 from helios import species_database as sdb
 from helios import host_functions as hsfunc
 
-KERNEL_PATH = importlib.resources.files("helios") / "kernels.cu"
+KERNEL_PATH = resources.files("helios") / "kernels.cu"
 
 class Species(object):
     """ class that sets properties of an atmospheric species """
