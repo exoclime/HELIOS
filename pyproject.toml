@@ -12,6 +12,7 @@ include = ["helios/kernels.cu"]
 python = "^3.10"
 numpy = "*"
 pandas = "*"
+wget = "*"
 
 [build-system]
 requires = ["poetry-core"]
