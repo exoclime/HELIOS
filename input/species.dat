@@ -1,32 +1,4 @@
 species      absorbing       scattering         mixing_ratio
 
-H2O           yes             yes                FastChem  
-
-CO2           yes             yes                 FastChem
-
-CO            yes             yes                 FastChem
-
-CH4           yes             no                  FastChem
-
-NH3           yes             no                  FastChem
-
-HCN           yes             no                  FastChem
-
-PH3           yes             no                  FastChem
-
-C2H2           yes             no                 FastChem
-
-H2S           yes             no                  FastChem     
-
-Na            yes             no                  FastChem
-
-K             yes             no                  FastChem
-
-H2            no	      yes                 FastChem
-
-He            no              yes                 FastChem
-
-CIA_H2H2      yes             no                 FastChem
-
-CIA_H2He     yes             no                  FastChem     
+SiO           yes             No                FastChem
 

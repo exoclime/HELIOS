@@ -44,13 +44,13 @@ rocky planet --> use f approximation formula =        no                        
 
 === === OPACITY MIXING === ===
 
-opacity mixing =                                      premixed                        [premixed, on-the-fly]                       (CL: Y)
+opacity mixing =                                      on-the-fly                        [premixed, on-the-fly]                       (CL: Y)
   premixed   --> path to opacity file =               ./input/r50_kdistr_solar_eq.h5  [file path]                                  (CL: Y)
   on-the-fly --> path to species file =               ./input/species.dat             [file path]                                  (CL: Y)
   on-the-fly --> file with vertical mixing ratios =   ./input/vmr_mix.txt             [file path]                                  (CL: Y)
   on-the-fly --> vertical VMR file format =           1 Pressure cgs                  [#skip, press.col., press.unit[cgs,Pa,bar]]  (CL: N)
-  on-the-fly --> directory with FastChem files =      ./input/chemistry/lodders_m0/   [directory path]                             (CL: Y)
-  on-the-fly --> directory with opacity files =       ./input/opacity/r50_kdistr/     [directory path]                             (CL: Y)
+  on-the-fly --> directory with FastChem files =      ./input/chemistry/   [directory path]                             (CL: Y)
+  on-the-fly --> directory with opacity files =       ./input/opacities/     [directory path]                             (CL: Y)
 
 === === CONVECTIVE ADJUSTMENT === ===
 
@@ -60,9 +60,9 @@ kappa value =                                         0.285714                  
 
 === === STELLAR AND PLANETARY PARAMETERS === ===
 
-stellar spectral model =                              file                            [blackbody, file]                            (CL: Y)
-  file --> path to stellar spectrum file =            ./input/star_2022.h5            [file path]                                  (CL: Y)
-  file --> dataset in stellar spectrum file =         /r50_kdistr/phoenix/gj1214      [dataset]                                    (CL: Y)
+stellar spectral model =                              blackbody                            [blackbody, file]                            (CL: Y)
+  file --> path to stellar spectrum file =            ./input/Sun.h5            [file path]                                  (CL: Y)
+  file --> dataset in stellar spectrum file =         /r50_kdistr/Sun/      [dataset]                                    (CL: Y)
 planet =                                              GJ_1214b                        [manual, name of planet]                     (CL: Y)
   manual --> surface gravity [cm s^-2] =              2000                            [number > 0]                                 (CL: Y)
   manual --> orbital distance [AU] =                  0.0124                          [number > 0]                                 (CL: Y)
