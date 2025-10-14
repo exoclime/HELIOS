@@ -34,10 +34,10 @@ KERNEL_PATH = resources.files("helios") / "kernels.cu"
 class Compute(object):
     """ class incorporating the computational core of HELIOS """
 
-    def __init__(self, cuda_kws: dict={}):
+    def __init__(self, nvcc_kws: dict={}):
         self.kernel_file = open(KERNEL_PATH)
         self.kernels = self.kernel_file.read()
-        self.mod = SourceModule(self.kernels, **cuda_kws)
+        self.mod = SourceModule(self.kernels, **nvcc_kws)
 
     def construct_planck_table(self, quant):
         """ constructs the Planck table """
