@@ -22,6 +22,7 @@ Thank you for considering HELIOS!
 
 The original basic input data for HELIOS has now been moved to Zenodo. It can be accessed here:
 https://zenodo.org/records/17425932
+The bash script install_input_files.bash in the main directory has also been updated accordingly to download the archive directly from Zenodo and to decompress it into the corresponding folder. For that latter task, the unzip command line tool needs to be available. Otherwise, the zip archive contents can be extracted manually.
 
 ### New version 3.0 --- released July 2022 ###
 
