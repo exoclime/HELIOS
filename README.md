@@ -18,6 +18,11 @@ Any questions, issues or bug reports are appreciated and can be sent to *malik@u
 
 Thank you for considering HELIOS!
 
+### New location for input data ###
+
+The original basic input data for HELIOS has now been moved to Zenodo. It can be accessed here:
+https://zenodo.org/records/17425932
+
 ### New version 3.0 --- released July 2022 ###
 
 New features include:
