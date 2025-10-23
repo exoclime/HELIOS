@@ -61,7 +61,7 @@ For the installation of HELIOS there are two choices:
 Download Input Files
 --------------------
 
-Many of the input files for HELIOS are too large to be stored on GitHub. They have to be downloaded from the University of Bern server. They are located `here <https://chaldene.unibe.ch/data/helios/input_files/>`_. For convenience, the installation includes a bash script that automatically downloads all files and puts them where they belong. Just run the included script with::
+Many of the input files for HELIOS are too large to be stored on GitHub. They have to be downloaded from the University of Bern server. They are located `here <https://zenodo.org/records/17425932>`_. For convenience, the installation includes a bash script that automatically downloads all files and puts them where they belong. Just run the included script with::
 
     bash install_input_files.bash
 
